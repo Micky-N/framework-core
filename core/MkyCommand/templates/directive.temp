@@ -1,0 +1,26 @@
+namespace !path;
+
+
+use MkyCore\Interfaces\MkyDirectiveInterface;
+use MkyCore\MkyCompiler\MkyDirectives\Directive;
+
+class !name extends Directive implements MkyDirectiveInterface
+{
+
+    public function getFunctions()
+    {
+        return [
+            '!function' => [[$this, '!function'], [$this, 'end!function']],
+        ];
+    }
+
+    public function !function()
+    {
+        return;
+    }
+
+    public function end!function()
+    {
+        return;
+    }
+}

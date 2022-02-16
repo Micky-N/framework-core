@@ -1,0 +1,40 @@
+namespace !path;
+
+use MkyCore\Interfaces\NotificationInterface;
+
+class !name implements NotificationInterface
+{
+    /**
+     * @var mixed
+     */
+    private $process;
+    private string $action;
+
+    public function __construct($process, string $action = '')
+    {
+        $this->process = $process;
+        $this->action = $action;
+    }
+
+    /**
+     * @param $notifiable
+     * @return string[]
+     */
+    public function via($notifiable)
+    {
+        return [!via];
+    }
+
+    /**
+     * @param $notifiable
+     * @return mixed[]
+     */
+    public function !tovia($notifiable)
+    {
+        switch ($this->action):
+            default:
+                return [];
+                break;
+        endswitch;
+    }
+}

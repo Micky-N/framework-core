@@ -1,0 +1,20 @@
+namespace !path;
+
+
+use MkyCore\Interfaces\MkyFormatterInterface;
+
+class !name implements MkyFormatterInterface
+{
+
+    public function getFormats()
+    {
+        return [
+            '!format' => [$this, '!format'],
+        ];
+    }
+
+    public function !format()
+    {
+        return;
+    }
+}

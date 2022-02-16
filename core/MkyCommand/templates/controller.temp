@@ -1,0 +1,10 @@
+namespace !path;
+
+use MkyCore\Controller;
+use MkyCore\Facades\View;
+
+
+class !name extends Controller
+{
+    !crud
+}

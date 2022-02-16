@@ -1,0 +1,34 @@
+    public function index()
+    {
+        // index
+    }
+
+    public function show($id)
+    {
+        // show
+    }
+
+    public function new()
+    {
+        // new
+    }
+
+    public function create(array $data)
+    {
+        // create
+    }
+
+    public function edit($id)
+    {
+        // edit
+    }
+
+    public function update($id, array $data)
+    {
+        // update
+    }
+    
+    public function delete($id)
+    {
+        // delete
+    }

@@ -1,0 +1,9 @@
+namespace !path;
+
+
+use MkyCore\Module;
+
+class !name extends Module
+{
+    const CONFIG = __DIR__ . '/config.php';
+}

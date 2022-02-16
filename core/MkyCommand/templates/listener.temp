@@ -1,0 +1,18 @@
+namespace !path;
+
+
+use MkyCore\Interfaces\EventInterface;
+use MkyCore\Interfaces\ListenerInterface;
+
+class !name implements ListenerInterface
+{
+
+    public function __construct()
+    {
+    }
+
+    public function handle(EventInterface $event)
+    {
+
+    }
+}

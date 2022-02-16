@@ -1,0 +1,9 @@
+namespace !path;
+
+use MkyCore\Model;
+
+
+class !name extends Model
+{
+    !table!pk
+}

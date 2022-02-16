@@ -1,0 +1,71 @@
+---------------------------------------------------------------------------
+                        Liste des commandes MkyCLI
+---------------------------------------------------------------------------
+
+create:
+    module: 
+        name: required
+
+    controller: 
+        name: required
+        crud: optional
+        path: optional
+        module: optional
+
+    model:
+        name: required
+        pk: optional
+        table: optional
+        path: optional
+        module: optional
+
+    middleware: 
+        name: required
+        path: optional
+        route: optional
+        module: optional
+
+    voter: 
+        name: required
+        model: required
+        path: optional
+        action: optional
+        module: optional
+
+    notification: 
+        name: required
+        via: required
+        path: optional
+
+    event: 
+        name: required
+        path: optional
+        module: optional
+
+    listener: 
+        name: required
+        path: optional
+        module: optional
+
+    formatter:
+        name: required
+        format: required
+        path: optional
+
+    directive: 
+        name: required
+        fn: required
+        path: optional
+
+show: 
+    routes:
+        request: optional
+        controller: optional
+
+cache: 
+    clear: 
+        path: optional
+
+    create:
+        path: required
+---------------------------------------------------------------------------
