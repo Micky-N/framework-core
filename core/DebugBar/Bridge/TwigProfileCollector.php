@@ -8,11 +8,11 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\Bridge;
+namespace MkyCore\DebugBar\Bridge;
 
-use DebugBar\DataCollector\AssetProvider;
-use DebugBar\DataCollector\DataCollector;
-use DebugBar\DataCollector\Renderable;
+use MkyCore\DebugBar\DataCollector\AssetProvider;
+use MkyCore\DebugBar\DataCollector\DataCollector;
+use MkyCore\DebugBar\DataCollector\Renderable;
 
 /**
  * Collects data about rendered templates
@@ -79,7 +79,7 @@ class TwigProfileCollector extends DataCollector implements Renderable, AssetPro
 
     /**
      * Returns a hash where keys are control names and their values
-     * an array of options as defined in {@see DebugBar\JavascriptRenderer::addControl()}
+     * an array of options as defined in {@see MkyCore\DebugBar\JavascriptRenderer::addControl()}
      *
      * @return array
      */

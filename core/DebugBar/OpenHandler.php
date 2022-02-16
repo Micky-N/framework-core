@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar;
+namespace MkyCore\DebugBar;
 
 /**
  * Handler to list and open saved dataset

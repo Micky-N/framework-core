@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\DataFormatter;
+namespace MkyCore\DebugBar\DataFormatter;
 
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\CliDumper;

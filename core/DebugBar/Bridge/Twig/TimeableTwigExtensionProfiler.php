@@ -8,9 +8,9 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\Bridge\Twig;
+namespace MkyCore\DebugBar\Bridge\Twig;
 
-use DebugBar\DataCollector\TimeDataCollector;
+use MkyCore\DebugBar\DataCollector\TimeDataCollector;
 use Twig_Profiler_Profile;
 
 /**
@@ -18,17 +18,17 @@ use Twig_Profiler_Profile;
  *
  * Extends Twig_Extension_Profiler to add rendering times to the TimeDataCollector
  *
- * @package DebugBar\Bridge\Twig
+ * @package MkyCore\DebugBar\Bridge\Twig
  */
 class TimeableTwigExtensionProfiler extends \Twig_Extension_Profiler
 {
     /**
-     * @var \DebugBar\DataCollector\TimeDataCollector
+     * @var \MkyCore\DebugBar\DataCollector\TimeDataCollector
      */
     private $timeDataCollector;
 
     /**
-     * @param \DebugBar\DataCollector\TimeDataCollector $timeDataCollector
+     * @param \MkyCore\DebugBar\DataCollector\TimeDataCollector $timeDataCollector
      */
     public function setTimeDataCollector(TimeDataCollector $timeDataCollector)
     {

@@ -8,9 +8,9 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\Bridge;
+namespace MkyCore\DebugBar\Bridge;
 
-use DebugBar\DataCollector\MessagesCollector;
+use MkyCore\DebugBar\DataCollector\MessagesCollector;
 use Psr\Log\LogLevel;
 use Slim\Log;
 use Slim\Slim;

@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\DataCollector;
+namespace MkyCore\DebugBar\DataCollector;
 
 /**
  * Indicates that a DataCollector is renderable using JavascriptRenderer
@@ -17,7 +17,7 @@ interface Renderable
 {
     /**
      * Returns a hash where keys are control names and their values
-     * an array of options as defined in {@see DebugBar\JavascriptRenderer::addControl()}
+     * an array of options as defined in {@see MkyCore\DebugBar\JavascriptRenderer::addControl()}
      *
      * @return array
      */

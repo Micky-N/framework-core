@@ -8,9 +8,9 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\Bridge\Twig;
+namespace MkyCore\DebugBar\Bridge\Twig;
 
-use DebugBar\DataCollector\TimeDataCollector;
+use MkyCore\DebugBar\DataCollector\TimeDataCollector;
 use Twig_CompilerInterface;
 use Twig_Environment;
 use Twig_ExtensionInterface;

@@ -8,9 +8,9 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\DataCollector;
+namespace MkyCore\DebugBar\DataCollector;
 
-use DebugBar\DebugBarException;
+use MkyCore\DebugBar\DebugBarException;
 
 /**
  * Collects info about the request duration as well as providing

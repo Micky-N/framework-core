@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\DataFormatter;
+namespace MkyCore\DebugBar\DataFormatter;
 
 /**
  * Formats data to be outputed as string

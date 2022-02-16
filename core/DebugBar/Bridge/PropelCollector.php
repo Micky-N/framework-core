@@ -8,12 +8,12 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\Bridge;
+namespace MkyCore\DebugBar\Bridge;
 
 use BasicLogger;
-use DebugBar\DataCollector\AssetProvider;
-use DebugBar\DataCollector\DataCollector;
-use DebugBar\DataCollector\Renderable;
+use MkyCore\DebugBar\DataCollector\AssetProvider;
+use MkyCore\DebugBar\DataCollector\DataCollector;
+use MkyCore\DebugBar\DataCollector\Renderable;
 use Propel;
 use PropelConfiguration;
 use PropelPDO;

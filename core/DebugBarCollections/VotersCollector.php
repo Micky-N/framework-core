@@ -10,14 +10,14 @@
 
 namespace MkyCore\DebugBarCollections;
 
-use DebugBar\DataCollector\AssetProvider;
-use DebugBar\DataCollector\DataCollector;
-use DebugBar\DataCollector\DataCollectorInterface;
-use DebugBar\DataCollector\MessagesAggregateInterface;
-use DebugBar\DataCollector\Renderable;
+use MkyCore\DebugBar\DataCollector\AssetProvider;
+use MkyCore\DebugBar\DataCollector\DataCollector;
+use MkyCore\DebugBar\DataCollector\DataCollectorInterface;
+use MkyCore\DebugBar\DataCollector\MessagesAggregateInterface;
+use MkyCore\DebugBar\DataCollector\Renderable;
 use Psr\Log\AbstractLogger;
-use DebugBar\DataFormatter\DataFormatterInterface;
-use DebugBar\DataFormatter\DebugBarVarDumper;
+use MkyCore\DebugBar\DataFormatter\DataFormatterInterface;
+use MkyCore\DebugBar\DataFormatter\DebugBarVarDumper;
 
 /**
  * Provides a way to log messages

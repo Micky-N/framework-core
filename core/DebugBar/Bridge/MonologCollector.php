@@ -8,11 +8,11 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\Bridge;
+namespace MkyCore\DebugBar\Bridge;
 
-use DebugBar\DataCollector\DataCollectorInterface;
-use DebugBar\DataCollector\MessagesAggregateInterface;
-use DebugBar\DataCollector\Renderable;
+use MkyCore\DebugBar\DataCollector\DataCollectorInterface;
+use MkyCore\DebugBar\DataCollector\MessagesAggregateInterface;
+use MkyCore\DebugBar\DataCollector\Renderable;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
 

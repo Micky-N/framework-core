@@ -8,10 +8,10 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\DataCollector;
+namespace MkyCore\DebugBar\DataCollector;
 
 use ArrayAccess;
-use DebugBar\DebugBarException;
+use MkyCore\DebugBar\DebugBarException;
 
 /**
  * Aggregates data from multiple collectors

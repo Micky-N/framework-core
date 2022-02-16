@@ -8,11 +8,11 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\DataCollector;
+namespace MkyCore\DebugBar\DataCollector;
 
-use DebugBar\DataFormatter\DataFormatter;
-use DebugBar\DataFormatter\DataFormatterInterface;
-use DebugBar\DataFormatter\DebugBarVarDumper;
+use MkyCore\DebugBar\DataFormatter\DataFormatter;
+use MkyCore\DebugBar\DataFormatter\DataFormatterInterface;
+use MkyCore\DebugBar\DataFormatter\DebugBarVarDumper;
 
 /**
  * Abstract class for data collectors

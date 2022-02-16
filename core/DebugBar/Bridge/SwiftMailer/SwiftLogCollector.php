@@ -8,9 +8,9 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\Bridge\SwiftMailer;
+namespace MkyCore\DebugBar\Bridge\SwiftMailer;
 
-use DebugBar\DataCollector\MessagesCollector;
+use MkyCore\DebugBar\DataCollector\MessagesCollector;
 use Swift_Mailer;
 use Swift_Plugins_Logger;
 use Swift_Plugins_LoggerPlugin;

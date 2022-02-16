@@ -8,11 +8,11 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\Bridge;
+namespace MkyCore\DebugBar\Bridge;
 
-use DebugBar\DataCollector\AssetProvider;
-use DebugBar\DataCollector\DataCollector;
-use DebugBar\DataCollector\Renderable;
+use MkyCore\DebugBar\DataCollector\AssetProvider;
+use MkyCore\DebugBar\DataCollector\DataCollector;
+use MkyCore\DebugBar\DataCollector\Renderable;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Propel\Runtime\Connection\ConnectionInterface;
@@ -30,7 +30,7 @@ use Psr\Log\LoggerInterface;
  *
  * Example:
  * <code>
- * $debugbar->addCollector(new \DebugBar\Bridge\Propel2Collector(\Propel\Runtime\Propel::getServiceContainer()->getReadConnection()));
+ * $debugbar->addCollector(new \MkyCore\DebugBar\Bridge\Propel2Collector(\Propel\Runtime\Propel::getServiceContainer()->getReadConnection()));
  * </code>
  */
 class Propel2Collector extends DataCollector implements Renderable, AssetProvider

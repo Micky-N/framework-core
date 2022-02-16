@@ -8,11 +8,11 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar;
+namespace MkyCore\DebugBar;
 
 use ArrayAccess;
-use DebugBar\DataCollector\DataCollectorInterface;
-use DebugBar\Storage\StorageInterface;
+use MkyCore\DebugBar\DataCollector\DataCollectorInterface;
+use MkyCore\DebugBar\Storage\StorageInterface;
 
 /**
  * Main DebugBar object

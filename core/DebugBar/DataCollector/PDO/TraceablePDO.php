@@ -1,10 +1,10 @@
 <?php
 
-namespace DebugBar\DataCollector\PDO;
+namespace MkyCore\DebugBar\DataCollector\PDO;
 
 use PDO;
 use PDOException;
-use DebugBar\DataCollector\PDO\TraceablePDOStatement;
+use MkyCore\DebugBar\DataCollector\PDO\TraceablePDOStatement;
 
 /**
  * A PDO proxy which traces statements

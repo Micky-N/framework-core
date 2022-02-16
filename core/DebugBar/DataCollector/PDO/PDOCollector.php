@@ -1,11 +1,11 @@
 <?php
 
-namespace DebugBar\DataCollector\PDO;
+namespace MkyCore\DebugBar\DataCollector\PDO;
 
-use DebugBar\DataCollector\AssetProvider;
-use DebugBar\DataCollector\DataCollector;
-use DebugBar\DataCollector\Renderable;
-use DebugBar\DataCollector\TimeDataCollector;
+use MkyCore\DebugBar\DataCollector\AssetProvider;
+use MkyCore\DebugBar\DataCollector\DataCollector;
+use MkyCore\DebugBar\DataCollector\Renderable;
+use MkyCore\DebugBar\DataCollector\TimeDataCollector;
 use Exception;
 use PDO;
 

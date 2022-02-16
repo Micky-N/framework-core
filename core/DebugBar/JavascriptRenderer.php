@@ -8,10 +8,10 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar;
+namespace MkyCore\DebugBar;
 
-use DebugBar\DataCollector\AssetProvider;
-use DebugBar\DataCollector\Renderable;
+use MkyCore\DebugBar\DataCollector\AssetProvider;
+use MkyCore\DebugBar\DataCollector\Renderable;
 
 /**
  * Renders the debug bar using the client side javascript implementation
@@ -85,7 +85,7 @@ class JavascriptRenderer
     protected $cspNonce;
 
     /**
-     * @param \DebugBar\DebugBar $debugBar
+     * @param \MkyCore\DebugBar\DebugBar $debugBar
      * @param string $baseUrl
      * @param string $basePath
      */

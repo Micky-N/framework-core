@@ -1,6 +1,6 @@
 <?php
 
-namespace DebugBar\DataCollector\PDO;
+namespace MkyCore\DebugBar\DataCollector\PDO;
 
 /**
  * Holds information about a statement

@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\Bridge\Twig;
+namespace MkyCore\DebugBar\Bridge\Twig;
 
 use Twig_Template;
 use Twig_TemplateInterface;

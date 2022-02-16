@@ -1,10 +1,10 @@
 <?php
 
-namespace DebugBar\DataFormatter;
+namespace MkyCore\DebugBar\DataFormatter;
 
-use DebugBar\DataCollector\AssetProvider;
-use DebugBar\DataFormatter\VarDumper\DebugBarHtmlDumper;
-use DebugBar\DataFormatter\VarDumper\SeekingData;
+use MkyCore\DebugBar\DataCollector\AssetProvider;
+use MkyCore\DebugBar\DataFormatter\VarDumper\DebugBarHtmlDumper;
+use MkyCore\DebugBar\DataFormatter\VarDumper\SeekingData;
 use Symfony\Component\VarDumper\Cloner\Data;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 

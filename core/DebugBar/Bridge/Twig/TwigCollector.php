@@ -8,11 +8,11 @@
  * file that was distributed with this source code.
  */
 
-namespace DebugBar\Bridge\Twig;
+namespace MkyCore\DebugBar\Bridge\Twig;
 
-use DebugBar\DataCollector\AssetProvider;
-use DebugBar\DataCollector\DataCollector;
-use DebugBar\DataCollector\Renderable;
+use MkyCore\DebugBar\DataCollector\AssetProvider;
+use MkyCore\DebugBar\DataCollector\DataCollector;
+use MkyCore\DebugBar\DataCollector\Renderable;
 
 /**
  * Collects data about rendered templates
@@ -27,7 +27,7 @@ use DebugBar\DataCollector\Renderable;
  * $debugbar->addCollector(new TwigCollector($env));
  * </code>
  * 
- * @deprecated use DebugBar\Bridge\TwigProfileCollector instead
+ * @deprecated use MkyCore\DebugBar\Bridge\TwigProfileCollector instead
  */
 class TwigCollector extends DataCollector implements Renderable, AssetProvider
 {

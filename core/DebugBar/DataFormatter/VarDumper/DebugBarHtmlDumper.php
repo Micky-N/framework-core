@@ -1,6 +1,6 @@
 <?php
 
-namespace DebugBar\DataFormatter\VarDumper;
+namespace MkyCore\DebugBar\DataFormatter\VarDumper;
 
 use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 

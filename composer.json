@@ -12,6 +12,8 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
+        "php": ">=7.4",
+        "psr/log": "^1|^2|^3",
         "symfony/dotenv": "^5.3",
         "ext-json": "*",
         "ext-pdo": "*",
