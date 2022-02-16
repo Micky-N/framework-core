@@ -47,7 +47,8 @@ class App
      */
     public static function Providers()
     {
-        self::$providers = include dirname(__DIR__) . '/app/Providers/Provider.php';
+        $root = defined('ROOT') ? ROOT : dirname(__DIR__).'/..';
+        self::$providers = include $root . '/app/Providers/Provider.php';
         return self::$providers;
     }
 
@@ -58,7 +59,8 @@ class App
      */
     public static function EventServiceProviders()
     {
-        self::$events = include dirname(__DIR__) . '/app/Providers/EventServiceProvider.php';
+        $root = defined('ROOT') ? ROOT : dirname(__DIR__).'/..';
+        self::$events = include $root . '/app/Providers/EventServiceProvider.php';
         return self::$events;
     }
 
@@ -69,7 +71,8 @@ class App
      */
     public static function MiddlewareServiceProviders()
     {
-        self::$middlewareServiceProviders = include dirname(__DIR__) . '/app/Providers/MiddlewareServiceProvider.php';
+        $root = defined('ROOT') ? ROOT : dirname(__DIR__).'/..';
+        self::$middlewareServiceProviders = include $root . '/app/Providers/MiddlewareServiceProvider.php';
         return self::$middlewareServiceProviders;
     }
 
@@ -78,7 +81,8 @@ class App
      */
     public static function ModuleServiceProvider()
     {
-        $moduleServiceProvider = include ROOT.'/app/Providers/ModuleServiceProvider.php';
+        $root = defined('ROOT') ? ROOT : dirname(__DIR__).'/..';
+        $moduleServiceProvider = include $root .'/app/Providers/ModuleServiceProvider.php';
         self::$modules = $moduleServiceProvider;
     }
 
@@ -87,7 +91,8 @@ class App
      */
     public static function MkyServiceProvider()
     {
-        self::$mkyServiceProvider = include dirname(__DIR__) . '/app/Providers/MkyServiceProvider.php';
+        $root = defined('ROOT') ? ROOT : dirname(__DIR__).'/..';
+        self::$mkyServiceProvider = include $root . '/app/Providers/MkyServiceProvider.php';
         return self::$mkyServiceProvider;
     }
 
@@ -148,11 +153,12 @@ class App
      */
     public static function RoutesInit()
     {
-        foreach (glob(dirname(__DIR__) . '/routes/*.yaml') as $filename) {
+        $root = defined('ROOT') ? ROOT : dirname(__DIR__).'/..';
+        foreach (glob($root . '/routes/*.yaml') as $filename) {
             Route::parseRoutes(Yaml::parseFile($filename) ?? [], null, strpos($filename, 'admin.yaml') !== false);
         }
         if(config('structure') === 'HMVC'){
-            $modules = !empty(self::$modules) ? self::$modules : (file_exists(dirname(__DIR__).'/app/Providers/ModuleServiceProvider.php') ? include(dirname(__DIR__).'/app/Providers/ModuleServiceProvider.php') : []);
+            $modules = !empty(self::$modules) ? self::$modules : (file_exists($root.'/app/Providers/ModuleServiceProvider.php') ? include($root.'/app/Providers/ModuleServiceProvider.php') : []);
             foreach ($modules as $module) {
                 $currentModule = new $module();
                 foreach (glob($currentModule->getRoot() . '/routes/*.yaml') as $filename) {
@@ -342,8 +348,9 @@ class App
 
     public static function ConfigInit()
     {
-        foreach (glob(ROOT . '/config/*.php') as $filename) {
-            $configFile = trim(str_replace(ROOT . '/config', '', $filename), '/');
+        $root = defined('ROOT') ? ROOT : dirname(__DIR__).'/..';
+        foreach (glob($root . '/config/*.php') as $filename) {
+            $configFile = trim(str_replace($root . '/config', '', $filename), '/');
             $configFile = str_replace('.php', '', $configFile);
             self::$config[$configFile] = include $filename;
         }

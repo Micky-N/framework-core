@@ -2,7 +2,7 @@
 
 namespace MkyCore;
 
-use DebugBar\DataCollector\PDO\TraceablePDO;
+use MkyCore\DebugBar\DataCollector\PDO\TraceablePDO;
 use Exception;
 use PDO;
 

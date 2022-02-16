@@ -34,7 +34,7 @@ class View
                 ->view($view, $params);
 
         } catch (Exception $ex) {
-            dd($ex);
+            return $ex;
         }
     }
 }

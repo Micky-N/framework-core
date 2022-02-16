@@ -6,8 +6,6 @@ namespace MkyCore;
 
 use MkyCore\Facades\View;
 use Exception;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\ServerRequest;
 
 class ErrorController extends Controller
 {
@@ -22,9 +20,10 @@ class ErrorController extends Controller
      */
     public static function error($code, string $text = null)
     {
+        $root = defined('ROOT') ? ROOT : dirname(__DIR__).'/..';
         $status = self::getStatus($code);
         $status['text'] = $text ?? $status['text'];
-        if(file_exists(dirname(__DIR__).'/views/general/errors.mky')){
+        if(file_exists($root.'/views/general/errors.mky')){
             return View::render('general.errors', $status, false);
         }
         throw new Exception($status['text'], $status['code']);

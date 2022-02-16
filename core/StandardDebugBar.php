@@ -12,16 +12,12 @@ namespace MkyCore;
 
 use MkyCore\DebugBarCollections\RoutesCollector;
 use MkyCore\DebugBarCollections\VotersCollector;
-use DebugBar\DataCollector\ExceptionsCollector;
-use DebugBar\DataCollector\LocalizationCollector;
-use DebugBar\DataCollector\MemoryCollector;
-use DebugBar\DataCollector\MessagesCollector;
-use DebugBar\DataCollector\PDO\PDOCollector;
-use DebugBar\DataCollector\PhpInfoCollector;
-use DebugBar\DataCollector\RequestDataCollector;
-use DebugBar\DataCollector\TimeDataCollector;
-use DebugBar\DebugBar;
-use DebugBar\JavascriptRenderer;
+use MkyCore\DebugBar\DataCollector\MemoryCollector;
+use MkyCore\DebugBar\DataCollector\PDO\PDOCollector;
+use MkyCore\DebugBar\DataCollector\PhpInfoCollector;
+use MkyCore\DebugBar\DataCollector\RequestDataCollector;
+use MkyCore\DebugBar\DebugBar;
+use MkyCore\DebugBar\JavascriptRenderer;
 
 /**
  * Debug bar subclass which adds all included collectors
