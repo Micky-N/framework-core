@@ -16,7 +16,7 @@ if(php_sapi_name() === "cli"){
     if(!strpos($name, 'Notification')){
         throw new MkyCommandException("$name notification must be suffixed by Notification");
     }
-    $template = file_get_contents(MickyCLI::BASE_MKY . "/templates/$option." . MickyCLI::EXTENSION);
+    $template = file_get_contents(__DIR__ . "/templates/$option." . MickyCLI::EXTENSION);
     $template = str_replace('!name', $name, $template);
     $template = str_replace('!path', $namespace, $template);
     $template = str_replace('!via', "'$via'", $template);

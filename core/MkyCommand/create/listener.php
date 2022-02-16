@@ -14,7 +14,7 @@ if (php_sapi_name() === "cli") {
     if (!strpos($name, 'Listener')) {
         throw new MkyCommandException("$name listener must be suffixed by Listener");
     }
-    $template = file_get_contents(MickyCLI::BASE_MKY."/templates/$option.".MickyCLI::EXTENSION);
+    $template = file_get_contents(__DIR__ . "/templates/$option.".MickyCLI::EXTENSION);
     $template = str_replace('!name', $name, $template);
     $template = str_replace('!path', $namespace, $template);
     $dir = sprintf("app%s/Listeners%s", ($module ? '/' . $module : ''), ($path ? "/" . $path : ''));

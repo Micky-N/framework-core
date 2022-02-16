@@ -11,7 +11,7 @@ if (php_sapi_name() === "cli") {
     $module = isset($cli['module']) ? ucfirst($cli['module']) : null;
     $path = isset($cli['path']) ? ucfirst($cli['path']) : null;
     $namespace = sprintf("App%s\\Http\\Middlewares%s", ($module ? "\\" . $module : ''), $path ? "\\" . $path : '');
-    $template = file_get_contents(MickyCLI::BASE_MKY."/templates/$option.".MickyCLI::EXTENSION);
+    $template = file_get_contents(__DIR__ . "/templates/$option.".MickyCLI::EXTENSION);
     $template = str_replace('!name', $middlewareName, $template);
     $template = str_replace('!path', $namespace, $template);
     $dir = sprintf("app%s/Http/Middlewares%s", ($module ? '/' . $module : ''), ($path ? "/" . $path : ''));
@@ -28,14 +28,14 @@ if (php_sapi_name() === "cli") {
     $start = "<"."?"."php\n\n";
     fwrite($middleware, $start.$template);
     if(isset($cli['route']) && $cli['route'] === false){
-        $middlewareProviderFile = sprintf("app%s/Providers/MiddlewareServiceProvider.php", ($module ? '/' . $module : ''));
-        $arr = explode("\n", file_get_contents(dirname(__DIR__)."/../$middlewareProviderFile"));
+        $middlewareProviderFile = getcwd() . sprintf("app%s/Providers/MiddlewareServiceProvider.php", ($module ? '/' . $module : ''));
+        $arr = explode("\n", file_get_contents($middlewareProviderFile));
         $middlewaresLine = array_keys(preg_grep("/'routeMiddlewares' => \[/i", $arr))[0];
         $subname = str_replace('middleware', '', strtolower($middlewareName));
         array_splice($arr, $middlewaresLine + 1, 0, "\t    '$subname' => \\$namespace\\$middlewareName::class,");
         $arr = array_values($arr);
         $arr = implode("\n", $arr);
-        $ptr = fopen(dirname(__DIR__)."/../$middlewareProviderFile", "w");
+        $ptr = fopen($middlewareProviderFile, "w");
         fwrite($ptr, $arr);
     }
     print("$middlewareName middleware created");

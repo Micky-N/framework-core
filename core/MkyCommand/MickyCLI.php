@@ -8,7 +8,7 @@ use Exception;
 class MickyCLI
 {
 
-    const BASE_MKY = 'core/MkyCommand';
+    const BASE_MKY = 'MkyCore/MkyCommand';
 
     const EXTENSION = 'temp';
 
@@ -286,7 +286,7 @@ class MickyCLI
     public function executeMKY()
     {
         $script = $this->sendOptions();
-        exec("php " . self::BASE_MKY . "/exec.php $script", $this->output, $this->retval);
+        exec("php " . __DIR__ . "/exec.php $script", $this->output, $this->retval);
         echo "\n-------------------------  Execution: $script  ------------------------\n\n";
         echo join("\n", $this->output);
     }
@@ -298,9 +298,7 @@ class MickyCLI
      */
     public function help()
     {
-        $script = $this->sendOptions();
-        exec("php " . self::BASE_MKY . "/show/help.php $script", $this->output, $this->retval);
-        echo "\n-------------------------  Execution: $script  ------------------------\n\n";
+        exec("php " . __DIR__ . "/help.txt", $this->output, $this->retval);
         echo join("\n", $this->output);
     }
 
@@ -321,7 +319,7 @@ class MickyCLI
             foreach ($this->cli as $cli => $option) {
                 if(array_key_exists($cli, self::$longOptions)){
                     if(array_key_exists($cli, self::$required) && $this->checkCLI($cli) && $this->getCommandBy($cli, $option) != null){
-                        $compile = file_get_contents(self::BASE_MKY . "/$cli/$option.php");
+                        $compile = file_get_contents(__DIR__."/$cli/$option.php");
                         break;
                     }
                 } else {
@@ -341,7 +339,7 @@ class MickyCLI
      */
     public function compileExec(string $compile = '')
     {
-        $exec = fopen(self::BASE_MKY . "/exec.php", "w");
+        $exec = fopen(__DIR__ . "/exec.php", "w");
         fwrite($exec, $compile ?? "");
     }
 

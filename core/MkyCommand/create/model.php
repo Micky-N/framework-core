@@ -13,7 +13,7 @@ if (php_sapi_name() === "cli") {
     $table = !empty($cli['table']) ? $cli['table'] : null;
     $pk = !empty($cli['pk']) ? $cli['pk'] : null;
     $namespace = sprintf("App%s\\Models%s", ($module ? "\\" . $module : ''), $path ? "\\" . $path : '');
-    $template = file_get_contents(MickyCLI::BASE_MKY."/templates/$options.".MickyCLI::EXTENSION);
+    $template = file_get_contents(__DIR__ . "/templates/$options.".MickyCLI::EXTENSION);
     $template = str_replace('!name', $name, $template);
     $template = str_replace('!path', $namespace, $template);
     $template = str_replace('!table', $table ? "protected string \$table = '$table';\n\t" : '' , $template);

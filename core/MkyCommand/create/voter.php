@@ -19,7 +19,7 @@ if (php_sapi_name() === "cli") {
     if (!strpos($name, 'Voter')) {
         throw new MkyCommandException("$name must be suffixed by Voter");
     }
-    $template = file_get_contents(MickyCLI::BASE_MKY."/templates/$option.".MickyCLI::EXTENSION);
+    $template = file_get_contents(__DIR__ . "/templates/$option.".MickyCLI::EXTENSION);
     $template = str_replace('!name', $name, $template);
     $template = str_replace('!modelLower', "\$$modelLower", $template);
     $template = str_replace('!path', $namespace, $template);
@@ -35,13 +35,13 @@ if (php_sapi_name() === "cli") {
     $voter = fopen("$dir/$name.php", "w") or die("Unable to open file $name");
     $start = "<"."?"."php\n\n";
     fwrite($voter, $start.$template);
-    $middlewareProviderFile = sprintf("app%s/Providers/MiddlewareServiceProvider.php", ($module ? '/' . $module : ''));;
-    $arr = explode("\n", file_get_contents(dirname(__DIR__)."/../$middlewareProviderFile"));
+    $middlewareProviderFile = getcwd().sprintf("/app%s/Providers/MiddlewareServiceProvider.php", ($module ? '/' . $module : ''));;
+    $arr = explode("\n", file_get_contents($middlewareProviderFile));
     $votersLine = array_keys(preg_grep("/'voters' => \[/i", $arr))[0];
     array_splice($arr, $votersLine + 1, 0, "\t    \\$namespace\\$name::class,");
     $arr = array_values($arr);
     $arr = implode("\n", $arr);
-    $ptr = fopen(dirname(__DIR__)."/../$middlewareProviderFile", "w");
+    $ptr = fopen($middlewareProviderFile, "w");
     fwrite($ptr, $arr);
     print("$name voter created");
 }

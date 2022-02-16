@@ -9,14 +9,14 @@ if(php_sapi_name() === "cli"){
     $cli = getopt('', MickyCLI::cliLongOptions());
     $option = $cli['create'];
     $controllerName = ucfirst($cli['name']);
-    $crud = isset($cli['crud']) ? file_get_contents(MickyCLI::BASE_MKY . "/templates/controller/crud." . MickyCLI::EXTENSION) : null;
+    $crud = isset($cli['crud']) ? file_get_contents(__DIR__ . "/templates/controller/crud." . MickyCLI::EXTENSION) : null;
     $module = isset($cli['module']) ? ucfirst($cli['module']) : null;
     $path = isset($cli['path']) ? ucfirst($cli['path']) : null;
     $namespace = sprintf("App%s\\Http\\Controllers%s", ($module ? "\\" . $module : ''), $path ? "\\" . $path : '');
     if(!strpos($controllerName, 'Controller')){
         throw new MkyCommandException("$controllerName controller must have be suffixed by Controller");
     }
-    $template = file_get_contents(MickyCLI::BASE_MKY . "/templates/$option." . MickyCLI::EXTENSION);
+    $template = file_get_contents(__DIR__ . "/templates/$option." . MickyCLI::EXTENSION);
     $template = str_replace('!name', $controllerName, $template);
     $template = str_replace('!path', $namespace, $template);
     $template = str_replace('!crud', $crud ? "\n" . $crud : '', $template);

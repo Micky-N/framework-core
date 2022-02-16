@@ -14,7 +14,7 @@ if (php_sapi_name() === "cli") {
     if (!strpos($name, 'Event')) {
         throw new MkyCommandException("$name event must be suffixed by Event");
     }
-    $template = file_get_contents(MickyCLI::BASE_MKY."/templates/$option.".MickyCLI::EXTENSION);
+    $template = file_get_contents(__DIR__."/templates/$option.".MickyCLI::EXTENSION);
     $template = str_replace('!path', $namespace, $template);
     $template = str_replace('!name', $name, $template);
     $dir = sprintf("app%s/Events%s", ($module ? '/' . $module : ''), ($path ? "/" . $path : ''));
