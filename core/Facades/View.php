@@ -6,7 +6,7 @@ use MkyCore\View as CoreView;
 
 
 /**
- * @method static \MkyCore\View render(string $view, array $params = [], bool $isModuleView = false)
+ * @method static \MkyCore\View render(string $view, array $params = [])
  *
  * @see \MkyCore\View
  */

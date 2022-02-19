@@ -31,17 +31,6 @@ class CsrfMiddlewareTest extends TestCase
         $this->assertEquals('boo', $this->router->run(new ServerRequest('get', '/passed')));
     }
 
-    public function testBlockPostRequestWithoutCsrf()
-    {
-        $this->router->post('/route', function (array $data) {});
-        $request = new ServerRequest('post', '/route');
-        try {
-            $this->router->run($request->withParsedBody(['go' => false]));
-        }catch (\Exception $ex){
-            $this->assertInstanceOf(CsrfMiddlewareException::class, $ex);
-        }
-    }
-
     public function testBlockPostRequestWithInvalidCsrf()
     {
         $this->router->post('/route', function (array $data) {});

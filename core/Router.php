@@ -224,9 +224,7 @@ class Router
      */
     public function generateUrlByName(string $routeName, array $params = []): string
     {
-        $requestTest = '';
         foreach ($this->routes as $request => $routesByRequest) {
-            $requestTest = $request;
             foreach ($routesByRequest as $route) {
                 if($route->name === $routeName){
                     return $this->routeNeedParams($route->path, $params);
@@ -252,14 +250,6 @@ class Router
             return $path ? $currentRoute[key($currentRoute)]->getPath() === $route : key($currentRoute) === $route;
         }
         return trim($currentPath, '/') === trim($route, '/');
-    }
-
-    public function isModuleRoute()
-    {
-        $currentPath = ServerRequest::fromGlobals()->getUri()->getPath();
-        $currentRoute = array_filter($this->routesByName(), fn($route) => trim($route->getPath(), '/') === trim($currentPath, '/'));
-        $currentRoute = $currentRoute[key($currentRoute)];
-        return !is_null($currentRoute->getModule());
     }
 
     /**
@@ -451,7 +441,8 @@ class Router
     {
         $action = explode('::', $action);
         if($action[0] === 'func'){
-            $functions = include ($moduleRoot ?? ROOT) . '/routes/functions.php';
+            $moduleFunctions = !is_null($moduleRoot) ? include $moduleRoot . '/routes/functions.php' : [];
+            $functions = array_merge(include ROOT . '/routes/functions.php', $moduleFunctions);
             return $functions[$action[1]];
         }
         return array_filter([$action[0], $action[1] ?? null]);

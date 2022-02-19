@@ -17,12 +17,11 @@ class View
      * @param bool $isModuleView
      * @return string|bool
      */
-    public function render(string $view, array $params = [], bool $isModuleView = true)
+    public function render(string $view, array $params = [])
     {
         try {
-            $moduleBaseConfig = include ROOT . '/config/module.php';
             $mkyServiceProvider = include ROOT . '/app/Providers/MkyServiceProvider.php';
-            $config = array_merge(config('*', 'mkyEngine'), ($isModuleView ? config('*', 'module') : $moduleBaseConfig));
+            $config = array_merge(config('*', 'mkyEngine'), config('*', 'module'));
             $mkyEngine = new MkyEngine($config);
             echo $mkyEngine->addDirectives(new BaseDirective())
                 ->addDirectives($mkyServiceProvider['directives'])
