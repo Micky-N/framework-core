@@ -1,8 +1,8 @@
 <?php
 
-namespace Console\Create;
+namespace MkyCore\Console\Create;
 
-use Console\Color;
+use MkyCore\Console\Color;
 use Exception;
 
 abstract class Create

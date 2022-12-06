@@ -1,6 +1,6 @@
 <?php
 
-namespace Console\Create;
+namespace MkyCore\Console\Create;
 
 class Middleware extends Create
 {

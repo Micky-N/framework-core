@@ -1,6 +1,6 @@
 <?php
 
-namespace Console;
+namespace MkyCore\Console;
 
 use Exception;
 
@@ -65,7 +65,7 @@ class Command
         if (!in_array($getOpt[$action], self::STRUCTURE[$action])) {
             throw new Exception("Value '{$getOpt[$action]}' not found in action '$action'");
         }
-        $class = 'Console\\' . ucfirst($action) . '\\' . ucfirst($getOpt[$action]);
+        $class = 'MkyCore\Console\\' . ucfirst($action) . '\\' . ucfirst($getOpt[$action]);
         array_shift($getOpt);
         $instance = new $class($getOpt);
         return $instance->process();

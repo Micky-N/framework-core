@@ -1,8 +1,8 @@
 <?php
 
-namespace Console\Show;
+namespace MkyCore\Console\Show;
 
-use Console\Color;
+use MkyCore\Console\Color;
 use MkyCore\Facades\Router;
 
 class Route

@@ -1,6 +1,6 @@
 <?php
 
-namespace Console;
+namespace MkyCore\Console;
 
 trait Color
 {
