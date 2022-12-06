@@ -38,10 +38,12 @@ class PermissionMiddleware implements MiddlewareInterface
         if ($route) {
             $module = $route->getModule();
             $appServiceProvider = $this->getAuthServiceProvider($module);
-            $appServiceProvider->register();
-            $this->permissions = $route->getPermissions();
-            if (!$this->processPermission($route)) {
-                return Redirect::error(401);
+            if(class_exists($appServiceProvider)){
+                $appServiceProvider->register();
+                $this->permissions = $route->getPermissions();
+                if (!$this->processPermission($route)) {
+                    return Redirect::error(401);
+                }
             }
         }
         return $next($request);

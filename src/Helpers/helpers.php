@@ -90,7 +90,7 @@ if(!function_exists('redirect')){
     function redirect(string $to = null, int $status = 302): RedirectResponse
     {
         $redirect = new RedirectResponse();
-        if($to){
+        if(!is_null($to)){
             return $redirect->to($to, $status);
         }
         return $redirect;

@@ -166,11 +166,11 @@ class Annotation
 
     /**
      * @param string $key
-     * @return ParamAnnotation
+     * @return ?ParamAnnotation
      */
-    public function getClassAnnotation(string $key): ParamAnnotation
+    public function getClassAnnotation(string $key): ?ParamAnnotation
     {
-        return $this->classAnnotations->getParam($key);
+        return $this->classAnnotations->getParam($key) ?? null;
     }
 
     /**
