@@ -15,7 +15,7 @@ class RedirectResponse implements ResponseHandlerInterface
     public function to(string $to, int $status = 302, string $reasonPhrase = ''): static
     {
         $response = new Response();
-        $this->response = $response->withStatus($status, $reasonPhrase)->withHeader('location', $to);
+        $this->response = $response->withStatus($status, $reasonPhrase)->withHeader('Location', $to);
         return $this;
     }
 

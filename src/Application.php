@@ -90,7 +90,7 @@ class Application extends Container
             $moduleName = trim(str_replace($root, '', $dir), DIRECTORY_SEPARATOR . '/');
             $this->modules[$moduleName] = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, trim($dir, DIRECTORY_SEPARATOR . '/'));
         }
-        $this->modules['root'] = $root;
+        $this->modules['Root'] = $root;
     }
 
     /**

@@ -11,8 +11,8 @@ class TrailingSlashMiddleware implements MiddlewareInterface
 
     public function process(Request $request, callable $next): ResponseHandlerInterface
     {
-        $url = $request->getUri()->getPath();
-        if (!empty($url) && str_ends_with($url, '/')) {
+        $url = $request->path();
+        if (!empty($url) && strlen($url) > 1 && str_ends_with($url, '/')) {
             $to = substr($url, 0, -1);
             return redirect($to, 301);
         }

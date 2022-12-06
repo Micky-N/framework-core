@@ -178,6 +178,11 @@ class Request extends ServerRequest implements ServerRequestInterface
     {
         return $this->currentRoute()->getParams();
     }
+    
+    public function parameter(string $key): mixed
+    {
+        return $this->currentRoute()->getParams()[$key] ?? null;
+    }
 
     public function fullUriWithQuery(): string
     {

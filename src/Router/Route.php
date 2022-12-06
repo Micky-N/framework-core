@@ -119,16 +119,16 @@ class Route
 
     public function check(ServerRequestInterface $request): bool
     {
-        $path = trim($request->getUri()->getPath(), '/');
+        $path = trim($request->path(), '/');
         preg_match("#^{$this->urlRegex()}$#", $path, $m);
-        return !empty($m[0]) && str_starts_with($path, $m[0]);
+        return !empty($m) && str_starts_with($path, $m[0]);
     }
 
     private function urlRegex(): array|string|null
     {
-        return preg_replace_callback('/\{(.*?)\}/', function ($e) {
+        return preg_replace_callback('/(.*?)\{(.*?)\}/', function ($e) {
             if (isset($e[1])) {
-                return str_ends_with($e[1], '?') ? '*|([\w]?)' : '+|([\w]?)';
+                return '([\w]*?)';
             }
             return $e[0];
         }, trim($this->url, '/'));
@@ -204,7 +204,7 @@ class Route
     {
         $request = Request::fromGlobals();
         $i = 0;
-        return ($absolute ? $request->baseUri() . '/' : '/') . trim(preg_replace_callback('/\{(.*?)\}/', function ($query) use ($params, &$i) {
+        return ($absolute ? $request->baseUri() . '/' : '/') . trim(preg_replace_callback('/(.*?)\{(.*?)\}/', function ($query) use ($params, &$i) {
                 $i++;
                 array_shift($query);
                 $query = $query[0] ?? false;
@@ -230,7 +230,7 @@ class Route
 
     public function hasParam(): bool
     {
-        return preg_match('/\{(.*)\}/', $this->url);
+        return preg_match('/(.*?)\{(.*)\}/', $this->url);
     }
 
     public function getParams(): array

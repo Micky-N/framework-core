@@ -3,6 +3,8 @@
 namespace MkyCore\Providers;
 
 use Exception;
+use MkyCore\Interfaces\ViewCompileInterface;
+use MkyCore\View\TwigCompile;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionException;
 use MkyCore\Abstracts\ServiceProvider;
@@ -54,12 +56,14 @@ class AppServiceProvider extends ServiceProvider
      * @throws FailedToResolveContainerException
      * @throws Exception
      */
-    public function viewCompile(): Compile
+    public function viewCompile(): ViewCompileInterface
     {
         $base = $this->app->get('path:base');
-        return new Compile([
-            'views' => $base . '/views',
-            'cache_views' => $base . '/cache/views'
-        ]);
+        return new TwigCompile(\MkyCore\Facades\Config::get('views.twig', [
+            'template' => $base . '/views',
+            'options' => [
+                'cache' => $base . '/cache/views'
+            ]
+        ]));
     }
 }

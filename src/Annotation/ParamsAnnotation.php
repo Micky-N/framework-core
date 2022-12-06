@@ -7,7 +7,7 @@ class ParamsAnnotation
     /**
      * @var ParamAnnotation[]
      */
-    private array $params;
+    private array $params = [];
 
     public function __construct(array $arrayParams)
     {
@@ -28,9 +28,9 @@ class ParamsAnnotation
      * @param string $key
      * @return ParamAnnotation
      */
-    public function getParam(string $key): ParamAnnotation
+    public function getParam(string $key): ?ParamAnnotation
     {
-        return $this->params[$key];
+        return $this->params[$key] ?? null;
     }
 
     /**

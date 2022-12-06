@@ -55,10 +55,10 @@ class Router
                 foreach ($methodsAnnotations as $nameMethod => $methodAnnotation) {
                     $methodRouter = $methodAnnotation->getParam('Router');
                     $routeArray = [
-                        'url' => trim($controllerAnnotations->default, '/') . '/' . trim($methodRouter->default, '/'),
+                        'url' => trim($controllerAnnotations ? $controllerAnnotations->default : '', '/') . '/' . trim($methodRouter->default, '/'),
                         'methods' => array_map(fn($method) => strtoupper($method), $methodRouter->methods ?? ['GET']),
                         'action' => [$controller->getName(), $nameMethod],
-                        'name' => $controllerAnnotations->as && $methodRouter->as ? $controllerAnnotations->as . '.' . $methodRouter->as : $methodRouter->as,
+                        'name' => ($controllerAnnotations && $controllerAnnotations->as) && $methodRouter->as ? $controllerAnnotations->as . '.' . $methodRouter->as : $methodRouter->as,
                         'middlewares' => array_merge($controllerAnnotations->middlewares ?? [], $methodRouter->middlewares ?? []),
                         'module' => $module,
                         'permissions' => $methodRouter->cans ?? []
