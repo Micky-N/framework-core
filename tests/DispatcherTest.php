@@ -2,12 +2,15 @@
 
 namespace MkyCore\Tests;
 
-use MkyCore\App;
+use PHPUnit\Framework\TestCase;
+use MkyCore\Application;
+use MkyCore\Exceptions\Config\ConfigNotFoundException;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Exceptions\Dispatcher\EventNotFoundException;
 use MkyCore\Exceptions\Dispatcher\EventNotImplementException;
 use MkyCore\Exceptions\Dispatcher\ListenerNotFoundException;
 use MkyCore\Exceptions\Dispatcher\ListenerNotImplementException;
-use PHPUnit\Framework\TestCase;
 use MkyCore\Tests\App\Event\TestAliasListener;
 use MkyCore\Tests\App\Event\TestEvent;
 use MkyCore\Tests\App\Event\TestNotFoundEvent;
@@ -22,14 +25,25 @@ class DispatcherTest extends TestCase
     /**
      * @var mixed
      */
-    private $todoTest;
+    private mixed $todoTest;
+    protected Application $app;
 
+    /**
+     * @return void
+     * @throws \ReflectionException
+     * @throws ConfigNotFoundException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     */
     public function setUp(): void
     {
+        $this->app = new Application(__DIR__.DIRECTORY_SEPARATOR.'App');
         $this->todoTest = new TodoTestClass('eat burger', false);
-        App::setEvents(\MkyCore\Tests\App\Event\TestEvent::class, 'test', TestAliasListener::class);
-        App::setEvents(\MkyCore\Tests\App\Event\TestEvent::class, 'propagation', TestPropagationListener::class);
-        App::setEvents(\MkyCore\Tests\App\Event\TestEvent::class, 'notImplement', TestNotImplementListener::class);
+        $this->app->addEvent(TestEvent::class, [
+            'test' => TestAliasListener::class,
+            'propagation' => TestPropagationListener::class,
+            'notImplement' => TestNotImplementListener::class
+        ]);
     }
 
     public function testConstructor()

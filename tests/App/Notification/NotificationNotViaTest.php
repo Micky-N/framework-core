@@ -11,7 +11,7 @@ class NotificationNotViaTest implements NotificationInterface
     /**
      * @var mixed
      */
-    private $process;
+    private mixed $process;
     private string $action;
 
     public function __construct($process, string $action = '')
@@ -20,8 +20,8 @@ class NotificationNotViaTest implements NotificationInterface
         $this->action = $action;
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
-        return ;
+        return [];
     }
 }

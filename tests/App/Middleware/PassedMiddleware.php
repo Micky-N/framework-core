@@ -4,15 +4,17 @@
 namespace MkyCore\Tests\App\Middleware;
 
 
-use Psr\Http\Message\ServerRequestInterface;
+use MkyCore\Interfaces\MiddlewareInterface;
+use MkyCore\Interfaces\ResponseHandlerInterface;
+use MkyCore\Request;
 
-class PassedMiddleware implements \MkyCore\Interfaces\MiddlewareInterface
+class PassedMiddleware implements MiddlewareInterface
 {
 
     /**
      * @inheritDoc
      */
-    public function process(callable $next, ServerRequestInterface $request)
+    public function process(Request $request, callable $next): ResponseHandlerInterface
     {
         return $next($request);
     }

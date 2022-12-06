@@ -1,0 +1,20 @@
+<?php
+
+
+namespace App\NotificationSystems;
+
+use MkyCore\Interfaces\NotificationSystemInterface;
+
+class !name implements NotificationSystemInterface
+{
+
+    public function __construct()
+    {
+
+    }
+
+    public function send($notifiable, array $message): void
+    {
+
+    }
+}

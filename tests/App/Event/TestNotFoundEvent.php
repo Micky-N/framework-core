@@ -4,7 +4,7 @@
 namespace MkyCore\Tests\App\Event;
 
 
-use MkyCore\Event;
+use MkyCore\Abstracts\Event;
 
 class TestNotFoundEvent extends Event
 {
@@ -14,8 +14,8 @@ class TestNotFoundEvent extends Event
      * @param array $actions
      * @param array $params
      */
-    public function __construct($target, array $actions, array $params = [])
+    public function __construct(mixed $target, array $actions, array $params = [])
     {
-        parent::__construct($target, $actions, $params);
+
     }
 }

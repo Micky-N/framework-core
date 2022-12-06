@@ -3,9 +3,15 @@
 namespace MkyCore\Tests;
 
 
-use MkyCore\App;
+use MkyCore\Application;
+use MkyCore\Exceptions\Config\ConfigNotFoundException;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Exceptions\Voter\VoterException;
 use MkyCore\Permission;
+use MkyCore\Router\Router;
+use MkyCore\Tests\Entities\Test;
+use MkyCore\Tests\Entities\UserTest;
 use PHPUnit\Framework\TestCase;
 use MkyCore\Tests\App\Permission\AlwaysNoVoter;
 use MkyCore\Tests\App\Permission\AlwaysYesVoter;
@@ -21,128 +27,53 @@ class PermissionTest extends TestCase
      * @var Permission
      */
     private Permission $permission;
+    private Router $router;
 
+    /**
+     * @return void
+     * @throws \ReflectionException
+     * @throws ConfigNotFoundException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     */
     public function setUp(): void
     {
         $this->permission = new Permission();
+        $app = new Application(__DIR__ . DIRECTORY_SEPARATOR . 'App');
+        $this->router = new Router($app);
     }
 
-    public function testEmptyVoters()
+    public function testWithTrueGate()
     {
-        $user = new \stdClass();
-        $user->id = 7;
-        $this->assertFalse($this->permission->authorize($user, 'demo'));
-
-        App::setConfig('app', [
-            'permission' => [
-                'allow_if_all_abstain' => true
-            ]
-        ]);
-        $this->assertTrue($this->permission->authorize($user, 'demo'));
+        $this->permission->define('test', fn(UserTest $userTest, Test $test) => true);
+        $user = new UserTest();
+        $test = new Test();
+        $this->assertTrue($this->permission->authorize('test', $user, $test));
     }
 
-    public function testWithTrueVoter()
+    public function testWithFalseGate()
     {
-        $this->permission->addVoter(new AlwaysYesVoter());
-        $user = new \stdClass();
-        $user->id = 7;
-        $this->assertTrue($this->permission->authorize($user, 'demo'));
+        $this->permission->define('test', fn(UserTest $userTest, Test $test) => false);
+        $user = new UserTest();
+        $test = new Test();
+        $this->assertFalse($this->permission->authorize('test', $user, $test));
     }
 
-    public function testWithFalseVoter()
+    public function testWithTrueConditionGate()
     {
-        $this->permission->addVoter(new AlwaysNoVoter());
-        $user = new \stdClass();
-        $user->id = 7;
-        $this->assertFalse($this->permission->authorize($user, 'demo'));
+        $this->permission->define('test', fn(UserTest $userTest, Test $test) => $test->user_id === $userTest->id);
+        $user = new UserTest();
+        $test = new Test();
+        $test->user_id = 7;
+        $this->assertTrue($this->permission->authorize('test', $user, $test));
     }
 
-    public function testAffirmativeStrategy()
+    public function testWithFalseConditionGate()
     {
-        App::setConfig('app', [
-            'permission' => [
-                'strategy' => 'affirmative'
-            ]
-        ]);
-        $user = new \stdClass();
-        $user->id = 7;
-        $this->permission->addVoter(new AlwaysYesVoter());
-        $this->permission->addVoter(new AlwaysNoVoter());
-        $this->assertTrue($this->permission->authorize($user, 'demo'));
-    }
-
-    public function testWithSpecificVoter()
-    {
-        $user = new \stdClass();
-        $user->id = 7;
-        $this->permission->addVoter(new SpecificVoter());
-        $this->assertFalse($this->permission->authorize($user, 'demo'));
-        $this->assertTrue($this->permission->authorize($user, 'specific'));
-    }
-
-    public function testWithConditionVoter()
-    {
-        $user = new \stdClass();
-        $user->id = 7;
-        $user2 = new \stdClass();
-        $user2->id = 1;
-        $product = new TestProduct($user);
-        $this->permission->addVoter(new SellerVoter());
-        $this->assertTrue($this->permission->authorize($user, SellerVoter::EDIT, $product));
-        $this->assertFalse($this->permission->authorize($user2, SellerVoter::EDIT, $product));
-        try {
-            $this->permission->addVoter(new FakeVoter());
-            $this->assertTrue($this->permission->authorize($user, true, $product));
-            $this->permission->authorize($user, true, $user2);
-        }catch (VoterException $ex){
-            $this->assertInstanceOf(VoterException::class, $ex);
-        }
-    }
-
-    public function testConsensusStrategy()
-    {
-        App::setConfig('app', [
-            'permission' => [
-                'strategy' => 'consensus'
-            ]
-        ]);
-        $user = 'user';
-        $this->permission->addVoter(new AlwaysNoVoter());
-        $this->permission->addVoter(new AlwaysNoVoter());
-        $this->permission->addVoter(new AlwaysYesVoter());
-        $this->assertFalse($this->permission->authorize($user, ''));
-
-        $this->permission->addVoter(new AlwaysYesVoter());
-        $this->permission->addVoter(new AlwaysNoVoter());
-        $this->permission->addVoter(new AlwaysYesVoter());
-        $this->assertTrue($this->permission->authorize($user, ''));
-
-        $this->permission->addVoter(new AlwaysYesVoter());
-        $this->permission->addVoter(new AlwaysNoVoter());
-        $this->assertTrue($this->permission->authorize($user, ''));
-
-        App::setConfig('app', [
-            'permission' => [
-                'strategy' => 'consensus',
-                'allow_if_equal_granted_denied' => false
-            ]
-        ]);
-        $this->permission->addVoter(new AlwaysYesVoter());
-        $this->permission->addVoter(new AlwaysNoVoter());
-        $this->assertFalse($this->permission->authorize($user, ''));
-    }
-
-    public function testUnanimousStrategy()
-    {
-        App::setConfig('app', [
-            'permission' => [
-                'strategy' => 'unanimous'
-            ]
-        ]);
-        $user = 'user';
-        $this->permission->addVoter(new AlwaysNoVoter());
-        $this->permission->addVoter(new AlwaysYesVoter());
-        $this->permission->addVoter(new AlwaysYesVoter());
-        $this->assertFalse($this->permission->authorize($user, ''));
+        $this->permission->define('test', fn(UserTest $userTest, Test $test) => $test->user_id === $userTest->id);
+        $user = new UserTest();
+        $test = new Test();
+        $test->user_id = 1;
+        $this->assertFalse($this->permission->authorize('test', $user, $test));
     }
 }

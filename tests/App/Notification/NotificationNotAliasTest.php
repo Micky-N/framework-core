@@ -21,7 +21,7 @@ class NotificationNotAliasTest implements \MkyCore\Interfaces\NotificationInterf
     /**
      * @inheritDoc
      */
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['notFound'];
     }

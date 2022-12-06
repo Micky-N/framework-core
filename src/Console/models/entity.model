@@ -1,0 +1,10 @@
+<?php
+
+namespace App\!moduleEntities;
+
+use MkyCore\Abstracts\Entity;
+!manager
+class !name extends Entity
+{
+
+}

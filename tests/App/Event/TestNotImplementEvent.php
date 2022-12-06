@@ -4,7 +4,7 @@
 namespace MkyCore\Tests\App\Event;
 
 
-use MkyCore\Event;
+use MkyCore\Abstracts\Event;
 use MkyCore\Traits\Dispatcher;
 
 class TestNotImplementEvent

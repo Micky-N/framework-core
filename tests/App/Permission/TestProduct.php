@@ -4,20 +4,16 @@
 namespace MkyCore\Tests\App\Permission;
 
 
+use MkyCore\Model;
+
 class TestProduct
 {
 
-    /**
-     * @var mixed
-     */
-    private $user;
-
-    public function __construct($user)
+    public function __construct(private readonly Model $user)
     {
-        $this->user = $user;
     }
 
-    public function getSeller()
+    public function getSeller(): Model
     {
         return $this->user;
     }

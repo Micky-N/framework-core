@@ -6,9 +6,9 @@ namespace MkyCore\Tests\App\Notification;
 
 class ReturnNotificationClass
 {
-    private static $return = null;
+    private static mixed $return = null;
 
-    public static function setReturn($value)
+    public static function setReturn($value): void
     {
         self::$return = $value;
     }
@@ -16,7 +16,7 @@ class ReturnNotificationClass
     /**
      * @return mixed
      */
-    public static function getReturn()
+    public static function getReturn(): mixed
     {
         return self::$return;
     }

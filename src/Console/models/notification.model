@@ -1,0 +1,23 @@
+<?php
+
+
+namespace App\!moduleNotifications;
+
+use MkyCore\Interfaces\NotificationInterface;
+
+class !name implements NotificationInterface
+{
+
+    public function __construct()
+    {
+
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function via($notifiable): array
+    {
+        return [''];
+    }
+}

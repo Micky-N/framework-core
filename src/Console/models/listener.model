@@ -1,0 +1,20 @@
+<?php
+
+
+namespace App\!moduleListeners;
+
+
+use MkyCore\Interfaces\EventInterface;
+use MkyCore\Interfaces\ListenerInterface;
+
+class !name implements ListenerInterface
+{
+
+    /**
+     * @inheritDoc
+     */
+    public function handle(EventInterface $event)
+    {
+        //
+    }
+}
