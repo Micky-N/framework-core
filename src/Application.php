@@ -101,7 +101,7 @@ class Application extends Container
     private function registerServiceProviders()
     {
         $modules = $this->modules;
-        $modules['src'] = $this->basePath . DIRECTORY_SEPARATOR . 'src';
+        $modules['src'] = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src';
         foreach ($modules as $module) {
             $providerPath = $this->get($module) . DIRECTORY_SEPARATOR . 'Providers';
             if (is_dir($providerPath)) {
@@ -110,7 +110,7 @@ class Application extends Container
                         continue;
                     }
                     $fullPath = $providerPath . DIRECTORY_SEPARATOR . $path;
-                    $provider = ucfirst(trim(str_replace([$this->basePath, '.php', DIRECTORY_SEPARATOR], ['', '', '\\'], $fullPath), DIRECTORY_SEPARATOR));
+                    $provider = ucfirst(trim(str_replace([dirname(__DIR__).DIRECTORY_SEPARATOR.'src', $this->basePath, '.php', DIRECTORY_SEPARATOR], ['MkyCore', '', '', '\\'], $fullPath), DIRECTORY_SEPARATOR));
                     $provider = $this->get($provider);
                     $provider->register();
                 }
