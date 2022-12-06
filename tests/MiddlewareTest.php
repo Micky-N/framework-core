@@ -3,16 +3,18 @@
 namespace MkyCore\Tests;
 
 
-use MkyCore\App;
-use MkyCore\Exceptions\Router\RouteMiddlewareException;
-use MkyCore\Middleware;
-use MkyCore\Router;
 use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
+use MkyCore\Application;
+use MkyCore\Exceptions\Config\ConfigNotFoundException;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Exceptions\Router\RouteMiddlewareException;
+use MkyCore\Middleware;
+use MkyCore\Router\Router;
 use MkyCore\Tests\App\Middleware\BlockedMiddleware;
-use MkyCore\Tests\App\Middleware\TestMiddleware;
 use MkyCore\Tests\App\Middleware\PassedMiddleware;
-use MkyCore\Tests\App\Middleware\ConditionMiddleware;
+use MkyCore\Tests\App\Middleware\TestMiddleware;
 
 class MiddlewareTest extends TestCase
 {
@@ -20,56 +22,36 @@ class MiddlewareTest extends TestCase
      * @var Router
      */
     private Router $router;
+    private Application $app;
+    private Middleware $middleware;
 
+    /**
+     * @return void
+     * @throws \ReflectionException
+     * @throws ConfigNotFoundException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     */
     public function setUp(): void
     {
-        $this->router = new Router();
-        App::setConfig('app', ['csrf' => false]);
-        App::setRouteMiddleware('passed', PassedMiddleware::class);
-        App::setRouteMiddleware('blocked', BlockedMiddleware::class);
-        App::setRouteMiddleware('condition', ConditionMiddleware::class);
+        $this->app = new Application(__DIR__.DIRECTORY_SEPARATOR.'App');
+        $this->router = new Router($this->app);
+        $this->middleware = new Middleware($this->app);
     }
 
     public function testMultipleMiddleware()
     {
-        $this->assertTrue(Middleware::run(PassedMiddleware::class));
-        $this->assertEquals(1, Middleware::getInstance()->index);
-        $this->assertTrue(Middleware::run([PassedMiddleware::class, TestMiddleware::class]));
-        $this->assertEquals(2, Middleware::getInstance()->index);
+        $this->assertFalse($this->middleware->run(PassedMiddleware::class));
+        $this->assertEquals(1, $this->middleware->getIndex());
+        $this->assertFalse($this->middleware->run([PassedMiddleware::class, TestMiddleware::class]));
+        $this->assertEquals(2, $this->middleware->getIndex());
     }
 
     public function testPriorityAndStopMiddleware()
     {
-        $this->assertFalse(Middleware::run([PassedMiddleware::class, BlockedMiddleware::class, TestMiddleware::class]));
+        $this->assertFalse($this->middleware->run([PassedMiddleware::class, BlockedMiddleware::class, TestMiddleware::class]));
         // GET THE LAST RUNNING MIDDLEWARE
-        $this->assertEquals(BlockedMiddleware::class, Middleware::getInstance()->getMiddlewares(Middleware::getInstance()->index - 1));
-        $this->assertEquals(2, Middleware::getInstance()->index);
-    }
-
-    public function testPassedRouteMiddleware()
-    {
-        $this->router->get('/passed', function () {
-            return 'boo';
-        }, '', 'passed');
-        $this->assertEquals('boo', $this->router->run(new ServerRequest('get', '/passed')));
-
-        $this->router->get('block', function () {}, '', 'blocked');
-        $this->assertFalse($this->router->run(new ServerRequest('get', 'block')));
-    }
-
-    public function testPriorityRouteMiddleware()
-    {
-        $this->router->get('/route', function () {}, '', ['passed', 'blocked', 'condition']);
-        $this->assertFalse($this->router->run(new ServerRequest('get', '/route')));
-    }
-
-    public function testNotFoundAliasRouteMiddleware()
-    {
-        $this->router->get('/route', function () {}, '', 'pass');
-        try {
-            $this->router->run(new ServerRequest('get', '/route'));
-        }catch (\Exception $ex){
-            $this->assertInstanceOf(RouteMiddlewareException::class, $ex);
-        }
+        $this->assertEquals(BlockedMiddleware::class, $this->middleware->getMiddleware($this->middleware->getIndex() - 1));
+        $this->assertEquals(2, $this->middleware->getIndex());
     }
 }

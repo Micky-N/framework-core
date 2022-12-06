@@ -4,7 +4,8 @@
 namespace MkyCore\Tests\App\Middleware;
 
 
-use Psr\Http\Message\ServerRequestInterface;
+use MkyCore\Interfaces\ResponseHandlerInterface;
+use MkyCore\Request;
 
 class ConditionMiddleware implements \MkyCore\Interfaces\MiddlewareInterface
 {
@@ -12,7 +13,7 @@ class ConditionMiddleware implements \MkyCore\Interfaces\MiddlewareInterface
     /**
      * @inheritDoc
      */
-    public function process(callable $next, ServerRequestInterface $request)
+    public function process(Request $request, callable $next): ResponseHandlerInterface
     {
         if($request->getParsedBody() && !$request->getParsedBody()['go']){
             return false;

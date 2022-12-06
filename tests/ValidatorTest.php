@@ -42,10 +42,10 @@ class ValidatorTest extends TestCase
         $this->assertTrue($validator2->passed());
 
         $this->assertFalse($validator3->passed());
-        $this->assertCount(1, $validator3->getErrors());
+        $this->assertCount(2, $validator3->getErrors());
 
         $this->assertFalse($validator4->passed());
-        $this->assertCount(1, $validator4->getErrors());
+        $this->assertCount(2, $validator4->getErrors());
     }
 
     public function testMaxMinLengthPassed()
@@ -61,18 +61,18 @@ class ValidatorTest extends TestCase
         $this->assertTrue($validator2->passed());
 
         $this->assertFalse($validator3->passed());
-        $this->assertCount(1, $validator3->getErrors());
+        $this->assertCount(1, $validator3->getErrors()['message']);
 
         $this->assertFalse($validator4->passed());
-        $this->assertCount(1, $validator4->getErrors());
+        $this->assertCount(1, $validator4->getErrors()['message']);
     }
 
     public function testTextFieldPassed()
     {
         $data = ['password' => '1234', 'fake_confirm' => '123', 'confirm' => '1234'];
 
-        $fake_rules = ['password' => 'confirmed:field.fake_confirm'];
-        $confirm_rules = ['password' => 'confirmed:field.confirm'];
+        $fake_rules = ['password' => 'confirmed:fake_confirm'];
+        $confirm_rules = ['password' => 'confirmed:confirm'];
         $same_rule = ['password' => 'same:field.confirm'];
         $different_rule = ['password' => 'different:field.fake_confirm'];
         $validator_fake = new Validator($data, $fake_rules);
@@ -80,13 +80,12 @@ class ValidatorTest extends TestCase
         $validator_same = new Validator($data, $same_rule);
         $validator_different = new Validator($data, $different_rule);
 
-        $validator_different->passed();
         $this->assertTrue($validator_confirm->passed());
         $this->assertTrue($validator_same->passed());
         $this->assertTrue($validator_different->passed());
 
         $this->assertFalse($validator_fake->passed());
-        $this->assertCount(1, $validator_fake->getErrors());
+        $this->assertCount(1, $validator_fake->getErrors()['message']);
     }
 
     public function testTextPassed()
@@ -102,7 +101,7 @@ class ValidatorTest extends TestCase
         $this->assertTrue($validator_same->passed());
         $this->assertTrue($validator_different->passed());
         $this->assertFalse($validator_block_confirm->passed());
-        $this->assertCount(1, $validator_block_confirm->getErrors());
+        $this->assertCount(1, $validator_block_confirm->getErrors()['message']);
     }
 
     public function testDatePassed()
@@ -113,9 +112,9 @@ class ValidatorTest extends TestCase
             'before' => date('Y-m-d', strtotime('-1 year')),
             'after' => date('Y-m-d', strtotime('+1 year'))
         ];
-        $now_rule = ['before' => 'beforeDate:now', 'after' => 'afterDate:now'];
-        $date_rule = ['before' => 'beforeDate:'.$after, 'after' => 'afterDate:'.$before];
-        $block_data_rule = ['before' => 'beforeDate:'.$before, 'after' => 'afterDate:'.$after];
+        $now_rule = ['before' => 'before:now', 'after' => 'after:now'];
+        $date_rule = ['before' => 'before:'.$after, 'after' => 'after:'.$before];
+        $block_data_rule = ['before' => 'before:'.$before, 'after' => 'after:'.$after];
         $validator_now = new Validator($data, $now_rule);
         $validator_date = new Validator($data, $date_rule);
         $validator_block_date = new Validator($data, $block_data_rule);
@@ -128,22 +127,22 @@ class ValidatorTest extends TestCase
 
     public function testMultipleRulesPassed()
     {
-        $rules = ['text' => 'required|max:5|same:code'];
+        $rules = ['text' => ['required', 'max:5', 'same:code']];
         $validator_passed = new Validator(['text' => 'code'], $rules);
         $validator_block = new Validator(['text' => 'c'], $rules);
 
         $this->assertTrue($validator_passed->passed());
         $this->assertFalse($validator_block->passed());
-        $this->assertCount(1, $validator_block->getErrors());
+        $this->assertCount(1, $validator_block->getErrors()['message']);
 
         // Get the last error_message
-        $this->assertEquals('text field must be same as code', $validator_block->getErrors()['text']);
+        $this->assertEquals('text field must be same as code', $validator_block->getErrors()['message']['text']);
     }
 
     public function testException()
     {
         // error on named same as samed
-        $rules = ['text' => 'required|max:5|samed:code'];
+        $rules = ['text' => ['required', 'max:5', 'samed:code']];
         $validator = new Validator(['text' => 'code'], $rules);
         try {
             $validator->passed();

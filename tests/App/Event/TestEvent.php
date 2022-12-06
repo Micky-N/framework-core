@@ -5,7 +5,7 @@ namespace MkyCore\Tests\App\Event;
 
 
 
-use MkyCore\Event;
+use MkyCore\Abstracts\Event;
 
 class TestEvent extends Event
 {
@@ -15,8 +15,8 @@ class TestEvent extends Event
      * @param array $actions
      * @param array $params
      */
-    public function __construct($target, array $actions, array $params = [])
+    public function __construct(protected mixed $target, protected array $actions, protected array $params = [])
     {
-        parent::__construct($target, $actions, $params);
+
     }
 }

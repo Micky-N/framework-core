@@ -17,7 +17,7 @@ class TestAliasListener implements ListenerInterface
     /**
      * @inheritDoc
      */
-    public function handle(EventInterface $event)
+    public function handle(EventInterface $event): void
     {
         $event->getTarget()->setCompleted(true);
     }

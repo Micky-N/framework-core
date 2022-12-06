@@ -9,7 +9,7 @@ class NotificationTest implements \MkyCore\Interfaces\NotificationInterface
     /**
      * @var mixed
      */
-    private $process;
+    private mixed $process;
     private string $action;
 
     public function __construct($process, string $action = '')
@@ -21,7 +21,7 @@ class NotificationTest implements \MkyCore\Interfaces\NotificationInterface
     /**
      * @inheritDoc
      */
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['test'];
     }

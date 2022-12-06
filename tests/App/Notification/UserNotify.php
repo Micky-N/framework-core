@@ -10,12 +10,7 @@ class UserNotify
 {
     use Notify;
 
-    private $id;
-    private $name;
-
-    public function __construct($id, $name)
+    public function __construct(private readonly int $id, private readonly string $name)
     {
-        $this->id = $id;
-        $this->name = $name;
     }
 }

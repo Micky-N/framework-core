@@ -4,8 +4,8 @@
 namespace MkyCore\Tests\App\Middleware;
 
 
-use GuzzleHttp\Psr7\ServerRequest;
-use Psr\Http\Message\ServerRequestInterface;
+use MkyCore\Interfaces\ResponseHandlerInterface;
+use MkyCore\Request;
 
 class BlockedMiddleware implements \MkyCore\Interfaces\MiddlewareInterface
 {
@@ -13,8 +13,8 @@ class BlockedMiddleware implements \MkyCore\Interfaces\MiddlewareInterface
     /**
      * @inheritDoc
      */
-    public function process(callable $next, ServerRequestInterface $request)
+    public function process(Request $request, callable $next): ResponseHandlerInterface
     {
-        return false;
+        return new ResponseHandlerTest(400);
     }
 }

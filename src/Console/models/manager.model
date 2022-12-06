@@ -1,0 +1,10 @@
+<?php
+
+namespace App\!moduleManagers;
+
+use MkyCore\Abstracts\Manager;
+!table
+class !name extends Manager
+{
+
+}

@@ -1,0 +1,14 @@
+<?php
+
+namespace App\!moduleProviders;
+
+use MkyCore\Abstracts\ServiceProvider;
+
+class !name extends ServiceProvider
+{
+    !doc
+    public function register(): void
+    {
+        //
+    }
+}

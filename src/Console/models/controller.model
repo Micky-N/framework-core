@@ -1,0 +1,12 @@
+<?php
+
+namespace App\!moduleControllers;
+
+use MkyCore\Abstracts\Controller;
+use MkyCore\RedirectResponse;
+use MkyCore\View;
+!head
+class !name extends Controller
+{
+    !crud
+}
