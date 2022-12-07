@@ -2,6 +2,7 @@
 
 namespace MkyCore\Tests;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use MkyCore\Application;
 use MkyCore\Exceptions\Config\ConfigNotFoundException;
@@ -19,6 +20,7 @@ use MkyCore\Tests\App\Event\TestNoAliasListener;
 use MkyCore\Tests\App\Event\TestNotImplementListener;
 use MkyCore\Tests\App\Event\TestPropagationListener;
 use MkyCore\Tests\App\Event\TodoTestClass;
+use ReflectionException;
 
 class DispatcherTest extends TestCase
 {
@@ -30,7 +32,7 @@ class DispatcherTest extends TestCase
 
     /**
      * @return void
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws ConfigNotFoundException
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
@@ -63,7 +65,7 @@ class DispatcherTest extends TestCase
     {
         try {
             TestEvent::dispatch($this->todoTest, TestNoAliasListener::class);
-        }catch(\Exception $ex){
+        }catch(Exception $ex){
             $this->assertInstanceOf(ListenerNotFoundException::class, $ex);
         }
     }
@@ -79,7 +81,7 @@ class DispatcherTest extends TestCase
     {
         try {
             TestNotImplementEvent::dispatch($this->todoTest);
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             $this->assertInstanceOf(EventNotImplementException::class, $ex);
         }
     }
@@ -88,7 +90,7 @@ class DispatcherTest extends TestCase
     {
         try {
             TestNotFoundEvent::dispatch($this->todoTest, ['test']);
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             $this->assertInstanceOf(EventNotFoundException::class, $ex);
         }
     }
@@ -97,7 +99,7 @@ class DispatcherTest extends TestCase
     {
         try {
             TestEvent::dispatch($this->todoTest, 'notFound');
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             $this->assertInstanceOf(ListenerNotFoundException::class, $ex);
         }
     }
@@ -106,7 +108,7 @@ class DispatcherTest extends TestCase
     {
         try {
             TestEvent::dispatch($this->todoTest, 'notImplement');
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             $this->assertInstanceOf(ListenerNotImplementException::class, $ex);
         }
     }

@@ -66,7 +66,7 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
      * @inheritDoc
      * @throws Exception
      */
-    public function process(Request $request, callable $next): ResponseHandlerInterface
+    public function process(Request $request, callable $next): mixed
     {
         if(!empty($this->moduleMiddlewares)){
             $middleware = $this->getCurrentMiddleware();

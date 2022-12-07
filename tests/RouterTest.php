@@ -2,7 +2,6 @@
 
 namespace MkyCore\Tests;
 
-use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 use MkyCore\Application;
@@ -57,8 +56,8 @@ class RouterTest extends TestCase
     {
         $route = $this->router->get('boo', function () {
         });
-        $this->assertTrue($route->check(new ServerRequest('get', '/boo')));
-        $this->assertFalse($route->check(new ServerRequest('get', '/boo2')));
+        $this->assertTrue($route->check(new Request('get', '/boo')));
+        $this->assertFalse($route->check(new Request('get', '/boo2')));
     }
 
     public function testRunRoute()
@@ -82,8 +81,8 @@ class RouterTest extends TestCase
     {
         $route = $this->router->get('boo/{id}', function ($id) {
         });
-        $this->assertTrue($route->check(new ServerRequest('get', '/boo/1')));
-        $this->assertFalse($route->check(new ServerRequest('get', '/boo')));
+        $this->assertTrue($route->check(new Request('get', '/boo/1')));
+        $this->assertFalse($route->check(new Request('get', '/boo')));
     }
 
     public function testSlugRoute()
@@ -125,7 +124,7 @@ class RouterTest extends TestCase
             return $dispatcherMiddleware->process($request, fn() => null);
         };
 
-        $this->assertEquals([], $routeMiddleware->process($request1, $dispatcherMiddleware));
+        $this->assertEquals(null, $routeMiddleware->process($request1, $dispatcherMiddleware));
         $this->assertEquals(['id' => 12], $routeMiddleware->process($request2, $dispatcherMiddleware));
     }
 

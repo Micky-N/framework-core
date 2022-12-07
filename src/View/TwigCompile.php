@@ -6,6 +6,10 @@ use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Facades\Session;
 use MkyCore\Interfaces\ViewCompileInterface;
+use MkyCore\TwigExtensions\TwigExtensionFilter;
+use MkyCore\TwigExtensions\TwigExtensionFunction;
+use MkyCore\TwigExtensions\TwigFilter;
+use MkyCore\TwigExtensions\TwigFunction;
 use ReflectionException;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -39,7 +43,9 @@ class TwigCompile implements ViewCompileInterface
     public function compile(string $view, array $params = []): string
     {
         $this->twig->addGlobal('flash', fn($type) => Session::pull($type, []));
-        $extensions = ['TwigFunction', 'TwigFilter'];
+        $extensions = ['TwigExtensionFunction', 'TwigExtensionFilter'];
+        $this->twig->addExtension(new TwigExtensionFunction());
+        $this->twig->addExtension(new TwigExtensionFilter());
         for ($i = 0; $i < count($extensions); $i++) {
             $extension = $extensions[$i];
             if (class_exists($extensionClass = 'App\TwigExtensions\\' . $extension)) {

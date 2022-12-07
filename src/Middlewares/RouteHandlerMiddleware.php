@@ -65,7 +65,7 @@ class RouteHandlerMiddleware implements MiddlewareInterface
      * @inheritDoc
      * @throws Exception
      */
-    public function process(Request $request, callable $next): ResponseHandlerInterface
+    public function process(Request $request, callable $next): mixed
     {
         $route = $request->getAttribute(Route::class);
         if($route && $this->routeHasMiddlewares($route)){

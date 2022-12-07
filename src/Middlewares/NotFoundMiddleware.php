@@ -17,7 +17,7 @@ class NotFoundMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, callable $next): ResponseHandlerInterface
     {
-        if(!Config::get('app.debug_mode', false)){
+        if(env('APP_ENV', 'local') === 'local'){
             return new ResponseHandlerNotFound(404 ,[], '', '', "Route '{$request->path()}' not found");
         }
         throw new RouteNotFoundException("Route '{$request->path()}' not found", 404);

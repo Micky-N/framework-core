@@ -9,7 +9,7 @@ use MkyCore\Request;
 class TrailingSlashMiddleware implements MiddlewareInterface
 {
 
-    public function process(Request $request, callable $next): ResponseHandlerInterface
+    public function process(Request $request, callable $next): mixed
     {
         $url = $request->path();
         if (!empty($url) && strlen($url) > 1 && str_ends_with($url, '/')) {

@@ -59,11 +59,11 @@ class AppServiceProvider extends ServiceProvider
     public function viewCompile(): ViewCompileInterface
     {
         $base = $this->app->get('path:base');
-        return new TwigCompile(\MkyCore\Facades\Config::get('views.twig', [
+        return new TwigCompile(array_replace_recursive([
             'template' => $base . '/views',
             'options' => [
-                'cache' => $base . '/cache/views'
+                'cache' => false
             ]
-        ]));
+        ], \MkyCore\Facades\Config::get('views.twig', [])));
     }
 }

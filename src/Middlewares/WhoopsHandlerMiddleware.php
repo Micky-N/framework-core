@@ -24,9 +24,12 @@ class WhoopsHandlerMiddleware implements MiddlewareInterface
     /**
      * @throws ReflectionException
      */
-    public function process(Request $request, callable $next): ResponseHandlerInterface
+    public function process(Request $request, callable $next): mixed
     {
         $this->whoops->process($request, new RequestHandler(fn() => null));
+        if(env('APP_ENV', 'local') === 'local'){
+            $this->whoops->catchErrors(true);
+        }
         return $next($request);
     }
 }

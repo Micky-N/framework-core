@@ -2,6 +2,8 @@
 
 namespace MkyCore;
 
+use Middlewares\Whoops;
+use MkyCore\Interfaces\ResponseHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -64,7 +66,11 @@ class NodeRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return Response::getFromHandler($this->process($request));
+        $response = $this->process($request);
+        if(is_array($response) || (is_object($response) && !($response instanceof ResponseHandlerInterface))){
+            $response = json_encode($response);
+        }
+        return Response::getFromHandler($response);
     }
 
     /**

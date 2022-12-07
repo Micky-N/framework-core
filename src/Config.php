@@ -41,7 +41,7 @@ class Config
                 if(isset($config[$configArray[$i]])){
                     $config = $config[$configArray[$i]];
                 }else{
-                    if($default){
+                    if(!is_null($default)){
                         return $default;
                     }
                     throw new ConfigNotFoundException("config {$configArray[$i]} do not exists");

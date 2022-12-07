@@ -47,15 +47,15 @@ trait Color
 
         // Check if given foreground color found
         if (isset(self::$COLORS[$foreground_color])) {
-            $colored_string .= "\033[" . $txt_style . ';' . self::$COLORS[$foreground_color] . "m";
+            $colored_string .= "\e[" . $txt_style . ';' . self::$COLORS[$foreground_color] . "m";
         }
         // Check if given background color found
         if (isset(self::$BACKGROUNDS[$background_color])) {
-            $colored_string .= "\033[" . $txt_style . ';' . self::$BACKGROUNDS[$background_color] . "m";
+            $colored_string .= "\e[" . $txt_style . ';' . self::$BACKGROUNDS[$background_color] . "m";
         }
 
         // Add string and end coloring
-        $colored_string .= $string . "\033[0m";
+        $colored_string .= $string . "\e[0m";
         return $colored_string;
     }
 }

@@ -16,8 +16,10 @@ class Provider extends Create
 
         if(str_starts_with($name, 'Auth')){
             $replaceParams['doc'] = $this->setAuthDocs();
-        }elseif(str_starts_with($name, 'Application')){
+        }elseif(str_starts_with($name, 'App')){
             $replaceParams['doc'] = $this->setAppDocs();
+        }elseif(str_starts_with($name, 'Event')){
+            $replaceParams['doc'] = $this->setEventDocs();
         }
         return $replaceParams;
     }
@@ -47,6 +49,22 @@ DOCS;
      * @example app->bind(alias, callback)
      * or use app->singleton(alias, callback) to share the same instance throughout the application
      * 
+     * @return void
+     */
+DOCS;
+
+    }
+
+    private function setEventDocs(): string
+    {
+        return <<<DOCS
+
+    /**
+     * Register events and their listeners
+     * @example app->addEvent(Event::class, ['action' => Listener::class]);
+     * and register notification systems
+     * @example app->addNotificationSystem('example', ExampleNotificationSystem::class);
+     *
      * @return void
      */
 DOCS;

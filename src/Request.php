@@ -22,6 +22,7 @@ class Request extends ServerRequest implements ServerRequestInterface
     const METHOD_POST = 'post';
     const METHOD_PUT = 'put';
     const METHOD_DELETE = 'delete';
+    const METHOD_KEY_FORM = '_method';
 
     const TYPE_DATA = ['query', 'post'];
 
@@ -65,25 +66,26 @@ class Request extends ServerRequest implements ServerRequestInterface
         return $date;
     }
 
-    public function post(string $name = null, string|int $default = null): mixed
+    public function post(string $name = null, mixed $default = null): mixed
     {
-        $parsedBody = $this->getParsedBody();
-        if ($name) {
-            return $parsedBody[$name] ?? $default;
-        }
-        return $parsedBody;
+        return $this->getRequestData($name, $this->getParsedBody(), $default);
     }
 
-    public function query(string $name = null, string|int $default = null): mixed
+    public function query(string $name = null, mixed $default = null): mixed
     {
-        $queryParams = $this->getQueryParams();
+        return $this->getRequestData($name, $this->getQueryParams(), $default);
+    }
+    
+    private function getRequestData(string $name = null, array $data, $default = null): mixed
+    {
+        $queryParams = $data;
         if ($name) {
             return $queryParams[$name] ?? $default;
         }
         return $queryParams;
     }
 
-    public function input(string $name = null, string|int $default = null): mixed
+    public function input(string $name = null, mixed $default = null): mixed
     {
         if ($res = $this->post($name)) {
             return $res;
@@ -92,6 +94,14 @@ class Request extends ServerRequest implements ServerRequestInterface
         } else {
             return $default;
         }
+    }
+
+    public function has(string $attribute, string $type = 'post'): bool
+    {
+        if (!in_array(strtolower($type), self::TYPE_DATA)) {
+            return false;
+        }
+        return $this->{$type}($attribute) !== null;
     }
 
     public function only(array|string $attributes, string $type = 'post'): ?array

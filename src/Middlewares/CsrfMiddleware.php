@@ -5,6 +5,7 @@ namespace MkyCore\Middlewares;
 
 
 use Exception;
+use MkyCore\Application;
 use ReflectionException;
 use MkyCore\Config;
 use MkyCore\Exceptions\Config\ConfigNotFoundException;
@@ -21,7 +22,7 @@ class CsrfMiddleware implements MiddlewareInterface
     public const FORM_KEY = '_csrf';
     private const SESSION_KEY = 'csrf';
 
-    public function __construct(private readonly Config $config)
+    public function __construct(private readonly Application $app, private readonly Config $config)
     {
 
     }
@@ -40,7 +41,7 @@ class CsrfMiddleware implements MiddlewareInterface
     public function process(Request $request, callable $next): mixed
     {
         if($this->config->get('app.security.csrf', false)){
-            if(in_array(strtoupper($request->getMethod()), ['POST', 'PUT'])){
+            if($request->post()){
                 if(!($csrf = $request->post(self::FORM_KEY))){
                     $this->reject('Csrf token is missing', 100);
                 }
@@ -50,6 +51,10 @@ class CsrfMiddleware implements MiddlewareInterface
                 }
                 $this->useToken($csrf);
             }
+        }
+        if($request->has(self::FORM_KEY)){
+            $request = $request->withParsedBody($request->except(self::FORM_KEY));
+            $this->app->singleton(Request::class, fn() => $request);
         }
         return $next($request);
 

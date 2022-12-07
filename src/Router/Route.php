@@ -126,7 +126,7 @@ class Route
 
     private function urlRegex(): array|string|null
     {
-        return preg_replace_callback('/(.*?)\{(.*?)\}/', function ($e) {
+        return preg_replace_callback('/\{(.*?)\}/', function ($e) {
             if (isset($e[1])) {
                 return '([\w]*?)';
             }
@@ -142,7 +142,7 @@ class Route
         $urlParts = explode('/', trim($this->url, '/'));
         $pathParts = explode('/', trim($request->path(), '/'));
         $routeParams = [];
-        $explode = array_map(function ($urlPart, $pathPart) use (&$routeParams) {
+        array_map(function ($urlPart, $pathPart) use (&$routeParams) {
             return preg_replace_callback('/(.*?)\{(.*?)\}/', function ($e) use ($pathPart, &$routeParams) {
                 if (isset($e[2])) {
                     $slug = $e[1];
@@ -230,7 +230,7 @@ class Route
 
     public function hasParam(): bool
     {
-        return preg_match('/(.*?)\{(.*)\}/', $this->url);
+        return preg_match('/\{(.*)\}/', $this->url);
     }
 
     public function getParams(): array

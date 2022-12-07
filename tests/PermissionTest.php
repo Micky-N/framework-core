@@ -7,18 +7,11 @@ use MkyCore\Application;
 use MkyCore\Exceptions\Config\ConfigNotFoundException;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
-use MkyCore\Exceptions\Voter\VoterException;
 use MkyCore\Permission;
 use MkyCore\Router\Router;
 use MkyCore\Tests\Entities\Test;
 use MkyCore\Tests\Entities\UserTest;
 use PHPUnit\Framework\TestCase;
-use MkyCore\Tests\App\Permission\AlwaysNoVoter;
-use MkyCore\Tests\App\Permission\AlwaysYesVoter;
-use MkyCore\Tests\App\Permission\FakeVoter;
-use MkyCore\Tests\App\Permission\SellerVoter;
-use MkyCore\Tests\App\Permission\SpecificVoter;
-use MkyCore\Tests\App\Permission\TestProduct;
 
 class PermissionTest extends TestCase
 {

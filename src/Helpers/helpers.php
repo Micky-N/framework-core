@@ -144,3 +144,18 @@ if(!function_exists('csrf')){
         return "<input type='hidden' name='$name' value='$token' />";
     }
 }
+
+if(!function_exists('method')){
+    /**
+     * @return string
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    function method(string $method): string
+    {
+        $method = strtoupper($method);
+        $name = Request::METHOD_KEY_FORM;
+        return "<input type='hidden' name='$name' value='$method' />";
+    }
+}

@@ -46,7 +46,7 @@ class GlobalHandlerMiddleware implements MiddlewareInterface
     /**
      * @throws ReflectionException
      */
-    public function process(Request $request, callable $next): ResponseHandlerInterface
+    public function process(Request $request, callable $next): mixed
     {
         if(!empty($this->globalMiddlewares)){
             $middleware = $this->getCurrentMiddleware();

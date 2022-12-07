@@ -125,7 +125,7 @@ class Router
             $method = strtoupper($method);
             if (in_array($method, ['GET', 'POST', 'PUT', 'DELETE'])) {
                 if ($this->checkIfAlreadyRouteExist($method, $route->getUrl())) {
-                    throw new RouteAlreadyExistException("This route {$route->getName()} is already exists");
+                    throw new RouteAlreadyExistException("This route \"{$route->getUrl()}\" is already exists");
                 }
                 $this->routes[$method][] = $route;
             } else {
