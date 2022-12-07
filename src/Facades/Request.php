@@ -23,6 +23,7 @@ use MkyCore\Abstracts\Facade;
  * @method static array parameters()
  * @method static string fullUriWithQuery()
  * @method static string fullUri()
+ * @method static string baseUri()
  * @method static string|null backUrl()
  * @method static string scheme()
  * @method static string host()

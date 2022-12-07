@@ -159,3 +159,31 @@ if(!function_exists('method')){
         return "<input type='hidden' name='$name' value='$method' />";
     }
 }
+
+if(!function_exists('asset')){
+    /**
+     * @return string
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    function asset(string $asset): string
+    {
+        $base = \MkyCore\Facades\Request::baseUri();
+        return $base.'/assets/'.trim($asset, '/');
+    }
+}
+
+if(!function_exists('public_path')){
+    /**
+     * @return string
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    function public_path(string $path): string
+    {
+        $base = \MkyCore\Facades\Request::baseUri();
+        return $base.'/'.trim($path, '/');
+    }
+}

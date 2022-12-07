@@ -40,7 +40,6 @@ class Container implements ContainerInterface
 
         if ($this->has($alias)) {
             $entryConcrete = $this->getConcrete($alias);
-
             if(!is_callable($entryConcrete)){
                 if (is_string($entryConcrete)) {
                     return $this->get($entryConcrete);
@@ -188,5 +187,18 @@ class Container implements ContainerInterface
     public function getSharedInstances(): array
     {
         return $this->sharedInstances;
+    }
+    
+    public function removeInstance(string $alias)
+    {
+        unset($this->sharedInstances[$alias]);
+        unset($this->entries[$alias]);
+        return $this;
+    }
+    
+    public function forceSingleton(string $alias, mixed $concrete)
+    {
+        return $this->removeInstance($alias)
+            ->singleton($alias, $concrete);
     }
 }

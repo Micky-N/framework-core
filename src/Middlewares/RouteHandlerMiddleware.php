@@ -43,7 +43,7 @@ class RouteHandlerMiddleware implements MiddlewareInterface
         $modules = $this->app->getModules();
         foreach ($modules as $key => $module) {
             $namespace = strtolower(str_replace('Module', '', $key));
-            $key = $key != 'root' ? $namespace . ':' : '';
+            $key = $key != 'Root' ? $namespace . ':' : '';
             if (is_dir($this->app->get($module))) {
                 $aliases = include($this->app->get($module) . '/Middlewares/aliases.php');
                 if (!empty($aliases['routeMiddlewares'])) {
@@ -130,7 +130,8 @@ class RouteHandlerMiddleware implements MiddlewareInterface
         $routeMiddlewaresAliases = $route->getMiddlewares();
         return array_map(function($routeMiddlewareAlias) use ($module){
             if(!($routeMiddleware = $this->getRouteMiddleware($routeMiddlewareAlias, $module))){
-                throw new Exception("No middleware found with the alias $routeMiddlewareAlias");
+                $routeMiddlewareAlias = str_replace('@this:', '', $routeMiddlewareAlias);
+                throw new Exception("No middleware found with the alias \"$routeMiddlewareAlias\"");
             }
             return $routeMiddleware;
         }, $routeMiddlewaresAliases);

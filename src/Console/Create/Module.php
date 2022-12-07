@@ -59,7 +59,7 @@ class Module extends Create
 
         $namespaces = [];
         foreach ($dirs as $dir => $path) {
-            $namespaces[$dir] = str_replace([getcwd() . DIRECTORY_SEPARATOR . 'app', '.php', DIRECTORY_SEPARATOR], ['Application', '', '\\'], $path);
+            $namespaces[$dir] = str_replace([getcwd() . DIRECTORY_SEPARATOR . 'app', '.php', DIRECTORY_SEPARATOR], ['App', '', '\\'], $path);
         }
         $success = [];
         // controller

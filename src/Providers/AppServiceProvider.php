@@ -33,9 +33,7 @@ class AppServiceProvider extends ServiceProvider
             return $router;
         });
 
-        $this->app->singleton(Request::class, function () {
-            return Request::fromGlobals();
-        });
+        $this->app->singleton(Request::class, fn() => Request::fromGlobals());
 
         $this->app->singleton(ResponseInterface::class, function () {
             return new Response();

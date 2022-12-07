@@ -61,7 +61,7 @@ class Router
                         'name' => ($controllerAnnotations && $controllerAnnotations->as) && $methodRouter->as ? $controllerAnnotations->as . '.' . $methodRouter->as : $methodRouter->as,
                         'middlewares' => array_merge($controllerAnnotations->middlewares ?? [], $methodRouter->middlewares ?? []),
                         'module' => $module,
-                        'permissions' => $methodRouter->cans ?? []
+                        'permissions' => array_merge($controllerAnnotations->allows ?? [], $methodRouter->allows ?? [])
                     ];
                     $this->addRoute($routeArray);
                 }

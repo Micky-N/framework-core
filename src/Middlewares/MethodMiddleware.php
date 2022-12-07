@@ -20,7 +20,7 @@ class MethodMiddleware implements MiddlewareInterface
         if($request->isMethod(Request::METHOD_POST) && ($method = $request->post('_method'))){
             $request = $request->withParsedBody($request->except($request::METHOD_KEY_FORM))
                 ->withMethod($method);
-            $this->app->singleton(Request::class, fn() => $request);
+//            $this->app->singleton(Request::class, fn() => $request);
         }
         return $next($request);
     }

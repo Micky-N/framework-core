@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Psr7\CachingStream;
 use GuzzleHttp\Psr7\LazyOpenStream;
+use GuzzleHttp\Psr7\MessageTrait;
 use GuzzleHttp\Psr7\ServerRequest;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionException;
@@ -47,9 +48,12 @@ class Request extends ServerRequest implements ServerRequestInterface
         return self::$_instance;
     }
 
-    public function header(string $name, string $default = null): array|string|null
+    public function header(string $name = null, string $default = null): array|string|null
     {
-        return $this->getHeader($name) ?? $default;
+        if($name){
+            return $this->getHeader($name) ?? $default;
+        }
+        return $this->getHeaders();
     }
 
     public function date(string $name, string $format = 'Y-m-d H:i:s', string $timezone = 'Europe/Paris'): ?Carbon

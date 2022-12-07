@@ -15,6 +15,8 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
             new TwigFunction('auth', [$this, 'auth']),
             new TwigFunction('csrf', [$this, 'csrf'], ['is_safe' => ['html']]),
             new TwigFunction('method', [$this, 'method'], ['is_safe' => ['html']]),
+            new TwigFunction('asset', [$this, 'asset']),
+            new TwigFunction('public_path', [$this, 'public_path']),
         ];
     }
 
@@ -41,6 +43,16 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
     public function method(string $method)
     {
         return method($method);
+    }
+
+    public function asset(string $asset)
+    {
+        return asset($asset);
+    }
+
+    public function public_path(string $path)
+    {
+        return public_path($path);
     }
 
 }

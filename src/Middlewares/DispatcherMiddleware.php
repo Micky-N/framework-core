@@ -31,6 +31,7 @@ class DispatcherMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, callable $next): mixed
     {
+        $this->app->forceSingleton(Request::class, $request);
         $routeParams = $request->getAttributes();
         if (isset($routeParams[Route::class])) {
             $route = $routeParams[Route::class];
@@ -77,12 +78,7 @@ class DispatcherMiddleware implements MiddlewareInterface
                 }
             }
             if (is_array($actionRoute)) {
-                $controller = $actionRoute[0];
-                if (is_string($controller)) {
-                    $controller = $this->app->get($controller);
-                }
-                $instantiatedController = $controller;
-                return $methodReflection->invokeArgs($instantiatedController, $params);
+                return $methodReflection->invokeArgs($controller, $params);
             } elseif ($actionRoute instanceof Closure) {
                 return $methodReflection->invokeArgs($params);
             }

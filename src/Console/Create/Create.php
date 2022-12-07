@@ -153,10 +153,10 @@ abstract class Create
                 return false;
             }
             $moduleAndClass = ucfirst($params[1]) . ucfirst($suffix);
-            $moduleAndClass = "Application\\$module\\$type\\$moduleAndClass";
+            $moduleAndClass = "App\\$module\\$type\\$moduleAndClass";
         } elseif (count($params) == 1) {
             $moduleAndClass = ucfirst($params[0]) . ucfirst($suffix);
-            $moduleAndClass = "Application\\$type\\$moduleAndClass";
+            $moduleAndClass = "App\\$type\\$moduleAndClass";
         }
         if (!class_exists($moduleAndClass)) {
             $this->sendError("Class not exists", $moduleAndClass);

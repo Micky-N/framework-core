@@ -34,7 +34,6 @@ class RouterMiddleware implements MiddlewareInterface
         $request = array_reduce(array_keys($params), function(Request $request, $key) use ($params){
             return $request->withAttribute($key, $params[$key]);
         }, $request->withAttribute(get_class($route), $route));
-        $this->app->singleton(Request::class, fn() => $request);
         return $next($request);
     }
 

@@ -3,6 +3,7 @@
 namespace MkyCore\Middlewares;
 
 use Exception;
+use MkyCore\Abstracts\ServiceProvider;
 use ReflectionException;
 use ReflectionFunction;
 use MkyCore\Application;
@@ -38,7 +39,7 @@ class PermissionMiddleware implements MiddlewareInterface
         if ($route) {
             $module = $route->getModule();
             $appServiceProvider = $this->getAuthServiceProvider($module);
-            if(class_exists($appServiceProvider)){
+            if(is_object($appServiceProvider) && $appServiceProvider instanceof ServiceProvider){
                 $appServiceProvider->register();
                 $this->permissions = $route->getPermissions();
                 if (!$this->processPermission($route)) {

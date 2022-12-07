@@ -11,7 +11,7 @@ class Event extends Create
 
     public function handleQuestions(array $replaceParams, array $params = []): array
     {
-        $eventServiceProvider = 'Application\\'.($replaceParams['module'] ?? '').'Providers\EventServiceProvider';
+        $eventServiceProvider = 'App\\'.($replaceParams['module'] ?? '').'Providers\EventServiceProvider';
         if(!class_exists($eventServiceProvider)){
             do{
                 $confirm = true;

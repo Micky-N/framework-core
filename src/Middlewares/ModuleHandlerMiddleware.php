@@ -3,13 +3,12 @@
 namespace MkyCore\Middlewares;
 
 use Exception;
-use Psr\Http\Message\ResponseInterface;
-use ReflectionException;
 use MkyCore\Application;
 use MkyCore\Interfaces\MiddlewareInterface;
-use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
 use MkyCore\Response;
+use Psr\Http\Message\ResponseInterface;
+use ReflectionException;
 
 class ModuleHandlerMiddleware implements MiddlewareInterface
 {
@@ -23,29 +22,20 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
      */
     public function __construct(private readonly Application $app)
     {
-        $this->setInitModuleMiddlewares();
-    }
-
-    /**
-     * @throws ReflectionException
-     */
-    private function setInitModuleMiddlewares(): void
-    {
-        $this->setMiddlewareFromModuleAliasFile();
     }
 
     /**
      * @throws ReflectionException
      * @throws Exception
      */
-    private function setMiddlewareFromModuleAliasFile(): void
+    private function setMiddlewareFromModuleAliasFile(Request $request): void
     {
-        $module = app()->get(Request::class)->getAttribute('currentModule');
-        if(!$module){
+        $module = $request->getAttribute('currentModule');
+        if (!$module) {
             return;
         }
         $modulePath = $this->app->getModulePath($module);
-        if(!$modulePath){
+        if (!$modulePath) {
             throw new Exception("No path found for the module $module");
         }
         $aliases = include($modulePath . '/Middlewares/aliases.php');
@@ -68,7 +58,10 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, callable $next): mixed
     {
-        if(!empty($this->moduleMiddlewares)){
+        if(!$this->moduleMiddlewares){
+            $this->setMiddlewareFromModuleAliasFile($request);
+        }
+        if (!empty($this->moduleMiddlewares)) {
             $middleware = $this->getCurrentMiddleware();
             return $middleware->process($request, $next);
         }
@@ -76,20 +69,20 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @return MiddlewareInterface[]
+     * @throws ReflectionException
      */
-    public function getModuleMiddlewares(): array
+    private function getCurrentMiddleware(): ResponseInterface|MiddlewareInterface|array
     {
-        return $this->moduleMiddlewares;
-    }
-
-    /**
-     * @param string $key
-     * @return string|null
-     */
-    public function getModuleMiddleware(string $key): ?string
-    {
-        return $this->moduleMiddlewares[$key] ?? null;
+        if (!$this->moduleMiddlewares) {
+            return [];
+        }
+        if ($this->hasModuleMiddleware($this->index)) {
+            $moduleMiddleware = $this->getModuleMiddleware($this->index);
+            $this->index++;
+            return $this->app->get($moduleMiddleware);
+        } else {
+            return (new Response())->withStatus(404);
+        }
     }
 
     /**
@@ -102,19 +95,19 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @throws ReflectionException
+     * @param string $key
+     * @return string|null
      */
-    private function getCurrentMiddleware(): ResponseInterface|MiddlewareInterface|array
+    public function getModuleMiddleware(string $key): ?string
     {
-        if(!$this->moduleMiddlewares){
-            return [];
-        }
-        if ($this->hasModuleMiddleware($this->index)) {
-            $moduleMiddleware = $this->getModuleMiddleware($this->index);
-            $this->index++;
-            return $this->app->get($moduleMiddleware);
-        } else {
-            return (new Response())->withStatus(404);
-        }
+        return $this->moduleMiddlewares[$key] ?? null;
+    }
+
+    /**
+     * @return MiddlewareInterface[]
+     */
+    public function getModuleMiddlewares(): array
+    {
+        return $this->moduleMiddlewares;
     }
 }
