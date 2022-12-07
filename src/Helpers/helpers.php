@@ -126,7 +126,7 @@ if(!function_exists('env')){
      */
     function env(string $key, string $default = null): string|array|bool|null
     {
-        return getenv($key) ?? $default;
+        return getenv($key) ?: $default;
     }
 }
 
