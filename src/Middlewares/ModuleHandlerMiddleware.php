@@ -3,10 +3,12 @@
 namespace MkyCore\Middlewares;
 
 use Exception;
+use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Application;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Request;
 use MkyCore\Response;
+use MkyCore\Router\Route;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionException;
 
@@ -30,14 +32,21 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
      */
     private function setMiddlewareFromModuleAliasFile(Request $request): void
     {
-        $module = $request->getAttribute('currentModule');
-        if (!$module) {
+        $route = $request->getAttribute(Route::class);
+
+        if (!($module = $route->getModule())) {
             return;
         }
-        $modulePath = $this->app->getModulePath($module);
-        if (!$modulePath) {
-            throw new Exception("No path found for the module $module");
+        $moduleKernel = $this->app->getModuleKernel($module);
+        if (!$moduleKernel) {
+            throw new Exception("No kernel found for the module $module");
         }
+
+        if(!($moduleKernel instanceof ModuleKernel)){
+            return;
+        }
+        $modulePath = $moduleKernel->getModulePath();
+
         $aliases = include($modulePath . '/Middlewares/aliases.php');
         if (!empty($aliases['middlewares'])) {
             foreach ($aliases['middlewares'] as $middleware) {

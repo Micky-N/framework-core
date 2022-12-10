@@ -202,9 +202,9 @@ class Route
      */
     public function makeUrlFromName(array $params = [], bool $absolute = true): string
     {
-        $request = Request::fromGlobals();
+        $request = app()->get(Request::class);
         $i = 0;
-        return ($absolute ? $request->baseUri() . '/' : '/') . trim(preg_replace_callback('/(.*?)\{(.*?)\}/', function ($query) use ($params, &$i) {
+        return ($absolute ? $request->baseUri() . '/' : '/') . trim(preg_replace_callback('/\{(.*?)\}/', function ($query) use ($params, &$i) {
                 $i++;
                 array_shift($query);
                 $query = $query[0] ?? false;
@@ -218,11 +218,13 @@ class Route
                             if (!empty($params[$query])) {
                                 return $params[$query];
                             }
-                            throw new RouteNeedParamsException("Param \$$query required");
+                            $err = trim($query, '/');
+                            throw new RouteNeedParamsException("Param \"$err\" required");
                         }
                         return '';
                     }
-                    throw new RouteNeedParamsException("Param \$$query required");
+                    $err = trim($query, '/');
+                    throw new RouteNeedParamsException("Param \"$err\" required");
                 }
                 return $query;
             }, $this->url), '/');

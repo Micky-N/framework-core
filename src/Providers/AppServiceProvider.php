@@ -3,21 +3,22 @@
 namespace MkyCore\Providers;
 
 use Exception;
-use MkyCore\Interfaces\ViewCompileInterface;
-use MkyCore\View\TwigCompile;
-use Psr\Http\Message\ResponseInterface;
-use ReflectionException;
 use MkyCore\Abstracts\ServiceProvider;
 use MkyCore\Application;
 use MkyCore\Config;
 use MkyCore\Container;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\FileManager;
+use MkyCore\Interfaces\ViewCompileInterface;
 use MkyCore\Request;
 use MkyCore\Response;
 use MkyCore\Router\Router;
 use MkyCore\Session;
 use MkyCore\View\Compile;
+use MkyCore\View\TwigCompile;
+use Psr\Http\Message\ResponseInterface;
+use ReflectionException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -45,6 +46,12 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(Config::class, function (Container $container) {
             return new Config($container->get('path:config'));
+        });
+
+        $this->app->singleton(FileManager::class, function (Container $container) {
+            $space = \MkyCore\Facades\Config::get('filesystems.default', 'public');
+            $fsConfig = \MkyCore\Facades\Config::get('filesystems.spaces.' . $space);
+            return new FileManager($space, $fsConfig);
         });
     }
 

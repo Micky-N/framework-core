@@ -2,6 +2,8 @@
 
 namespace MkyCore;
 
+use App\Providers\AppServiceProvider;
+use MkyCore\Abstracts\ModuleKernel;
 use ReflectionException;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Exceptions\Config\ConfigNotFoundException;
@@ -63,6 +65,12 @@ class Application extends Container
         $this->setInstance('path:public', $this->basePath . DIRECTORY_SEPARATOR . 'public');
     }
 
+    private function setInitModules()
+    {
+        $appProvider = $this->get(AppServiceProvider::class);
+        $appProvider->registerModule();
+    }
+
     /**
      * @throws ConfigNotFoundException
      * @throws FailedToResolveContainerException
@@ -78,19 +86,9 @@ class Application extends Container
         $this->setInstance(Container::class, $this);
     }
 
-    /**
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     */
-    public function setInitModules(): void
+    public function addModules(array $modules): void
     {
-        $root = $this->get('path:app');
-        foreach (glob($root . '/*Module', GLOB_ONLYDIR) as $dir) {
-            $moduleName = trim(str_replace($root, '', $dir), DIRECTORY_SEPARATOR . '/');
-            $this->modules[$moduleName] = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, trim($dir, DIRECTORY_SEPARATOR . '/'));
-        }
-        $this->modules['Root'] = $root;
+        $this->modules = $modules;
     }
 
     /**
@@ -100,35 +98,59 @@ class Application extends Container
      */
     private function registerServiceProviders()
     {
+        $module = dirname(__FILE__).DIRECTORY_SEPARATOR.'Providers';
+        foreach (scandir($module) as $path) {
+            if (in_array($path, ['.', '..'])) {
+                continue;
+            }
+            $namespace = 'MkyCore\\Providers';
+            $provider = str_replace('.php', '', $path);
+            $provider = "$namespace\\$provider";
+            $provider = $this->get($provider);
+            if(method_exists($provider, 'register')){
+                $provider->register();
+            }
+        }
         $modules = $this->modules;
-        $modules['src'] = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src';
         foreach ($modules as $module) {
-            $providerPath = $this->get($module) . DIRECTORY_SEPARATOR . 'Providers';
+            $module = $this->get($module);
+            if($module instanceof ModuleKernel){
+                $providerPath = $module->getModulePath().DIRECTORY_SEPARATOR .'Providers';
+            }
             if (is_dir($providerPath)) {
                 foreach (scandir($providerPath) as $path) {
                     if (in_array($path, ['.', '..'])) {
                         continue;
                     }
-                    $fullPath = $providerPath . DIRECTORY_SEPARATOR . $path;
-                    $provider = ucfirst(trim(str_replace([dirname(__DIR__).DIRECTORY_SEPARATOR.'src', $this->basePath, '.php', DIRECTORY_SEPARATOR], ['MkyCore', '', '', '\\'], $fullPath), DIRECTORY_SEPARATOR));
+                    $reflectionModule = new \ReflectionClass($module);
+                    $provider = str_replace('.php', '', $path);
+                    $namespace = str_replace($reflectionModule->getShortName(), 'Providers', get_class($module));
+                    $provider = "$namespace\\$provider";
                     $provider = $this->get($provider);
-                    $provider->register();
+                    if(method_exists($provider, 'register')){
+                        $provider->register();
+                    }
                 }
             }
         }
     }
 
     /**
-     * @return array
+     * @return ModuleKernel[]
      */
     public function getModules(): array
     {
         return $this->modules;
     }
 
-    public function getModulePath(string $module): ?string
+    public function getModule(string $module): ?string
     {
         return $this->modules[$module] ?? null;
+    }
+    
+    public function getModuleKernel(string $module): ?ModuleKernel
+    {
+        return $this->get($this->getModule($module)) ?? null;
     }
 
     /**

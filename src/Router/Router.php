@@ -5,6 +5,7 @@ namespace MkyCore\Router;
 use Closure;
 use Exception;
 use GuzzleHttp\Psr7\Request;
+use MkyCore\Abstracts\ModuleKernel;
 use ReflectionException;
 use MkyCore\Annotation\Annotation;
 use MkyCore\Application;
@@ -46,8 +47,8 @@ class Router
     {
         foreach ($this->getAllControllerDirs($controllerRootPath) as $controllerDir) {
             $controller = ucfirst(trim(str_replace([$this->app->get('path:base'), '.php'], ['', ''], $controllerDir), DIRECTORY_SEPARATOR));
-            preg_match('/\\\(.*Module)/', $controller, $matches);
-            $module = $matches[1] ?? 'root';
+            $module = $this->parseModule($controller);
+            $endpoint = trim($module->getConfig('endpoint'), '/');
             $controller = new Annotation($controller);
             $controllerAnnotations = $controller->getClassAnnotation('Router');
             $methodsAnnotations = $controller->getMethodsAnnotations();
@@ -55,18 +56,68 @@ class Router
                 foreach ($methodsAnnotations as $nameMethod => $methodAnnotation) {
                     $methodRouter = $methodAnnotation->getParam('Router');
                     $routeArray = [
-                        'url' => trim($controllerAnnotations ? $controllerAnnotations->default : '', '/') . '/' . trim($methodRouter->default, '/'),
+                        'url' => $endpoint.($controllerAnnotations && trim($controllerAnnotations->default, '/') ? '/'.trim($controllerAnnotations->default, '/') : '') . '/'.trim($methodRouter->default, '/'),
                         'methods' => array_map(fn($method) => strtoupper($method), $methodRouter->methods ?? ['GET']),
                         'action' => [$controller->getName(), $nameMethod],
                         'name' => ($controllerAnnotations && $controllerAnnotations->as) && $methodRouter->as ? $controllerAnnotations->as . '.' . $methodRouter->as : $methodRouter->as,
                         'middlewares' => array_merge($controllerAnnotations->middlewares ?? [], $methodRouter->middlewares ?? []),
-                        'module' => $module,
+                        'module' => $module->getAlias(),
                         'permissions' => array_merge($controllerAnnotations->allows ?? [], $methodRouter->allows ?? [])
                     ];
                     $this->addRoute($routeArray);
                 }
             }
         }
+    }
+
+    private function parseModule(string $controller): ?ModuleKernel
+    {
+        $controller = new \ReflectionClass($controller);
+        $controllerPath =$controller->getFileName();
+        $explode = explode(DIRECTORY_SEPARATOR, $controllerPath);
+        $explode = array_reverse($explode);
+        $exp = '';
+        for($i = 0; $i < count($explode) - 1; $i++){
+            $exp = $explode[$i];
+            if(!str_ends_with($exp, 'Module')){
+                unset($explode[$i]);
+            }else{
+                break;
+            }
+        }
+        $explode = join(DIRECTORY_SEPARATOR, array_reverse($explode));
+        $nameKernel = '';
+        foreach (scandir($explode) as $path){
+            if(str_ends_with($path, 'Kernel.php')){
+                $nameKernel = str_replace('.php', '', $path);
+                break;
+            }
+        }
+
+        $namespace = $controller->getNamespaceName();
+        $explode = explode(DIRECTORY_SEPARATOR, $namespace);
+        $explode = array_reverse($explode);
+        $exp = '';
+        for($i = 0; $i < count($explode) - 1; $i++){
+            $exp = $explode[$i];
+            if(!str_ends_with($exp, 'Module')){
+                unset($explode[$i]);
+            }else{
+                break;
+            }
+        }
+        $explode = join(DIRECTORY_SEPARATOR, array_reverse($explode));
+        $kernel = "$explode\\$nameKernel";
+
+        if(!class_exists($kernel)){
+            return null;
+        }
+
+        $module = $this->app->get($kernel);
+        if(!($module instanceof ModuleKernel)){
+            return null;
+        }
+        return $module;
     }
 
     private function getAllControllerDirs(string $controllerRootPath): array
@@ -120,7 +171,7 @@ class Router
     public function addRoute(array $routeData): Route
     {
         $routeData['methods'] = (array)($routeData['methods'] ?: self::DEFAULT_PARAMS['methods']);
-        $route = new Route($routeData['url'], $routeData['methods'], $routeData['action'] ?? [], ucfirst($routeData['module'] ?? 'root'), $routeData['name'] ?? '', $routeData['middlewares'] ?? [], $routeData['permissions'] ?? []);
+        $route = new Route($routeData['url'], $routeData['methods'], $routeData['action'] ?? [], $routeData['module'] ?? 'root', $routeData['name'] ?? '', $routeData['middlewares'] ?? [], $routeData['permissions'] ?? []);
         foreach ($routeData['methods'] as $method) {
             $method = strtoupper($method);
             if (in_array($method, ['GET', 'POST', 'PUT', 'DELETE'])) {

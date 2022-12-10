@@ -59,10 +59,12 @@ class PermissionMiddleware implements MiddlewareInterface
      */
     private function getAuthServiceProvider(mixed $module): mixed
     {
-        $modulePath = $this->app->getModulePath($module);
-        $modulePath .= DIRECTORY_SEPARATOR . 'Providers' . DIRECTORY_SEPARATOR . 'AuthServiceProvider.php';
-        $authServiceProvider = ucfirst(trim(str_replace([$this->app->get('path:base'), '.php', DIRECTORY_SEPARATOR], ['', '', '\\'], $modulePath), DIRECTORY_SEPARATOR . '/'));
-        return $this->app->get($authServiceProvider);
+        $module = $this->app->getModule($module);
+        $reflection = new \ReflectionClass($module);
+        $moduleKernelShortName = $reflection->getShortName();
+        $moduleNameSpace = str_replace($moduleKernelShortName, '', $reflection->getNamespaceName());
+        $authServiceProvider = $moduleNameSpace . '\Providers\AuthServiceProvider';
+        return class_exists($authServiceProvider) ? $this->app->get($authServiceProvider) : null;
     }
 
     /**

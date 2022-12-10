@@ -2,8 +2,10 @@
 
 namespace MkyCore\Interfaces;
 
+use MkyCore\Abstracts\Entity;
+
 interface AuthSystemInterface
 {
 
-    public function passwordCheck(array $credentials): static|bool;
+    public function passwordCheck(array $credentials): Entity|bool;
 }

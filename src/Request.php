@@ -6,14 +6,14 @@ use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Psr7\CachingStream;
 use GuzzleHttp\Psr7\LazyOpenStream;
-use GuzzleHttp\Psr7\MessageTrait;
 use GuzzleHttp\Psr7\ServerRequest;
-use Psr\Http\Message\ServerRequestInterface;
-use ReflectionException;
+use GuzzleHttp\Psr7\UploadedFile;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Router\Route;
 use MkyCore\Validate\Validator;
+use Psr\Http\Message\ServerRequestInterface;
+use ReflectionException;
 
 
 class Request extends ServerRequest implements ServerRequestInterface
@@ -25,7 +25,7 @@ class Request extends ServerRequest implements ServerRequestInterface
     const METHOD_DELETE = 'delete';
     const METHOD_KEY_FORM = '_method';
 
-    const TYPE_DATA = ['query', 'post'];
+    const TYPE_DATA = ['query', 'post', 'files'];
 
     private static ?ServerRequestInterface $_instance = null;
 
@@ -50,7 +50,7 @@ class Request extends ServerRequest implements ServerRequestInterface
 
     public function header(string $name = null, string $default = null): array|string|null
     {
-        if($name){
+        if ($name) {
             return $this->getHeader($name) ?? $default;
         }
         return $this->getHeaders();
@@ -75,11 +75,6 @@ class Request extends ServerRequest implements ServerRequestInterface
         return $this->getRequestData($name, $this->getParsedBody(), $default);
     }
 
-    public function query(string $name = null, mixed $default = null): mixed
-    {
-        return $this->getRequestData($name, $this->getQueryParams(), $default);
-    }
-    
     private function getRequestData(string $name = null, array $data, $default = null): mixed
     {
         $queryParams = $data;
@@ -87,6 +82,29 @@ class Request extends ServerRequest implements ServerRequestInterface
             return $queryParams[$name] ?? $default;
         }
         return $queryParams;
+    }
+
+    public function query(string $name = null, mixed $default = null): mixed
+    {
+        return $this->getRequestData($name, $this->getQueryParams(), $default);
+    }
+
+    public function files(string $name = null, mixed $default = null): array|File|null
+    {
+        $files = [];
+        foreach ($this->getUploadedFiles() as $key => $file) {
+            if($file->getError() === 0){
+                $file = new File($file->getStream(),
+                    $file->getSize(),
+                    $file->getError(),
+                    $file->getClientFilename(),
+                    $file->getClientMediaType()
+                );
+                $files[$key] = $file;
+            }
+        }
+
+        return $this->getRequestData($name, $files, $default);
     }
 
     public function input(string $name = null, mixed $default = null): mixed
@@ -132,16 +150,6 @@ class Request extends ServerRequest implements ServerRequestInterface
         return $cookies[$name] ?? $default;
     }
 
-    /**
-     * @param string $name
-     * @param mixed|null $default
-     * @return mixed
-     */
-    public function session(string $name, mixed $default = null): mixed
-    {
-        return \MkyCore\Facades\Session::get($name, $default);
-    }
-
     public function isMethod(string $methodSearch): bool
     {
         $method = $this->method();
@@ -167,17 +175,17 @@ class Request extends ServerRequest implements ServerRequestInterface
         return $bool;
     }
 
-    private function currentRoute()
-    {
-        return $this->getAttribute(Route::class);
-    }
-
     public function is(string $routeRegex): bool
     {
         $routeRegex = '/^' . str_replace('/', '\/', $routeRegex) . '/';
         $route = $this->currentRoute();
         $url = $route->getUrl();
         return (bool)preg_match($routeRegex, $url);
+    }
+
+    private function currentRoute()
+    {
+        return $this->getAttribute(Route::class);
     }
 
     public function routeIs(string $routeNameRegex): bool
@@ -192,7 +200,7 @@ class Request extends ServerRequest implements ServerRequestInterface
     {
         return $this->currentRoute()->getParams();
     }
-    
+
     public function parameter(string $key): mixed
     {
         return $this->currentRoute()->getParams()[$key] ?? null;
@@ -208,11 +216,6 @@ class Request extends ServerRequest implements ServerRequestInterface
         return sprintf("%s://%s%s", $this->scheme(), $this->host(), $this->path());
     }
 
-    public function baseUri(): string
-    {
-        return sprintf("%s://%s", $this->scheme(), $this->host());
-    }
-
     public function scheme(): string
     {
         return $this->getUri()->getScheme();
@@ -226,6 +229,11 @@ class Request extends ServerRequest implements ServerRequestInterface
     public function path(): string
     {
         return $this->getUri()->getPath();
+    }
+
+    public function baseUri(): string
+    {
+        return sprintf("%s://%s", $this->scheme(), $this->host());
     }
 
     public function addQuery(array $queries): Request
@@ -258,27 +266,88 @@ class Request extends ServerRequest implements ServerRequestInterface
         return $this->server('REMOTE_ADDR');
     }
 
-    /**
-     * @throws Exception
-     */
-    public function validate(array $rules, array $messages = []): RedirectResponse|bool
-    {
-        $validate = new Validator($this->post(), $rules, $messages);
-        if($validate->passed()){
-            return true;
-        }
-        $response = redirect()->back()->session('error', $validate->getErrors());
-        $response->handle()->send();
-        return $response;
-    }
-
     public function server(string $key, mixed $default = null): mixed
     {
         return $this->getServerParams()[$key] ?? $default;
     }
 
+    /**
+     * @throws Exception
+     */
+    public function validate(array $rules, array $messages = []): RedirectResponse|bool
+    {
+        $validate = new Validator([...$this->post(), ...$this->files()], $rules, $messages);
+        if ($validate->passed()) {
+            return true;
+        }
+        foreach ($validate->getErrors() as $key => $message){
+            \MkyCore\Facades\Session::set('_flash:'.$key, $message);
+        }
+
+        foreach ($validate->getData() as $key => $data){
+            \MkyCore\Facades\Session::set('_input:'.$key, $data);
+        }
+
+        $response = redirect()->back();
+        $response->handle()->send();
+        return $response;
+    }
+
+    /**
+     * @param string $name
+     * @param mixed|null $default
+     * @return mixed
+     */
+    public function session(string $name = null, mixed $default = null): mixed
+    {
+        return session($name, $default);
+    }
+
+    /**
+     * @param string $name
+     * @param mixed|null $default
+     * @return mixed
+     */
+    public function flash(string $name, mixed $default = null): mixed
+    {
+        $flash = $default;
+        if(\MkyCore\Facades\Session::has('_flash:'.$name)){
+            $flash = \MkyCore\Facades\Session::pull('_flash:'.$name);
+        }
+        return $flash;
+    }
+
+    /**
+     * @param string $name
+     * @param mixed|null $default
+     * @return mixed
+     */
+    public function hasFlash(string $name): bool
+    {
+        return \MkyCore\Facades\Session::has('_flash:'.$name);
+    }
+
     public function backUrl(): string|null
     {
         return $this->server('HTTP_REFERER');
+    }
+
+    public function old(string $name, mixed $default = null): mixed
+    {
+        $input = $default;
+        if(\MkyCore\Facades\Session::has('_input:'.$name)){
+            $input = \MkyCore\Facades\Session::pull('_input:'.$name);
+        }
+        return $input;
+    }
+
+    /**
+     * @param string $name
+     * @param mixed|null $default
+     * @return mixed
+     */
+    public function hasOld(string $name): bool
+    {
+        return \MkyCore\Facades\Session::has('_old:'.$name);
     }
 }
