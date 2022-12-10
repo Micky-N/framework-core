@@ -27,9 +27,7 @@ class RouterMiddleware implements MiddlewareInterface
         if(!$route){
             return $next($request);
         }
-        $module = $this->getModuleFromRoute($route);
         $params = $route->getParams();
-        $params['currentModule'] = $module;
 
         $request = array_reduce(array_keys($params), function(Request $request, $key) use ($params){
             return $request->withAttribute($key, $params[$key]);

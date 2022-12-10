@@ -41,7 +41,7 @@ class RedirectResponse implements ResponseHandlerInterface
 
     public function session(string $type, string|array $message): static
     {
-        Session::set($type, $message);
+        Session::set('_flash:'.$type, $message);
         return $this;
     }
 }

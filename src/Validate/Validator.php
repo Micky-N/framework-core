@@ -51,10 +51,7 @@ class Validator
             $rules->checkRule($key, $d, $customMessages);
         }
         if (!empty($rules->getErrors())) {
-            $this->errors = [
-                'message' => $rules->getErrors(),
-                'data' => $this->data
-            ];
+            $this->errors = $rules->getErrors();
             return false;
         }
         return true;

@@ -73,6 +73,17 @@ if(!function_exists('app')){
     }
 }
 
+if(!function_exists('path')){
+    function path(string $path = ''): ?string
+    {
+        try{
+            return app()->get('path:base').DIRECTORY_SEPARATOR.trim($path, '\/');
+        }catch(Exception $ex){
+            return null;
+        }
+    }
+}
+
 if(!function_exists('auth')){
     /**
      * @return AuthManager

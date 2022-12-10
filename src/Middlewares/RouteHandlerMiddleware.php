@@ -3,34 +3,26 @@
 namespace MkyCore\Middlewares;
 
 use Exception;
-use Psr\Http\Message\ResponseInterface;
-use ReflectionException;
 use MkyCore\Application;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
 use MkyCore\Response;
 use MkyCore\Router\Route;
+use Psr\Http\Message\ResponseInterface;
+use ReflectionException;
 
 class RouteHandlerMiddleware implements MiddlewareInterface
 {
 
     private array $routeMiddlewares = [];
-
+    private Route $route;
     private int $index = 0;
 
     /**
      * @throws ReflectionException
      */
     public function __construct(private readonly Application $app)
-    {
-        $this->setInitRouteMiddlewares();
-    }
-
-    /**
-     * @throws ReflectionException
-     */
-    private function setInitRouteMiddlewares(): void
     {
         $this->setMiddlewareFromAliasFile();
     }
@@ -42,13 +34,13 @@ class RouteHandlerMiddleware implements MiddlewareInterface
     {
         $modules = $this->app->getModules();
         foreach ($modules as $key => $module) {
-            $namespace = strtolower(str_replace('Module', '', $key));
-            $key = $key != 'Root' ? $namespace . ':' : '';
-            if (is_dir($this->app->get($module))) {
-                $aliases = include($this->app->get($module) . '/Middlewares/aliases.php');
+            $module = $this->app->get($module);
+            $modulePath = $module->getModulePath();
+            if (is_dir($modulePath)) {
+                $aliases = include($modulePath . '/Middlewares/aliases.php');
                 if (!empty($aliases['routeMiddlewares'])) {
                     foreach ($aliases['routeMiddlewares'] as $alias => $middleware) {
-                        $this->setRouteMiddleware($key . $alias, $middleware);
+                        $this->setRouteMiddleware("$key:" . $alias, $middleware);
                     }
                 }
             }
@@ -67,13 +59,45 @@ class RouteHandlerMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, callable $next): mixed
     {
-        $route = $request->getAttribute(Route::class);
-        if($route && $this->routeHasMiddlewares($route)){
-            $module = $request->getAttribute('currentModule');
-            $this->routeMiddlewares = $this->getRouteMiddlewaresByRoute($route, $module);
+        $this->route = $request->getAttribute(Route::class);
+        if ($this->route && $this->routeHasMiddlewares()) {
+            $this->routeMiddlewares = $this->getRouteMiddlewaresByRoute();
             return $this->processRoute($request, $next);
         }
         return $next($request);
+    }
+
+    private function routeHasMiddlewares(): bool
+    {
+        return !empty($this->route->getMiddlewares());
+    }
+
+    /**
+     * @return array|bool
+     * @throws Exception
+     */
+    private function getRouteMiddlewaresByRoute(): array|bool
+    {
+        $routeMiddlewaresAliases = $this->route->getMiddlewares();
+        return array_map(function ($routeMiddlewareAlias) {
+            if (!($routeMiddleware = $this->getRouteMiddleware($routeMiddlewareAlias))) {
+                $routeMiddlewareAlias = str_replace('@:', '', $routeMiddlewareAlias);
+                throw new Exception("No middleware found with the alias \"$routeMiddlewareAlias\"");
+            }
+            return $routeMiddleware;
+        }, $routeMiddlewaresAliases);
+    }
+
+    /**
+     * @param string $key
+     * @return string|null
+     */
+    public function getRouteMiddleware(string $key): ?string
+    {
+        if (str_contains($key, '@:')) {
+            $key = str_replace('@', $this->route->getModule(), $key);
+        }
+        return $this->routeMiddlewares[$key] ?? null;
     }
 
     /**
@@ -89,25 +113,20 @@ class RouteHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @return MiddlewareInterface[]
+     * @throws ReflectionException
      */
-    public function getRouteMiddlewares(): array
+    private function getCurrentMiddleware(): ResponseInterface|MiddlewareInterface|array
     {
-        return $this->routeMiddlewares;
-    }
-
-    /**
-     * @param string $key
-     * @param string $module
-     * @return string|null
-     */
-    public function getRouteMiddleware(string $key, string $module = ''): ?string
-    {
-        if($module){
-            $module = strtolower(str_replace('Module', '', $module));
-            $key = str_replace('@this', $module, $key);
+        if (!$this->routeMiddlewares) {
+            return [];
         }
-        return $this->routeMiddlewares[$key] ?? null;
+        if ($this->hasRouteMiddleware($this->index)) {
+            $routeMiddleware = $this->getRouteMiddleware($this->index);
+            $this->index++;
+            return $this->app->get($routeMiddleware);
+        } else {
+            return (new Response())->withStatus(404);
+        }
     }
 
     /**
@@ -120,42 +139,10 @@ class RouteHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @param Route $route
-     * @param string $module
-     * @return array|bool
-     * @throws Exception
+     * @return MiddlewareInterface[]
      */
-    private function getRouteMiddlewaresByRoute(Route $route, string $module = ''): array|bool
+    public function getRouteMiddlewares(): array
     {
-        $routeMiddlewaresAliases = $route->getMiddlewares();
-        return array_map(function($routeMiddlewareAlias) use ($module){
-            if(!($routeMiddleware = $this->getRouteMiddleware($routeMiddlewareAlias, $module))){
-                $routeMiddlewareAlias = str_replace('@this:', '', $routeMiddlewareAlias);
-                throw new Exception("No middleware found with the alias \"$routeMiddlewareAlias\"");
-            }
-            return $routeMiddleware;
-        }, $routeMiddlewaresAliases);
-    }
-
-    /**
-     * @throws ReflectionException
-     */
-    private function getCurrentMiddleware(): ResponseInterface|MiddlewareInterface|array
-    {
-        if(!$this->routeMiddlewares){
-            return [];
-        }
-        if ($this->hasRouteMiddleware($this->index)) {
-            $routeMiddleware = $this->getRouteMiddleware($this->index);
-            $this->index++;
-            return $this->app->get($routeMiddleware);
-        } else {
-            return (new Response())->withStatus(404);
-        }
-    }
-
-    private function routeHasMiddlewares(Route $route): bool
-    {
-        return !empty($route->getMiddlewares());
+        return $this->routeMiddlewares;
     }
 }

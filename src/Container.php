@@ -47,7 +47,7 @@ class Container implements ContainerInterface
                     return $entryConcrete;
                 }
             }
-
+            
             $resolve = $entryConcrete($this, ...$options);
 
             if($this->isShared($alias)){

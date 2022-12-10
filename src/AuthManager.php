@@ -31,18 +31,19 @@ class AuthManager
      */
     public function attempt(array $credentials): bool
     {
-        if(!empty($this->provider)){
-            $manager = $this->app->get($this->provider['manager']);
-            if (!($manager instanceof AuthSystemInterface)) {
-                $class = get_class($manager);
-                throw new Exception("The class $class must be an instance of MkyCore\Interface\AuthSystemInterface");
-            }
-            $credentials = array_filter($credentials, fn($key) => in_array($key, $this->provider['properties']), ARRAY_FILTER_USE_KEY);
-            if ($entity = $manager->passwordCheck($credentials)) {
-                $primaryKey = $entity->getPrimaryKey();
-                $this->session->set('auth', $entity->{$primaryKey}());
-                return true;
-            }
+        if(empty($this->provider['manager'])){
+            throw new Exception("No config set for \"$this->providerName\" provider");
+        }
+        $manager = $this->app->get($this->provider['manager']);
+        if (!($manager instanceof AuthSystemInterface)) {
+            $class = get_class($manager);
+            throw new Exception("The class $class must be an instance of MkyCore\Interface\AuthSystemInterface");
+        }
+        $credentials = array_filter($credentials, fn($key) => in_array($key, $this->provider['properties']), ARRAY_FILTER_USE_KEY);
+        if ($entity = $manager->passwordCheck($credentials)) {
+            $primaryKey = $entity->getPrimaryKey();
+            $this->session->set('auth', $entity->{$primaryKey}());
+            return true;
         }
         return false;
     }

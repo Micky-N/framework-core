@@ -3,6 +3,7 @@
 namespace MkyCore\Validate;
 
 use Exception;
+use MkyCore\File;
 use ReflectionException;
 use ReflectionFunction;
 use MkyCore\Exceptions\Validator\RuleNotFoundException;
@@ -104,7 +105,17 @@ class Rules
                     throw new Exception("Enum $param doesn't exist");
                 }
                 return !$param::tryFrom($value) ? false : $value;
-            }, '{field} field must be in enum {param}')
+            }, '{field} field must be in enum {param}'),
+            'max_size' => new Rule(function (string $param, File $value) {
+                return (int) $param < $value->getSize() * 1000 ? false : $value;
+            }, 'the size of the {field} file must be less than {param}Ko'),
+            'min_size' => new Rule(function (string $param, File $value) {
+                return (int) $param > $value->getSize() * 1000 ? false : $value;
+            }, 'the size of the {field} file must be greater than {param}Ko'),
+            'type' => new Rule(function (string $param, File $value) {
+                $exts = array_map(fn($ext) => trim($ext), explode(',', $param));
+                return !in_array($value->extension(), $exts) ? false : $value;
+            }, 'the type of the {field} file must in [{param}]'),
         ];
     }
 
@@ -120,7 +131,7 @@ class Rules
      * @throws RuleNotFoundException
      * @throws RuleParamNotDeclareException
      */
-    public function checkRule(string $key, mixed $value, array $customMessages = []): bool
+    public function checkRule(string $key, mixed $value, array $customMessages = []): mixed
     {
         if (isset($this->rules[$key])) {
             $rules = array_filter((array)$this->rules[$key], function ($r) {
