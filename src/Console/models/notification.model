@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\!moduleNotifications;
+namespace !module\Notifications;
 
 use MkyCore\Interfaces\NotificationInterface;
 

@@ -30,11 +30,17 @@ abstract class ModuleKernel
 
     }
 
-    public function getModulePath(): string
+    public function getModulePath(bool $namespace = false): string
     {
         $reflection = new \ReflectionClass($this);
         $shortName = $reflection->getShortName();
-        return str_replace("\\$shortName.php", '', $reflection->getFileName());
+        $res = '';
+        if($namespace){
+            $res = str_replace("\\$shortName", '', $reflection->getNamespaceName());
+        }else{
+            $res = str_replace("\\$shortName.php", '', $reflection->getFileName());
+        }
+        return $res;
     }
 
     public function getParentKernel(): ?ModuleKernel

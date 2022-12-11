@@ -1,0 +1,10 @@
+<?php
+
+namespace App\!module;
+
+use MkyCore\Abstracts\ModuleKernel;
+
+class !name extends ModuleKernel
+{
+
+}

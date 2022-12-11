@@ -3,6 +3,7 @@
 namespace MkyCore\Console\Create;
 
 use MkyCore\Facades\DB;
+use MkyCore\File;
 
 class Module extends Create
 {
@@ -62,10 +63,40 @@ class Module extends Create
             $namespaces[$dir] = str_replace([getcwd() . DIRECTORY_SEPARATOR . 'app', '.php', DIRECTORY_SEPARATOR], ['App', '', '\\'], $path);
         }
         $success = [];
+
+        do {
+            $confirm = true;
+            $alias = $this->sendQuestion('Enter the alias module', $name) ?: $name;
+            if ($this->app->hasModule($name)) {
+                $this->sendError("Alias $name already exists");
+                $confirm = false;
+            }
+        } while (!$confirm);
+
+        do {
+            $confirm = true;
+            $routeMode = $this->sendQuestion('Enter the route mode (file/controller/both)', 'controller') ?: 'controller';
+            if (!in_array($routeMode, ['file', 'controller', 'both'])) {
+                $this->sendError("Route mode not given", $routeMode);
+                $confirm = false;
+            }
+        } while (!$confirm);
+
+        // kernel
+        if (($fileKernel = $this->createKernel($name, $module)) && ($configPath = $this->createConfigKernel($name, $routeMode))) {
+            $success['Kernel'] = $fileKernel;
+            $success['Config'] = $configPath;
+        }
+
+        if (!$this->declareModuleInApp($alias, $fileKernel)) {
+            $this->sendError('Error in declaration of module in AppServiceProvider');
+            return false;
+        }
+
         // controller
-        $controller = new Controller([], [
+        $controller = new Controller($this->app, [], [
             'name' => $name,
-            'module' => $module,
+            'module' => $alias,
             ...$params
         ]);
         if ($file = $controller->process()) {
@@ -73,9 +104,9 @@ class Module extends Create
         }
 
         // entity
-        $entity = new Entity([], [
+        $entity = new Entity($this->app, [], [
             'name' => $name,
-            'module' => $module,
+            'module' => $alias,
             'manager' => $namespaces['Manager'] . "\\" . ucfirst($name . 'Manager'),
             ...$params
         ]);
@@ -84,9 +115,9 @@ class Module extends Create
         }
 
         // manager
-        $manager = new Manager([], [
+        $manager = new Manager($this->app, [], [
             'name' => $name,
-            'module' => $module,
+            'module' => $alias,
             'entity' => $namespaces['Entity'] . "\\" . ucfirst($name),
             'table' => $table,
             ...$params
@@ -95,44 +126,117 @@ class Module extends Create
             $success['Manager'] = $namespaces['Manager'] . '\\' . $file;
         }
 
-        if(file_put_contents(getcwd().DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.'Middlewares'.DIRECTORY_SEPARATOR.'aliases.php', file_get_contents(dirname(__DIR__).'/models/aliases.model'))){
-            $success['Aliases file'] = 'app'.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.'Middlewares'.DIRECTORY_SEPARATOR.'aliases.php';
+        if (file_put_contents(getcwd() . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'Middlewares' . DIRECTORY_SEPARATOR . 'aliases.php', file_get_contents(dirname(__DIR__) . '/models/aliases.model'))) {
+            $success['Aliases file'] = 'app' . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'Middlewares' . DIRECTORY_SEPARATOR . 'aliases.php';
         }
 
         // provider
         foreach (['auth', 'app'] as $item) {
-            $provider = new Provider([], [
+            $provider = new Provider($this->app, [], [
                 'name' => $item,
-                'module' => $module
+                'module' => $alias
             ]);
             if ($file = $provider->process()) {
                 $success['Provider'][] = $namespaces['Provider'] . '\\' . $file;
             }
         }
 
-        if(in_array('--crud', $params)){
-            $viewPath = 'views' . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR;
-            if(!is_dir(getcwd() . DIRECTORY_SEPARATOR . $viewPath)){
-                mkdir(getcwd() . DIRECTORY_SEPARATOR . $viewPath, '0777', true);
+        if ($routeMode != 'controller' && $routePath = $this->createRoutesFile($alias)) {
+            $success['Routes file'] = $routePath;
+        }
+
+        if (in_array('--crud', $params)) {
+            $viewPath = 'views' . DIRECTORY_SEPARATOR;
+            $viewsModuleDirectory = $this->viewsModuleDirectory($module);
+            if (!is_dir($viewsModuleDirectory . DIRECTORY_SEPARATOR . $viewPath)) {
+                mkdir($viewsModuleDirectory . DIRECTORY_SEPARATOR . $viewPath, '0777', true);
             }
-            foreach (['index', 'show', 'create', 'edit'] as $view) {
-                $file = $viewPath.$view.'.html.php';
-                if(file_exists(getcwd() . DIRECTORY_SEPARATOR . $file)){
+            if (!is_dir($viewsModuleDirectory . DIRECTORY_SEPARATOR . $viewPath . DIRECTORY_SEPARATOR . 'layouts')) {
+                mkdir($viewsModuleDirectory . DIRECTORY_SEPARATOR . $viewPath . DIRECTORY_SEPARATOR . 'layouts', '0777', true);
+            }
+            foreach (['index', 'show', 'create', 'edit', 'layouts' . DIRECTORY_SEPARATOR . 'layout'] as $view) {
+                $file = $viewPath . $view . '.twig';
+                if (file_exists($viewsModuleDirectory . DIRECTORY_SEPARATOR . $file)) {
                     continue;
                 }
-                if(file_put_contents(getcwd() . DIRECTORY_SEPARATOR . $file, '') !== false){
+                if (file_put_contents($viewsModuleDirectory . DIRECTORY_SEPARATOR . $file, '') !== false) {
                     $success['View file'][] = $file;
                 }
             }
+
         }
 
-        foreach ($success as $key => $files){
-            $files = (array) $files;
-            for($i = 0; $i < count($files); $i++){
+        foreach ($success as $key => $files) {
+            $files = (array)$files;
+            for ($i = 0; $i < count($files); $i++) {
                 $file = $files[$i];
                 echo $this->getColoredString("$key created", 'green', 'bold') . ": $file\n";
             }
         }
         return true;
+    }
+
+    private function createKernel(string $name, string $module)
+    {
+        $name = ucfirst($name);
+        $outputDir = $this->app->get('path:app') . DIRECTORY_SEPARATOR . "$module";
+        $fileModel = file_get_contents(dirname(__DIR__) . '/models/kernel.model');
+        $fileModel = str_replace("!name", $name . 'Kernel', $fileModel);
+        $fileModel = str_replace("!module", $module, $fileModel);
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, '0777', true);
+        }
+        file_put_contents($outputDir . DIRECTORY_SEPARATOR . $name . 'Kernel.php', $fileModel);
+
+        return "App\\$module\\{$name}Kernel";
+    }
+
+    private function createConfigKernel(string $name, string $routeMode = 'file')
+    {
+        $nameModule = ucfirst($name);
+        $outputDir = $this->app->get('path:app') . DIRECTORY_SEPARATOR . "{$nameModule}Module";
+        $fileModel = file_get_contents(dirname(__DIR__) . '/models/config.model');
+        $fileModel = str_replace("!name", $name, $fileModel);
+        $fileModel = str_replace("!routeMode", $routeMode, $fileModel);
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, '0777', true);
+        }
+        file_put_contents($outputDir . DIRECTORY_SEPARATOR . 'config.php', $fileModel);
+
+        return $outputDir . DIRECTORY_SEPARATOR . 'config.php';
+    }
+
+    private function declareModuleInApp(string $alias, string $fileKernel)
+    {
+        $kernel = str_replace([$this->app->get('path:app'), '.php', DIRECTORY_SEPARATOR], ['App', '', '\\'], $fileKernel);
+        $file = File::makePath([$this->app->get('path:app'), 'Providers', 'AppServiceProvider.php']);
+        $arr = explode("\n", file_get_contents($file));
+        $index = array_keys(preg_grep('/private array \$modules = \[/', $arr));
+        if (!$index) {
+            return false;
+        }
+        $moduleLine = $index[0];
+        array_splice($arr, $moduleLine + 1, 0, "\t    '$alias' => \\$kernel::class,");
+        $arr = array_values($arr);
+        $arr = implode("\n", $arr);
+        $this->app->addModule($alias, $kernel);
+        return file_put_contents($file, $arr) !== false ? $alias : false;
+    }
+
+    private function createRoutesFile(string $alias)
+    {
+        $modulePath = $this->app->getModuleKernel($alias)->getModulePath();
+        $model = file_get_contents(dirname(__DIR__) . '/models/routes.model');
+        if (!is_dir($modulePath . DIRECTORY_SEPARATOR . 'start')) {
+            mkdir($modulePath . DIRECTORY_SEPARATOR . 'start', '0777', true);
+        }
+        return file_put_contents($modulePath . DIRECTORY_SEPARATOR . 'start' . DIRECTORY_SEPARATOR . 'routes.php', $model) !== false
+            ? $modulePath . DIRECTORY_SEPARATOR . 'start' . DIRECTORY_SEPARATOR . 'routes.php' : false;
+
+    }
+
+    private function viewsModuleDirectory(string $module): string
+    {
+        return $this->app->get('path:app') . DIRECTORY_SEPARATOR . $module;
     }
 }

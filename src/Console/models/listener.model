@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\!moduleListeners;
+namespace !module\Listeners;
 
 
 use MkyCore\Interfaces\EventInterface;

@@ -6,10 +6,10 @@ use MkyCore\Abstracts\Facade;
 use MkyCore\Router\Route;
 
 /**
- * @method static \MkyCore\Router\Router get(string $url, callable|array $action, string $module = 'root')
- * @method static \MkyCore\Router\Router post(string $url, callable|array $action, string $module = 'root')
- * @method static \MkyCore\Router\Router put(string $url, callable|array $action, string $module = 'root')
- * @method static \MkyCore\Router\Router delete(string $url, callable|array $action, string $module = 'root')
+ * @method static \MkyCore\Router\Route get(string $url, callable|array $action, string $module = 'root')
+ * @method static \MkyCore\Router\Route post(string $url, callable|array $action, string $module = 'root')
+ * @method static \MkyCore\Router\Route put(string $url, callable|array $action, string $module = 'root')
+ * @method static \MkyCore\Router\Route delete(string $url, callable|array $action, string $module = 'root')
  * @method static \MkyCore\Router\RouteCrud crud(string $namespace, string $controller, string $moduleName = 'root')
  * @method static \MkyCore\Router\Route getCurrentRoute()
  * @method static array getRoutes(array $filters = [])

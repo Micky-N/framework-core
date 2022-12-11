@@ -115,10 +115,11 @@ CRUD;
     private function implementHead(string $name): string
     {
         $name = strtolower(str_replace('Controller', '', $name));
+        $prefix = $this->moduleOptions ? '' : $name;
         return <<<ROUTER
 
 /**
- * @Router('/$name', name: '$name')
+ * @Router('/$prefix', name: '$name')
  */
 ROUTER;
     }

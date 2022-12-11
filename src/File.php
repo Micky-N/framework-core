@@ -6,6 +6,12 @@ use GuzzleHttp\Psr7\UploadedFile;
 
 class File extends UploadedFile
 {
+    
+    public static function makePath(array $path): string
+    {
+        $path = array_filter($path, fn($p) => $p);
+        return join(DIRECTORY_SEPARATOR, $path);
+    }
 
     public function extension()
     {

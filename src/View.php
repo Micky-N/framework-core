@@ -2,32 +2,84 @@
 
 namespace MkyCore;
 
-use App\Providers\AppServiceProvider;
 use Exception;
-use ReflectionException;
+use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Exceptions\ViewSystemException;
 use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Interfaces\ViewCompileInterface;
+use MkyCore\View\TwigCompile;
 
 class View implements ResponseHandlerInterface
 {
+    const VIEWS_STRATEGIES = ['base', 'module', 'parent'];
     private ?string $renderedView = null;
+    private ViewCompileInterface $compile;
+
+    public function __construct(private Application $app)
+    {
+        $compile = new TwigCompile(\MkyCore\Facades\Config::get('twig_options', []));
+        $this->compile = $compile;
+    }
 
     /**
      * @throws Exception
      */
     public function render(string $view, array $params = []): View
     {
-        if(method_exists(AppServiceProvider::class, 'viewCompile')){
-            $compile = app()->get(AppServiceProvider::class)->viewCompile();
-        }else{
-            $compile = app()->get(\MkyCore\Providers\AppServiceProvider::class)->viewCompile();
+        $module = $this->app->getCurrentRoute()->getModule();
+        if ($module) {
+            $module = $this->app->getModuleKernel($module);
+            $viewsModuleDirectory = $module->getModulePath() . DIRECTORY_SEPARATOR . 'views';
+            if (file_exists($viewsModuleDirectory)) {
+                $this->compile->addPath($viewsModuleDirectory, $module->getAlias());
+            }
+            $viewsModuleConfig = $module->getConfig('views_mode', 'base');
+            if (!in_array($viewsModuleConfig, self::VIEWS_STRATEGIES)) {
+                throw new ViewSystemException("View config $viewsModuleConfig not correct, must be base, module or parent");
+            }
+            switch ($viewsModuleConfig) {
+                case 'parent':
+                    $this->getParentViewsDirectory($module);
+                case 'module':
+                    $this->getModuleViewsDirectory($module);
+            }
         }
-        if(!($compile instanceof ViewCompileInterface)){
-            throw new ViewSystemException("Class must implement ViewCompileInterface");
+        if (str_starts_with($view, '@/')) {
+            $view = str_replace('@', '@' . $module->getAlias(), $view);
         }
-        $this->renderedView = $compile->compile($view, $params);
+        $this->renderedView = $this->compile->compile($view, $params);
         return $this;
+    }
+
+    public function addPath(string $path, string $namespace)
+    {
+        $this->compile->addPath($path, $namespace);
+    }
+
+    private function getParentViewsDirectory(ModuleKernel $moduleKernel): void
+    {
+
+    }
+
+    private function getModuleViewsDirectory(ModuleKernel $moduleKernel): void
+    {
+        $viewsModules = (array) $moduleKernel->getConfig('modules', []);
+        if (!$viewsModules) {
+            return;
+        }
+        for ($i = 0; $i < count($viewsModules); $i++) {
+            $module = $viewsModules[$i];
+            if (!$this->app->hasModule($module)) {
+                throw new Exception("Alias module $module not found");
+            }
+            $module = $this->app->getModuleKernel($module);
+            $viewPath = $module->getModulePath() . DIRECTORY_SEPARATOR . 'views';
+            if (!file_exists($viewPath)) {
+                continue;
+            }
+
+            $this->compile->addPath($viewPath, $module->getAlias());
+        }
     }
 
     public function handle(): Response

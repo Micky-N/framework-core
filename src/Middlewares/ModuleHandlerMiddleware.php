@@ -32,7 +32,9 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
      */
     private function setMiddlewareFromModuleAliasFile(Request $request): void
     {
-        $route = $request->getAttribute(Route::class);
+        if(!($route = $request->getAttribute(Route::class))){
+            return;
+        }
 
         if (!($module = $route->getModule())) {
             return;

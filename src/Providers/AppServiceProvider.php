@@ -15,6 +15,7 @@ use MkyCore\Request;
 use MkyCore\Response;
 use MkyCore\Router\Router;
 use MkyCore\Session;
+use MkyCore\View;
 use MkyCore\View\Compile;
 use MkyCore\View\TwigCompile;
 use Psr\Http\Message\ResponseInterface;
@@ -28,9 +29,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(Router::class, function (Container $container) {
             $router = new Router($container->getInstance(Application::class));
-            if (in_array(\MkyCore\Facades\Config::get('app.route_mode', 'file'), ['controller', 'both'])) {
-                $router->getRoutesFromAnnotation($container->get('path:app'));
-            }
+            $router->getRoutesFromAnnotation($container->get('path:app'));
             return $router;
         });
 
@@ -45,7 +44,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(Config::class, function (Container $container) {
-            return new Config($container->get('path:config'));
+            return new Config($container->getInstance(Application::class), $container->get('path:config'));
         });
 
         $this->app->singleton(FileManager::class, function (Container $container) {
@@ -53,22 +52,5 @@ class AppServiceProvider extends ServiceProvider
             $fsConfig = \MkyCore\Facades\Config::get('filesystems.spaces.' . $space);
             return new FileManager($space, $fsConfig);
         });
-    }
-
-    /**
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     * @throws FailedToResolveContainerException
-     * @throws Exception
-     */
-    public function viewCompile(): ViewCompileInterface
-    {
-        $base = $this->app->get('path:base');
-        return new TwigCompile(array_replace_recursive([
-            'template' => $base . '/views',
-            'options' => [
-                'cache' => false
-            ]
-        ], \MkyCore\Facades\Config::get('views.twig', [])));
     }
 }

@@ -17,8 +17,18 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        if (in_array(\MkyCore\Facades\Config::get('app.route_mode', 'file'), ['file', 'both'])) {
-            require $this->app->get('path:base').'/start/routes.php';
+        $modules = $this->app->getModules();
+        foreach ($modules as $name => $module){
+            $modulePath = $this->app->getModuleKernel($name)->getModulePath();
+            if (in_array(\MkyCore\Facades\Config::get($name.'::app.route_mode', 'file'), ['file', 'both'])) {
+                if($name == 'root'){
+                    require $this->app->get('path:base').'/start/routes.php';
+                }else{
+                    if(file_exists($modulePath.'/start/routes.php')){
+                        require $modulePath.'/start/routes.php';
+                    }
+                }
+            }
         }
     }
 }

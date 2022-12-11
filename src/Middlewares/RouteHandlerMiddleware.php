@@ -59,10 +59,12 @@ class RouteHandlerMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, callable $next): mixed
     {
-        $this->route = $request->getAttribute(Route::class);
-        if ($this->route && $this->routeHasMiddlewares()) {
-            $this->routeMiddlewares = $this->getRouteMiddlewaresByRoute();
-            return $this->processRoute($request, $next);
+        if($request->getAttribute(Route::class)){
+            $this->route = $request->getAttribute(Route::class);
+            if ($this->route && $this->routeHasMiddlewares()) {
+                $this->routeMiddlewares = $this->getRouteMiddlewaresByRoute();
+                return $this->processRoute($request, $next);
+            }
         }
         return $next($request);
     }

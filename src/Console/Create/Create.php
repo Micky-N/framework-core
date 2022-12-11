@@ -2,8 +2,10 @@
 
 namespace MkyCore\Console\Create;
 
-use MkyCore\Console\Color;
 use Exception;
+use MkyCore\Application;
+use MkyCore\Console\Color;
+use MkyCore\File;
 
 abstract class Create
 {
@@ -12,13 +14,12 @@ abstract class Create
 
     protected array $rules = [];
     protected string $outputDirectory = '';
+    protected string $createType;
     private array $communRules = [
-        'module' => ['ucfirst', 'ends:module', 'anti-slash'],
         'name' => 'ucfirst'
     ];
-    protected string $createType;
 
-    public function __construct(protected readonly array $params = [], protected array $moduleOptions = [])
+    public function __construct(protected Application $app, protected readonly array $params = [], protected array $moduleOptions = [])
     {
         $pathExplode = explode(DIRECTORY_SEPARATOR, static::class);
         $this->createType = end($pathExplode);
@@ -33,34 +34,44 @@ abstract class Create
         $fileModel = file_get_contents($getModel);
         $params = array_values($this->params);
         $replaceParams = $this->moduleOptions;
+        $replaceParams['name'] = $this->handlerRules('name', array_shift($params) ?: $replaceParams['name']);
         if (empty($replaceParams['name']) || empty($replaceParams['module'])) {
+            if (!isset($params['name']) && !isset($replaceParams['name'])) {
+                $this->sendError('Name not found');
+                return false;
+            }
             $replaceParams['module'] = !empty($replaceParams['module']) ? $replaceParams['module'] : '';
-            if (empty($replaceParams['module']) && count(app()->getModules()) > 1) {
+            if (empty($replaceParams['module']) && count($this->app->getModules()) > 1) {
                 $type = strtolower($this->createType);
                 do {
                     $confirm = true;
                     $module = $this->sendQuestion("In which module do you want to create the $type", 'root');
-                    $moduleTest = $module == 'root' ? '' : trim($this->handlerRules('module', $module), '\\/');
-                    if ($module && !array_key_exists($moduleTest, app()->getModules())) {
+                    $module = $module ?: 'root';
+                    if (!$this->app->hasModule($module)) {
                         $this->sendError("Module not found", $module);
                         $confirm = false;
                     }
-                    $replaceParams['module'] = $module == 'root' ? '' : $module;
+                    $replaceParams['module'] = $module;
                 } while (!$confirm);
             }
         }
-        $replaceParams['module'] = $replaceParams['module'] == 'root' ? '' : $replaceParams['module'];
-        $replaceParams['module'] = empty($replaceParams['module']) ? '' : $this->handlerRules('module', $replaceParams['module']);
-        $replaceParams['name'] = $this->handlerRules('name', array_shift($params) ?: $replaceParams['name']);
+        $replaceParams['module'] ??= 'root';
+
         $name = $replaceParams['name'];
         $outputDir = $this->getOutPutDir($replaceParams['module']);
-        if (file_exists($outputDir . DIRECTORY_SEPARATOR . $name . '.php')) {
-            return $this->sendError("$this->createType file already exists", $outputDir . DIRECTORY_SEPARATOR . $name . '.php');
+        if (file_exists($outputDir . $name . '.php')) {
+            return $this->sendError("$this->createType file already exists", $outputDir . $name . '.php');
         }
         $replaceParams = $this->handleQuestions($replaceParams, $params);
+        $module = $this->app->getModuleKernel($replaceParams['module']);
+        $module = new \ReflectionClass($module);
         foreach ($replaceParams as $key => $value) {
             if (preg_match("/!$key/", $fileModel)) {
-                $fileModel = str_replace("!$key", $value, $fileModel);
+                if ($key == 'module') {
+                    $fileModel = str_replace("!$key", $this->getModuleNamespace($value), $fileModel);
+                } else {
+                    $fileModel = str_replace("!$key", $value, $fileModel);
+                }
             } else {
                 $fileModel = str_replace("!$key", '', $fileModel);
             }
@@ -76,17 +87,6 @@ abstract class Create
     public function getModel(): string
     {
         return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'models' . DIRECTORY_SEPARATOR . lcfirst($this->createType . '.model');
-    }
-
-    protected function sendQuestion(string $question, string $default = ''): string
-    {
-        $message = "\n" . $this->getColoredString($question, 'blue', 'bold');
-        if ($default) {
-            $message .= $this->getColoredString(" [$default]", 'light_yellow');
-        }
-        $message .= ":\n";
-        echo $message;
-        return trim((string)readline("> "));
     }
 
     public function handlerRules($key, $value): mixed
@@ -114,26 +114,38 @@ abstract class Create
         return $value;
     }
 
-    protected function sendError(string $message, string $res): bool
+    protected function sendError(string $message, string $res = ''): bool
     {
-        echo "\n" . $this->getColoredString($message, 'red', 'bold') . ": $res\n";
+        echo "\n" . $this->getColoredString($message, 'red', 'bold') . ($res ? ": $res" : '') . "\n";
         return false;
     }
 
-    public function getOutPutDir(string $module = ''): string
+    protected function sendQuestion(string $question, string $default = ''): string
     {
-        $module = trim($this->handlerRules('module', $module), '\\');
-        $outputDir = "app" . DIRECTORY_SEPARATOR;
-        if ($module) {
-            $outputDir .= $module . DIRECTORY_SEPARATOR;
+        $message = "\n" . $this->getColoredString($question, 'blue', 'bold');
+        if ($default) {
+            $message .= $this->getColoredString(" [$default]", 'light_yellow');
         }
-        $outputDir .= $this->outputDirectory;
-        return getcwd() . DIRECTORY_SEPARATOR . $outputDir;
+        $message .= ":\n";
+        echo $message;
+        return trim((string)readline("> "));
+    }
+
+    protected function getOutPutDir(string $module = 'root'): string
+    {
+        $module = $this->app->getModuleKernel($module);
+        $modulePath = $module->getModulePath();
+        return File::makePath([$modulePath, $this->outputDirectory]);
     }
 
     protected function handleQuestions(array $replaceParams, array $params = []): array
     {
         return $replaceParams;
+    }
+
+    protected function getModuleNamespace(string $module)
+    {
+        return $this->app->getModuleKernel($module)->getModulePath(true);
     }
 
     protected function sendSuccess(string $message, string $res): bool
@@ -142,26 +154,4 @@ abstract class Create
         return true;
     }
 
-    protected function getModuleAndClass(string $moduleAndClass, string $type, string $suffix = ''): string|bool
-    {
-        $type = ucfirst($type);
-        $params = explode('.', $moduleAndClass);
-        if (count($params) == 2) {
-            $module = ucfirst($params[0]) . 'Module';
-            if (!array_key_exists($module, app()->getModules())) {
-                $this->sendError("Module not exists", $params[0]);
-                return false;
-            }
-            $moduleAndClass = ucfirst($params[1]) . ucfirst($suffix);
-            $moduleAndClass = "App\\$module\\$type\\$moduleAndClass";
-        } elseif (count($params) == 1) {
-            $moduleAndClass = ucfirst($params[0]) . ucfirst($suffix);
-            $moduleAndClass = "App\\$type\\$moduleAndClass";
-        }
-        if (!class_exists($moduleAndClass)) {
-            $this->sendError("Class not exists", $moduleAndClass);
-            return false;
-        }
-        return $moduleAndClass;
-    }
 }

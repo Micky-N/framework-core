@@ -24,11 +24,13 @@ class TwigCompile implements ViewCompileInterface
 {
 
     private Environment $twig;
+    private FilesystemLoader $loader;
 
-    public function __construct(array $config)
+    public function __construct(array $options)
     {
-        $loader = new FilesystemLoader($config['template']);
-        $this->twig = new Environment($loader, $config['options']);
+        $baseViews = str_replace(DIRECTORY_SEPARATOR.'public', '', getcwd()).DIRECTORY_SEPARATOR.'views';
+        $this->loader = new FilesystemLoader($baseViews);
+        $this->twig = new Environment($this->loader, $options);
     }
 
     /**
@@ -67,5 +69,10 @@ class TwigCompile implements ViewCompileInterface
         $this->twig->getExtension(\Twig\Extension\CoreExtension::class)->setTimezone(Config::get('app.timezone'));
 
         return $this->twig->render($view, $params);
+    }
+
+    public function addPath(string $path, string $namespace)
+    {
+        $this->loader->addPath($path, $namespace);
     }
 }

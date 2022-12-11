@@ -11,7 +11,7 @@ class Event extends Create
 
     public function handleQuestions(array $replaceParams, array $params = []): array
     {
-        $eventServiceProvider = 'App\\'.($replaceParams['module'] ?? '').'Providers\EventServiceProvider';
+        $eventServiceProvider = $this->app->getModuleKernel($replaceParams['module'])->getModulePath(true) .'\Providers\EventServiceProvider';
         if(!class_exists($eventServiceProvider)){
             do{
                 $confirm = true;
@@ -21,7 +21,7 @@ class Event extends Create
                 }
             }while(!$confirm);
             if($createService == 'yes'){
-                $this->createEventServiceProvider(trim($replaceParams['module'], '\\/'));
+                $this->createEventServiceProvider($replaceParams['module']);
             }
         }
         return $replaceParams;
@@ -37,7 +37,8 @@ class Event extends Create
         $provider = new Provider([], ['name' => 'event', 'module' => $module]);
         if($provider->process()){
             $message = 'Provider created';
-            $res = 'C:\laragon\www\myfm\app\\'.($module ? $module.'\\' : '').'Providers/EventServiceProvider.php';
+            $module = $this->app->getModuleKernel($module)->getModulePath();
+            $res = $this->app->getModuleKernel($module)->getModulePath().DIRECTORY_SEPARATOR.'Providers'.DIRECTORY_SEPARATOR.'EventServiceProvider.php';
             echo "\n" . $this->getColoredString($message, 'green', 'bold') . ": $res";
         }
     }

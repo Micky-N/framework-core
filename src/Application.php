@@ -2,14 +2,15 @@
 
 namespace MkyCore;
 
-use App\Providers\AppServiceProvider;
 use MkyCore\Abstracts\ModuleKernel;
+use MkyCore\Router\Route;
 use ReflectionException;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Exceptions\Config\ConfigNotFoundException;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\ListenerInterface;
+use Exception;
 
 class Application extends Container
 {
@@ -17,6 +18,8 @@ class Application extends Container
     private array $modules = [];
 
     private string $basePath;
+    
+    private ?Route $currentRoute = null;
 
     /**
      * @var array<string, array>
@@ -41,7 +44,7 @@ class Application extends Container
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
-    public function __construct(string $basePath = ROOT_APP)
+    public function __construct(string $basePath)
     {
         $this->setBasePath($basePath);
         $this->registerBaseBindings();
@@ -67,8 +70,10 @@ class Application extends Container
 
     private function setInitModules()
     {
-        $appProvider = $this->get(AppServiceProvider::class);
-        $appProvider->registerModule();
+        if(class_exists(\App\Providers\AppServiceProvider::class)){
+            $appProvider = $this->get(\App\Providers\AppServiceProvider::class);
+            $appProvider->registerModule();
+        }
     }
 
     /**
@@ -80,7 +85,7 @@ class Application extends Container
     private function registerBaseBindings()
     {
         static::setBaseInstance($this);
-        $config = new Config($this->get('path:config'));
+        $config = new Config($this, $this->get('path:config'));
         date_default_timezone_set($config->get('app.default_timezone', 'Europe/Paris'));
         $this->setInstance(Application::class, $this);
         $this->setInstance(Container::class, $this);
@@ -89,6 +94,14 @@ class Application extends Container
     public function addModules(array $modules): void
     {
         $this->modules = $modules;
+    }
+
+    public function addModule(string $alias, string $moduleKernel): void
+    {
+        if($this->hasModule($alias)){
+            throw new Exception("Alias $alias already set");
+        }
+        $this->modules[$alias] = $moduleKernel;
     }
 
     /**
@@ -151,6 +164,11 @@ class Application extends Container
     public function getModuleKernel(string $module): ?ModuleKernel
     {
         return $this->get($this->getModule($module)) ?? null;
+    }
+    
+    public function hasModule(string $module): bool
+    {
+        return isset($this->modules[$module]);
     }
 
     /**
@@ -228,5 +246,15 @@ class Application extends Container
     public function getBasePath(): string
     {
         return $this->basePath;
+    }
+    
+    public function setCurrentRoute(Route $route)
+    {
+        $this->currentRoute = $route;
+    }
+    
+    public function getCurrentRoute(): ?Route
+    {
+        return $this->currentRoute;
     }
 }
