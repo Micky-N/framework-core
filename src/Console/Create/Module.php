@@ -232,11 +232,10 @@ class Module extends Create
     /**
      * @param string $name
      * @param ModuleKernel $parentKernel
-     * @param string $alias
      * @param string $routeMode
      * @return bool|string
      */
-    private function createConfigKernel(string $name, ModuleKernel $parentKernel, string $alias, string $routeMode = 'file'): bool|string
+    private function createConfigKernel(string $name, ModuleKernel $parentKernel, string $routeMode = 'file'): bool|string
     {
         $nameModule = ucfirst($name);
         $prefix = $this->getAncestorsAlias($parentKernel, '/');

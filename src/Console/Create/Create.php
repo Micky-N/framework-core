@@ -128,10 +128,6 @@ abstract class Create
         }
         $message .= ":\n";
         echo $message;
-        foreach (array_keys($this->app->getModules()) as $index => $val){
-            $index++;
-            echo "$index. $val\n";
-        }
         return trim((string)readline("> "));
     }
 

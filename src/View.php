@@ -15,7 +15,7 @@ use Twig\Error\LoaderError;
 
 class View implements ResponseHandlerInterface
 {
-    const VIEWS_STRATEGIES = ['base', 'module', 'parent'];
+    const VIEWS_STRATEGIES = ['base', 'module', 'parent', 'both'];
     private ?string $renderedView = null;
     private ViewCompileInterface $compile;
 
@@ -42,11 +42,14 @@ class View implements ResponseHandlerInterface
                 throw new ViewSystemException("View config $viewsModuleConfig not correct, must be base, module or parent");
             }
             switch ($viewsModuleConfig) {
+                case 'both':
+                    $this->getModuleViewsDirectory($module);
                 case 'parent':
                     $this->getParentViewsDirectory($module);
                     break;
                 case 'module':
                     $this->getModuleViewsDirectory($module);
+                    break;
             }
         }
         if (str_starts_with($view, '@/')) {
@@ -59,14 +62,18 @@ class View implements ResponseHandlerInterface
     /**
      * @throws LoaderError
      */
-    public function addPath(string $path, string $namespace)
+    public function addPath(string $path, string $namespace): void
     {
         $this->compile->addPath($path, $namespace);
     }
 
     private function getParentViewsDirectory(ModuleKernel $moduleKernel): void
     {
-
+        /** @var ModuleKernel[] $ancestors */
+        $ancestors = $moduleKernel->getAncestorsKernel();
+        foreach ($ancestors as $ancestor) {
+            $this->compile->addPath($ancestor->getModulePath() . DIRECTORY_SEPARATOR . 'views', $ancestor->getAlias());
+        }
     }
 
     /**

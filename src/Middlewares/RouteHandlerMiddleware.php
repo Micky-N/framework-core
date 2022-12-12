@@ -41,7 +41,7 @@ class RouteHandlerMiddleware implements MiddlewareInterface
     {
         $modules = $this->app->getModules();
         foreach ($modules as $key => $module) {
-            $module = $this->app->get($module);
+            $module = $this->app->getModuleKernel($key);
             $modulePath = $module->getModulePath();
             if (is_dir($modulePath)) {
                 $aliases = include($modulePath . '/Middlewares/aliases.php');
