@@ -1,6 +1,6 @@
 <?php
 
-namespace App\!moduleMiddlewares;
+namespace !module\Middlewares;
 
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;

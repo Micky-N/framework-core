@@ -4,8 +4,6 @@ namespace MkyCore\Middlewares;
 
 use Exception;
 use MkyCore\Abstracts\ServiceProvider;
-use ReflectionException;
-use ReflectionFunction;
 use MkyCore\Application;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
@@ -13,9 +11,10 @@ use MkyCore\Facades\Allows;
 use MkyCore\Facades\Auth;
 use MkyCore\Facades\Redirect;
 use MkyCore\Interfaces\MiddlewareInterface;
-use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
 use MkyCore\Router\Route;
+use ReflectionException;
+use ReflectionFunction;
 
 class PermissionMiddleware implements MiddlewareInterface
 {
@@ -39,7 +38,7 @@ class PermissionMiddleware implements MiddlewareInterface
         if ($route) {
             $module = $route->getModule();
             $appServiceProvider = $this->getAuthServiceProvider($module);
-            if(is_object($appServiceProvider) && $appServiceProvider instanceof ServiceProvider){
+            if (is_object($appServiceProvider) && $appServiceProvider instanceof ServiceProvider) {
                 $appServiceProvider->register();
                 $this->permissions = $route->getPermissions();
                 if (!$this->processPermission($route)) {

@@ -4,10 +4,11 @@ namespace MkyCore\Router;
 
 use Closure;
 use Exception;
-use Psr\Http\Message\ServerRequestInterface;
-use ReflectionException;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Exceptions\Router\RouteNeedParamsException;
 use MkyCore\Request;
+use ReflectionException;
 
 class Route
 {
@@ -117,7 +118,11 @@ class Route
         return $this->methods;
     }
 
-    public function check(ServerRequestInterface $request): bool
+    /**
+     * @param Request $request
+     * @return bool
+     */
+    public function check(Request $request): bool
     {
         $path = trim($request->path(), '/');
         preg_match("#^{$this->urlRegex()}$#", $path, $m);
@@ -198,7 +203,10 @@ class Route
      * @param array $params
      * @param bool $absolute
      * @return string
+     * @throws ReflectionException
      * @throws RouteNeedParamsException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      */
     public function makeUrlFromName(array $params = [], bool $absolute = true): string
     {

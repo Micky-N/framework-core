@@ -7,14 +7,9 @@ class Session
 
     public function __construct(array $option = [])
     {
-        if(empty($_SESSION) && session_status() === PHP_SESSION_NONE && empty(session_id())){
+        if (empty($_SESSION) && session_status() === PHP_SESSION_NONE && empty(session_id())) {
             session_start($option);
         }
-    }
-
-    public function get(string $key, mixed $default = null): mixed
-    {
-        return $_SESSION[$key] ?? $default;
     }
 
     public function all(): array
@@ -34,14 +29,19 @@ class Session
         return $value;
     }
 
-    public function has(string $key): bool
+    public function get(string $key, mixed $default = null): mixed
     {
-        return isset($_SESSION[$key]);
+        return $_SESSION[$key] ?? $default;
     }
 
     public function remove(string $key): void
     {
         unset($_SESSION[$key]);
+    }
+
+    public function has(string $key): bool
+    {
+        return isset($_SESSION[$key]);
     }
 
     public function clear(): bool

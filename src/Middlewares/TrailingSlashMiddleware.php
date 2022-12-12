@@ -3,7 +3,6 @@
 namespace MkyCore\Middlewares;
 
 use MkyCore\Interfaces\MiddlewareInterface;
-use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
 
 class TrailingSlashMiddleware implements MiddlewareInterface

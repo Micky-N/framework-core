@@ -5,13 +5,9 @@ namespace MkyCore\View;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Facades\Config;
-use MkyCore\Facades\Request;
-use MkyCore\Facades\Session;
 use MkyCore\Interfaces\ViewCompileInterface;
 use MkyCore\TwigExtensions\TwigExtensionFilter;
 use MkyCore\TwigExtensions\TwigExtensionFunction;
-use MkyCore\TwigExtensions\TwigFilter;
-use MkyCore\TwigExtensions\TwigFunction;
 use ReflectionException;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -24,11 +20,13 @@ class TwigCompile implements ViewCompileInterface
 {
 
     private Environment $twig;
+    private FilesystemLoader $loader;
 
-    public function __construct(array $config)
+    public function __construct(array $options)
     {
-        $loader = new FilesystemLoader($config['template']);
-        $this->twig = new Environment($loader, $config['options']);
+        $baseViews = str_replace(DIRECTORY_SEPARATOR . 'public', '', getcwd()) . DIRECTORY_SEPARATOR . 'views';
+        $this->loader = new FilesystemLoader($baseViews);
+        $this->twig = new Environment($this->loader, $options);
     }
 
     /**
@@ -67,5 +65,13 @@ class TwigCompile implements ViewCompileInterface
         $this->twig->getExtension(\Twig\Extension\CoreExtension::class)->setTimezone(Config::get('app.timezone'));
 
         return $this->twig->render($view, $params);
+    }
+
+    /**
+     * @throws LoaderError
+     */
+    public function addPath(string $path, string $namespace)
+    {
+        $this->loader->addPath($path, $namespace);
     }
 }

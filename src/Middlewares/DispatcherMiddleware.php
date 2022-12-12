@@ -4,7 +4,6 @@ namespace MkyCore\Middlewares;
 
 
 use Closure;
-use ReflectionException;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Application;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
@@ -13,6 +12,7 @@ use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
 use MkyCore\Router\Route;
+use ReflectionException;
 
 class DispatcherMiddleware implements MiddlewareInterface
 {

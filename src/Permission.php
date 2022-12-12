@@ -22,35 +22,27 @@ class Permission
     }
 
     /**
-     * @throws PermissionAliasNotFoundException
-     */
-    public function authorize(string $name, Entity $user, Entity|string $entity, array $options = []): bool
-    {
-        $callback = $this->getCallback($name);
-        if(!$callback){
-            throw new PermissionAliasNotFoundException("No permission found with name $name");
-        }
-        return $callback($user, $entity, $options);
-    }
-
-    /**
      * @throws Exception
      */
     public function routeAuthorize(string $name, Entity|string $entity, array $options = []): \MkyCore\RedirectResponse|bool
     {
         $user = Auth::user();
-        if(!$user){
-            return Redirect::to404();
+        if (!$user) {
+            return Redirect::error();
         }
         return $this->authorize($name, $user, $entity, $options);
     }
 
     /**
-     * @return array
+     * @throws PermissionAliasNotFoundException
      */
-    public function getCallbacks(): array
+    public function authorize(string $name, Entity $user, Entity|string $entity, array $options = []): bool
     {
-        return $this->callbacks;
+        $callback = $this->getCallback($name);
+        if (!$callback) {
+            throw new PermissionAliasNotFoundException("No permission found with name $name");
+        }
+        return $callback($user, $entity, $options);
     }
 
     /**
@@ -60,5 +52,13 @@ class Permission
     public function getCallback(string $name): ?Closure
     {
         return $this->callbacks[$name] ?? null;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCallbacks(): array
+    {
+        return $this->callbacks;
     }
 }

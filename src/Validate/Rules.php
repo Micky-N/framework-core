@@ -3,13 +3,14 @@
 namespace MkyCore\Validate;
 
 use Exception;
-use MkyCore\File;
-use ReflectionException;
-use ReflectionFunction;
 use MkyCore\Exceptions\Validator\RuleNotFoundException;
 use MkyCore\Exceptions\Validator\RuleParamNotDeclareException;
 use MkyCore\Exceptions\Validator\RuleParamNotLogicException;
+use MkyCore\File;
 use MkyCore\Interfaces\RuleInterface;
+use ReflectionException;
+use ReflectionFunction;
+use UnitEnum;
 
 class Rules
 {
@@ -28,40 +29,40 @@ class Rules
                 return empty($value) ? false : $value;
             }, '{field} field is required'),
             'minL' => new Rule(function (string $param, string $value) {
-                if(!is_numeric($param)){
+                if (!is_numeric($param)) {
                     throw new RuleParamNotLogicException("Param must be integer");
                 }
-                return strlen($value) < (int) $param ? false : $value;
+                return strlen($value) < (int)$param ? false : $value;
             }, '{field} field must have at least {param} characters'),
             'maxL' => new Rule(function (string $param, string $value) {
-                if(!is_numeric($param)){
+                if (!is_numeric($param)) {
                     throw new RuleParamNotLogicException("Param must be integer");
                 }
-                return strlen($value) > (int) $param ? false : $value;
+                return strlen($value) > (int)$param ? false : $value;
             }, '{field} field must have at most {param} characters'),
             'min' => new Rule(function (string $param, string|int|float $value) {
-                if(!is_numeric($param)){
+                if (!is_numeric($param)) {
                     throw new RuleParamNotLogicException("Param must be integer ot float");
                 }
                 return (float)$value < (float)$param ? false : $value;
             }, '{field} field must be greater than {param}'),
             'between' => new Rule(function (string $param, string|int|float $value) {
                 $params = explode(',', $param);
-                if(count($params) !== 2){
+                if (count($params) !== 2) {
                     throw new RuleParamNotLogicException("There must be 2 params");
                 }
-                $params = array_map(function($param){
-                    if(!is_numeric(trim($param))){
+                $params = array_map(function ($param) {
+                    if (!is_numeric(trim($param))) {
                         throw new RuleParamNotLogicException("Param must be integer ot float");
                     }
-                    return (float) trim($param);
+                    return (float)trim($param);
                 }, $params);
                 $min = $params[0];
                 $max = $params[1];
                 return $min > (float)$value || (float)$value > $max ? false : $value;
             }, '{field} field must be between [{param}]'),
             'max' => new Rule(function (string $param, string|int|float $value) {
-                if(!is_numeric($param)){
+                if (!is_numeric($param)) {
                     throw new RuleParamNotLogicException("Param must be integer ot float");
                 }
                 return (float)$value > (float)$param ? false : $value;
@@ -104,19 +105,38 @@ class Rules
                 if (!enum_exists($param)) {
                     throw new Exception("Enum $param doesn't exist");
                 }
+                /** @var UnitEnum $param */
                 return !$param::tryFrom($value) ? false : $value;
             }, '{field} field must be in enum {param}'),
             'max_size' => new Rule(function (string $param, File $value) {
-                return (int) $param < $value->getSize() * 1000 ? false : $value;
+                return (int)$param < $value->getSize() * 1000 ? false : $value;
             }, 'the size of the {field} file must be less than {param}Ko'),
             'min_size' => new Rule(function (string $param, File $value) {
-                return (int) $param > $value->getSize() * 1000 ? false : $value;
+                return (int)$param > $value->getSize() * 1000 ? false : $value;
             }, 'the size of the {field} file must be greater than {param}Ko'),
             'type' => new Rule(function (string $param, File $value) {
                 $exts = array_map(fn($ext) => trim($ext), explode(',', $param));
                 return !in_array($value->extension(), $exts) ? false : $value;
             }, 'the type of the {field} file must in [{param}]'),
         ];
+    }
+
+    /**
+     * @param string $param
+     * @return string
+     */
+    private function getDateFromString(string $param): string
+    {
+        if ($param == 'now') {
+            $param = "Y-m-d H:i:s";
+        } elseif ($param == 'tomorrow') {
+            $param = \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", date("Y-m-d H:i:s"));
+            $param = $param->addDay()->format('Y-m-d H:i:s');
+        } elseif ($param == 'yesterday') {
+            $param = \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", date("Y-m-d H:i:s"));
+            $param = $param->subDay()->format('Y-m-d H:i:s');
+        }
+        return $param;
     }
 
     /**
@@ -231,23 +251,5 @@ class Rules
     public function getErrors(): array
     {
         return $this->errors;
-    }
-
-    /**
-     * @param string $param
-     * @return string
-     */
-    private function getDateFromString(string $param): string
-    {
-        if ($param == 'now') {
-            $param = "Y-m-d H:i:s";
-        } elseif ($param == 'tomorrow') {
-            $param = \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", date("Y-m-d H:i:s"));
-            $param = $param->addDay()->format('Y-m-d H:i:s');
-        } elseif ($param == 'yesterday') {
-            $param = \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", date("Y-m-d H:i:s"));
-            $param = $param->subDay()->format('Y-m-d H:i:s');
-        }
-        return $param;
     }
 }

@@ -7,9 +7,9 @@ use Exception;
 use GuzzleHttp\Psr7\CachingStream;
 use GuzzleHttp\Psr7\LazyOpenStream;
 use GuzzleHttp\Psr7\ServerRequest;
-use GuzzleHttp\Psr7\UploadedFile;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Facades\Session;
 use MkyCore\Router\Route;
 use MkyCore\Validate\Validator;
 use Psr\Http\Message\ServerRequestInterface;
@@ -75,7 +75,13 @@ class Request extends ServerRequest implements ServerRequestInterface
         return $this->getRequestData($name, $this->getParsedBody(), $default);
     }
 
-    private function getRequestData(string $name = null, array $data, $default = null): mixed
+    /**
+     * @param string|null $name
+     * @param array $data
+     * @param $default
+     * @return mixed
+     */
+    private function getRequestData(string $name = null, array $data = [], $default = null): mixed
     {
         $queryParams = $data;
         if ($name) {
@@ -89,24 +95,6 @@ class Request extends ServerRequest implements ServerRequestInterface
         return $this->getRequestData($name, $this->getQueryParams(), $default);
     }
 
-    public function files(string $name = null, mixed $default = null): array|File|null
-    {
-        $files = [];
-        foreach ($this->getUploadedFiles() as $key => $file) {
-            if($file->getError() === 0){
-                $file = new File($file->getStream(),
-                    $file->getSize(),
-                    $file->getError(),
-                    $file->getClientFilename(),
-                    $file->getClientMediaType()
-                );
-                $files[$key] = $file;
-            }
-        }
-
-        return $this->getRequestData($name, $files, $default);
-    }
-
     public function input(string $name = null, mixed $default = null): mixed
     {
         if ($res = $this->post($name)) {
@@ -116,14 +104,6 @@ class Request extends ServerRequest implements ServerRequestInterface
         } else {
             return $default;
         }
-    }
-
-    public function has(string $attribute, string $type = 'post'): bool
-    {
-        if (!in_array(strtolower($type), self::TYPE_DATA)) {
-            return false;
-        }
-        return $this->{$type}($attribute) !== null;
     }
 
     public function only(array|string $attributes, string $type = 'post'): ?array
@@ -280,12 +260,12 @@ class Request extends ServerRequest implements ServerRequestInterface
         if ($validate->passed()) {
             return true;
         }
-        foreach ($validate->getErrors() as $key => $message){
-            \MkyCore\Facades\Session::set('_flash:'.$key, $message);
+        foreach ($validate->getErrors() as $key => $message) {
+            Session::set('_flash:' . $key, $message);
         }
 
-        foreach ($validate->getData() as $key => $data){
-            \MkyCore\Facades\Session::set('_input:'.$key, $data);
+        foreach ($validate->getData() as $key => $data) {
+            Session::set('_input:' . $key, $data);
         }
 
         $response = redirect()->back();
@@ -293,10 +273,31 @@ class Request extends ServerRequest implements ServerRequestInterface
         return $response;
     }
 
+    public function files(string $name = null, mixed $default = null): array|File|null
+    {
+        $files = [];
+        foreach ($this->getUploadedFiles() as $key => $file) {
+            if ($file->getError() === 0) {
+                $file = new File($file->getStream(),
+                    $file->getSize(),
+                    $file->getError(),
+                    $file->getClientFilename(),
+                    $file->getClientMediaType()
+                );
+                $files[$key] = $file;
+            }
+        }
+
+        return $this->getRequestData($name, $files, $default);
+    }
+
     /**
-     * @param string $name
+     * @param string|null $name
      * @param mixed|null $default
      * @return mixed
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
     public function session(string $name = null, mixed $default = null): mixed
     {
@@ -311,20 +312,27 @@ class Request extends ServerRequest implements ServerRequestInterface
     public function flash(string $name, mixed $default = null): mixed
     {
         $flash = $default;
-        if(\MkyCore\Facades\Session::has('_flash:'.$name)){
-            $flash = \MkyCore\Facades\Session::pull('_flash:'.$name);
+        if (Session::has('_flash:' . $name)) {
+            $flash = Session::pull('_flash:' . $name);
         }
         return $flash;
     }
 
+    public function has(string $attribute, string $type = 'post'): bool
+    {
+        if (!in_array(strtolower($type), self::TYPE_DATA)) {
+            return false;
+        }
+        return $this->{$type}($attribute) !== null;
+    }
+
     /**
      * @param string $name
-     * @param mixed|null $default
      * @return mixed
      */
     public function hasFlash(string $name): bool
     {
-        return \MkyCore\Facades\Session::has('_flash:'.$name);
+        return \MkyCore\Facades\Session::has('_flash:' . $name);
     }
 
     public function backUrl(): string|null
@@ -335,19 +343,18 @@ class Request extends ServerRequest implements ServerRequestInterface
     public function old(string $name, mixed $default = null): mixed
     {
         $input = $default;
-        if(\MkyCore\Facades\Session::has('_input:'.$name)){
-            $input = \MkyCore\Facades\Session::pull('_input:'.$name);
+        if (\MkyCore\Facades\Session::has('_input:' . $name)) {
+            $input = \MkyCore\Facades\Session::pull('_input:' . $name);
         }
         return $input;
     }
 
     /**
      * @param string $name
-     * @param mixed|null $default
      * @return mixed
      */
     public function hasOld(string $name): bool
     {
-        return \MkyCore\Facades\Session::has('_old:'.$name);
+        return \MkyCore\Facades\Session::has('_old:' . $name);
     }
 }

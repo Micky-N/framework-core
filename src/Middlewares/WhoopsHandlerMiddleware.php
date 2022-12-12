@@ -4,11 +4,9 @@ namespace MkyCore\Middlewares;
 
 use Middlewares\Utils\RequestHandler;
 use Middlewares\Whoops;
-use ReflectionException;
-use MkyCore\Facades\Config;
 use MkyCore\Interfaces\MiddlewareInterface;
-use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
+use ReflectionException;
 
 class WhoopsHandlerMiddleware implements MiddlewareInterface
 {
@@ -27,7 +25,7 @@ class WhoopsHandlerMiddleware implements MiddlewareInterface
     public function process(Request $request, callable $next): mixed
     {
         $this->whoops->process($request, new RequestHandler(fn() => null));
-        if(env('APP_ENV', 'local') === 'local'){
+        if (env('APP_ENV', 'local') === 'local') {
             $this->whoops->catchErrors(true);
         }
         return $next($request);

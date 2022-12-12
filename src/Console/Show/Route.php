@@ -5,29 +5,26 @@ namespace MkyCore\Console\Show;
 use MkyCore\Console\Color;
 use MkyCore\Facades\Router;
 
-class Route
+class Route extends Show
 {
 
-    use Color;
+    const HEADERS = [
+        'getMethods' => 'Request Method',
+        'getUrl' => 'Url',
+        'getAction' => 'Controller',
+        'getName' => 'Name',
+        'getModule' => 'Module'
+    ];
 
-    public function __construct(protected readonly array $params = [], protected array $moduleOptions = [])
-    {
-    }
+    use Color;
 
     public function process()
     {
         $print = in_array('--print', $this->params);
-        $headers = [
-            'getMethods' => 'Request Method',
-            'getUrl' => 'Url',
-            'getAction' => 'Controller',
-            'getName' => 'Name',
-            'getModule' => 'Module'
-        ];
         $table = new ConsoleTable();
-        $table->setHeaders(array_values($headers));
+        $table->setHeaders(array_keys(self::HEADERS));
         $routes = Router::getRoutes();
-        $methods = array_keys($headers);
+        $methods = array_keys(self::HEADERS);
         for ($i = 0; $i < count($routes); $i++) {
             $route = $routes[$i];
             $array = [];
@@ -44,10 +41,10 @@ class Route
             }
             $table->addRow($array);
         }
-        if($print){
+        if ($print) {
             echo "List of routes:\n";
         }
-        
+
         $table->setPadding(2)
             ->setIndent(2)
             ->showAllBorders()

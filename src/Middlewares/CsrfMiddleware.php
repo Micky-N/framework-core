@@ -6,7 +6,6 @@ namespace MkyCore\Middlewares;
 
 use Exception;
 use MkyCore\Application;
-use ReflectionException;
 use MkyCore\Config;
 use MkyCore\Exceptions\Config\ConfigNotFoundException;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
@@ -15,6 +14,7 @@ use MkyCore\Exceptions\CsrfMiddlewareException;
 use MkyCore\Facades\Session;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Request;
+use ReflectionException;
 
 class CsrfMiddleware implements MiddlewareInterface
 {
@@ -40,19 +40,19 @@ class CsrfMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, callable $next): mixed
     {
-        if($this->config->get('app.security.csrf', false)){
-            if($request->post()){
-                if(!($csrf = $request->post(self::FORM_KEY))){
+        if ($this->config->get('app.security.csrf', false)) {
+            if ($request->post()) {
+                if (!($csrf = $request->post(self::FORM_KEY))) {
                     $this->reject('Csrf token is missing', 100);
                 }
                 $csrfList = Session::get(self::SESSION_KEY, []);
-                if(!in_array($csrf, $csrfList)){
+                if (!in_array($csrf, $csrfList)) {
                     $this->reject('Wrong csrf token', 101);
                 }
                 $this->useToken($csrf);
             }
         }
-        if($request->has(self::FORM_KEY)){
+        if ($request->has(self::FORM_KEY)) {
             $request = $request->withParsedBody($request->except(self::FORM_KEY));
             $this->app->singleton(Request::class, fn() => $request);
         }
@@ -68,6 +68,14 @@ class CsrfMiddleware implements MiddlewareInterface
         throw new CsrfMiddlewareException($message, $code);
     }
 
+    private function useToken($token): void
+    {
+        $tokens = array_filter(Session::get(self::SESSION_KEY), function ($tk) use ($token) {
+            return $tk !== $token;
+        });
+        Session::set(self::SESSION_KEY, $tokens);
+    }
+
     /**
      * @throws Exception
      */
@@ -81,18 +89,10 @@ class CsrfMiddleware implements MiddlewareInterface
         return $token;
     }
 
-    private function useToken($token): void
-    {
-        $tokens = array_filter(Session::get(self::SESSION_KEY), function ($tk) use ($token){
-            return $tk !== $token;
-        });
-        Session::set(self::SESSION_KEY, $tokens);
-    }
-
     private function limitTokens(): void
     {
         $tokens = Session::get(self::SESSION_KEY, []);
-        if(count($tokens) > self::LIMIT){
+        if (count($tokens) > self::LIMIT) {
             array_shift($tokens);
         }
         Session::set(self::SESSION_KEY, $tokens);

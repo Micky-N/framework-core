@@ -1,6 +1,6 @@
 <?php
 
-namespace App\!moduleManagers;
+namespace !module\Managers;
 
 use MkyCore\Abstracts\Manager;
 !table

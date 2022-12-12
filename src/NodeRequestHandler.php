@@ -2,15 +2,11 @@
 
 namespace MkyCore;
 
-use Middlewares\Whoops;
-use MkyCore\Interfaces\ResponseHandlerInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use ReflectionException;
+use Exception;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\MiddlewareInterface;
+use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Middlewares\CsrfMiddleware;
 use MkyCore\Middlewares\DispatcherMiddleware;
 use MkyCore\Middlewares\GlobalHandlerMiddleware;
@@ -23,6 +19,10 @@ use MkyCore\Middlewares\RouteHandlerMiddleware;
 use MkyCore\Middlewares\RouterMiddleware;
 use MkyCore\Middlewares\TrailingSlashMiddleware;
 use MkyCore\Middlewares\WhoopsHandlerMiddleware;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use ReflectionException;
 
 class NodeRequestHandler implements RequestHandlerInterface
 {
@@ -60,14 +60,12 @@ class NodeRequestHandler implements RequestHandlerInterface
     /**
      * @param ServerRequestInterface $request
      * @return ResponseInterface
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
+     * @throws Exception
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $response = $this->process($request);
-        if(is_array($response) || (is_object($response) && !($response instanceof ResponseHandlerInterface))){
+        if (is_array($response) || (is_object($response) && !($response instanceof ResponseHandlerInterface))) {
             $response = json_encode($response);
         }
         return Response::getFromHandler($response);

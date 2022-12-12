@@ -13,11 +13,15 @@ class Controller extends Create
     {
         $replaceParams['crud'] = '';
         $replaceParams['head'] = '';
-        if (in_array('--crud', $params) || in_array('--crud', $this->moduleOptions)) {
-            if (method_exists($this, 'implementCrud')) {
+        $crud = in_array('--crud', $params) || in_array('--crud', $this->moduleOptions);
+        $crudApi = in_array('--crud-api', $params) || in_array('--crud-api', $this->moduleOptions);
+        if ($crud || $crudApi) {
+            if ($crud) {
                 $replaceParams['crud'] = $this->implementCrud();
-                $replaceParams['head'] = $this->implementHead($replaceParams['name']);
+            } elseif ($crudApi) {
+                $replaceParams['crud'] = $this->implementCrudApi();
             }
+            $replaceParams['head'] = $this->implementHead($replaceParams['name'], $replaceParams['parent'] ?? '');
         }
         return $replaceParams;
     }
@@ -32,7 +36,6 @@ class Controller extends Create
      * @Router('/', name:'index', methods:['GET'])
      * Display a listing of the resource.
      *
-     * @return View
      */
     public function index()
     {
@@ -43,7 +46,6 @@ class Controller extends Create
      * @Router('/create', name:'create', methods:['GET'])
      * Show the form for creating a new resource.
      *
-     * @return View
      */
     public function create()
     {
@@ -54,7 +56,6 @@ class Controller extends Create
      * @Router('/', name:'store', methods:['POST'])
      * Store a newly created resource in storage.
      *
-     * @return RedirectResponse
      */
     public function store()
     {
@@ -66,7 +67,6 @@ class Controller extends Create
      * Display the specified resource.
      *
      * @param  int|string \$id
-     * @return View
      */
     public function show(int|string \$id)
     {
@@ -78,7 +78,6 @@ class Controller extends Create
      * Show the form for editing the specified resource.
      *
      * @param  int|string \$id
-     * @return View
      */
     public function edit(int|string \$id)
     {
@@ -90,7 +89,6 @@ class Controller extends Create
      * Update the specified resource in storage.
      *
      * @param  int|string \$id
-     * @return RedirectResponse
      */
     public function update(int|string \$id)
     {
@@ -102,23 +100,84 @@ class Controller extends Create
      * Remove the specified resource from storage.
      *
      * @param int|string \$id
-     * @return RedirectResponse
      */
     public function destroy(int|string \$id)
     {
         //
     }
-CRUD;
-;
+CRUD;;
     }
 
-    private function implementHead(string $name): string
+    /**
+     * @return string
+     */
+    private function implementCrudApi(): string
+    {
+        return <<<CRUD
+/**
+     * @Router('/', name:'index', methods:['GET'])
+     * Display a listing of the resource.
+     *
+     */
+    public function index()
+    {
+        //
+    }
+
+    /**
+     * @Router('/', name:'store', methods:['POST'])
+     * Store a newly created resource in storage.
+     *
+     */
+    public function store()
+    {
+        //
+    }
+
+    /**
+     * @Router('/{id}', name:'show', methods:['GET'])
+     * Display the specified resource.
+     *
+     * @param  int|string \$id
+     */
+    public function show(int|string \$id)
+    {
+        //
+    }
+
+    /**
+     * @Router('/{id}', name:'update', methods:['PUT'])
+     * Update the specified resource in storage.
+     *
+     * @param  int|string \$id
+     */
+    public function update(int|string \$id)
+    {
+        //
+    }
+
+    /**
+     * @Router('/{id}', name:'destroy', methods:['DELETE'])
+     * Remove the specified resource from storage.
+     *
+     * @param int|string \$id
+     */
+    public function destroy(int|string \$id)
+    {
+        //
+    }
+CRUD;;
+    }
+
+    private function implementHead(string $name, string $parent = ''): string
     {
         $name = strtolower(str_replace('Controller', '', $name));
+        $name = $parent ? "$parent.$name" : $name;
+        $prefix = $this->moduleOptions ? '' : $name;
         return <<<ROUTER
 
 /**
- * @Router('/$name', name: '$name')
+ * @Router('/$prefix', name: '$name')
  */
 ROUTER;
     }

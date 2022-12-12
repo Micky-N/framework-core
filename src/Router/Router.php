@@ -6,12 +6,15 @@ use Closure;
 use Exception;
 use GuzzleHttp\Psr7\Request;
 use MkyCore\Abstracts\ModuleKernel;
-use ReflectionException;
 use MkyCore\Annotation\Annotation;
 use MkyCore\Application;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Exceptions\Router\RouteAlreadyExistException;
 use MkyCore\Exceptions\Router\RouteNeedParamsException;
 use MkyCore\Exceptions\Router\RouteNotFoundException;
+use MkyCore\Facades\Config;
+use ReflectionException;
 
 class Router
 {
@@ -31,7 +34,7 @@ class Router
     public function __construct(private readonly Application $app)
     {
         $methods = self::METHODS;
-        for ($i = 0; $i < count($methods); $i++){
+        for ($i = 0; $i < count($methods); $i++) {
             $method = $methods[$i];
             $this->routes[$method] = [];
         }
@@ -48,18 +51,23 @@ class Router
         foreach ($this->getAllControllerDirs($controllerRootPath) as $controllerDir) {
             $controller = ucfirst(trim(str_replace([$this->app->get('path:base'), '.php'], ['', ''], $controllerDir), DIRECTORY_SEPARATOR));
             $module = $this->parseModule($controller);
-            $endpoint = trim($module->getConfig('endpoint'), '/');
+            $alias = $module->getAlias();
+            if (!in_array(Config::get($alias . '::app.route_mode', 'file'), ['controller', 'both'])) {
+                continue;
+            }
             $controller = new Annotation($controller);
             $controllerAnnotations = $controller->getClassAnnotation('Router');
             $methodsAnnotations = $controller->getMethodsAnnotations();
             if ($methodsAnnotations) {
                 foreach ($methodsAnnotations as $nameMethod => $methodAnnotation) {
                     $methodRouter = $methodAnnotation->getParam('Router');
+                    $controllerUrl = $controllerAnnotations && $controllerAnnotations->default ? trim($controllerAnnotations->default, '/') : '';
+                    $controllerName = $controllerAnnotations && $controllerAnnotations->as && $methodRouter->as ? $controllerAnnotations->as . '.' : '';
                     $routeArray = [
-                        'url' => $endpoint.($controllerAnnotations && trim($controllerAnnotations->default, '/') ? '/'.trim($controllerAnnotations->default, '/') : '') . '/'.trim($methodRouter->default, '/'),
+                        'url' => $controllerUrl . '/' . trim($methodRouter->default, '/'),
                         'methods' => array_map(fn($method) => strtoupper($method), $methodRouter->methods ?? ['GET']),
                         'action' => [$controller->getName(), $nameMethod],
-                        'name' => ($controllerAnnotations && $controllerAnnotations->as) && $methodRouter->as ? $controllerAnnotations->as . '.' . $methodRouter->as : $methodRouter->as,
+                        'name' => $controllerName . $methodRouter->as,
                         'middlewares' => array_merge($controllerAnnotations->middlewares ?? [], $methodRouter->middlewares ?? []),
                         'module' => $module->getAlias(),
                         'permissions' => array_merge($controllerAnnotations->allows ?? [], $methodRouter->allows ?? [])
@@ -68,56 +76,6 @@ class Router
                 }
             }
         }
-    }
-
-    private function parseModule(string $controller): ?ModuleKernel
-    {
-        $controller = new \ReflectionClass($controller);
-        $controllerPath =$controller->getFileName();
-        $explode = explode(DIRECTORY_SEPARATOR, $controllerPath);
-        $explode = array_reverse($explode);
-        $exp = '';
-        for($i = 0; $i < count($explode) - 1; $i++){
-            $exp = $explode[$i];
-            if(!str_ends_with($exp, 'Module')){
-                unset($explode[$i]);
-            }else{
-                break;
-            }
-        }
-        $explode = join(DIRECTORY_SEPARATOR, array_reverse($explode));
-        $nameKernel = '';
-        foreach (scandir($explode) as $path){
-            if(str_ends_with($path, 'Kernel.php')){
-                $nameKernel = str_replace('.php', '', $path);
-                break;
-            }
-        }
-
-        $namespace = $controller->getNamespaceName();
-        $explode = explode(DIRECTORY_SEPARATOR, $namespace);
-        $explode = array_reverse($explode);
-        $exp = '';
-        for($i = 0; $i < count($explode) - 1; $i++){
-            $exp = $explode[$i];
-            if(!str_ends_with($exp, 'Module')){
-                unset($explode[$i]);
-            }else{
-                break;
-            }
-        }
-        $explode = join(DIRECTORY_SEPARATOR, array_reverse($explode));
-        $kernel = "$explode\\$nameKernel";
-
-        if(!class_exists($kernel)){
-            return null;
-        }
-
-        $module = $this->app->get($kernel);
-        if(!($module instanceof ModuleKernel)){
-            return null;
-        }
-        return $module;
     }
 
     private function getAllControllerDirs(string $controllerRootPath): array
@@ -171,7 +129,11 @@ class Router
     public function addRoute(array $routeData): Route
     {
         $routeData['methods'] = (array)($routeData['methods'] ?: self::DEFAULT_PARAMS['methods']);
-        $route = new Route($routeData['url'], $routeData['methods'], $routeData['action'] ?? [], $routeData['module'] ?? 'root', $routeData['name'] ?? '', $routeData['middlewares'] ?? [], $routeData['permissions'] ?? []);
+        $moduleKernel = $this->app->getModuleKernel($routeData['module']);
+        $prefix = trim($moduleKernel->getConfig('prefix', '/'), '/');
+        $url = trim($routeData['url'], '/');
+        $url = $prefix ? "$prefix/$url" : $url;
+        $route = new Route($url, $routeData['methods'], $routeData['action'] ?? [], $routeData['module'], $routeData['name'] ?? '', $routeData['middlewares'] ?? [], $routeData['permissions'] ?? []);
         foreach ($routeData['methods'] as $method) {
             $method = strtoupper($method);
             if (in_array($method, ['GET', 'POST', 'PUT', 'DELETE'])) {
@@ -206,7 +168,62 @@ class Router
     }
 
     /**
-     * Set GET method route
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     */
+    private function parseModule(string $controller): ?ModuleKernel
+    {
+        $controller = new \ReflectionClass($controller);
+        $controllerPath = $controller->getFileName();
+        $explode = explode(DIRECTORY_SEPARATOR, $controllerPath);
+        $explode = array_reverse($explode);
+        $exp = '';
+        for ($i = 0; $i < count($explode) - 1; $i++) {
+            $exp = $explode[$i];
+            if (!str_ends_with($exp, 'Module')) {
+                unset($explode[$i]);
+            } else {
+                break;
+            }
+        }
+        $explode = join(DIRECTORY_SEPARATOR, array_reverse($explode));
+        $nameKernel = '';
+        foreach (scandir($explode) as $path) {
+            if (str_ends_with($path, 'Kernel.php')) {
+                $nameKernel = str_replace('.php', '', $path);
+                break;
+            }
+        }
+
+        $namespace = $controller->getNamespaceName();
+        $explode = explode(DIRECTORY_SEPARATOR, $namespace);
+        $explode = array_reverse($explode);
+        $exp = '';
+        for ($i = 0; $i < count($explode) - 1; $i++) {
+            $exp = $explode[$i];
+            if (!str_ends_with($exp, 'Module')) {
+                unset($explode[$i]);
+            } else {
+                break;
+            }
+        }
+        $explode = join(DIRECTORY_SEPARATOR, array_reverse($explode));
+        $kernel = "$explode\\$nameKernel";
+
+        if (!class_exists($kernel)) {
+            return null;
+        }
+
+        $module = $this->app->get($kernel);
+        if (!($module instanceof ModuleKernel)) {
+            return null;
+        }
+        return $module;
+    }
+
+    /**
+     * Set PUT method route
      *
      * @param string $url
      * @param callable|array $action
@@ -226,7 +243,7 @@ class Router
     }
 
     /**
-     * Set GET method route
+     * Set DELETE method route
      *
      * @param string $url
      * @param callable|array $action
@@ -271,14 +288,12 @@ class Router
      * @param string $namespace
      * @param string $controller
      * @param string $moduleName
-     * @param array $only
      * @return RouteCrud
      */
     public function crud(string $namespace, string $controller, string $moduleName = 'root'): RouteCrud
     {
         $path = '';
         $action = '';
-        $moduleName = $moduleName == 'root' ? $moduleName : ucfirst($moduleName).'Module';
         if (strpos($namespace, '.')) {
             $namespaces = explode('.', $namespace);
             $namespace = end($namespaces);
@@ -384,7 +399,7 @@ class Router
 
     public function deleteRoute(Route $route): void
     {
-        foreach ($route->getMethods() as $method){
+        foreach ($route->getMethods() as $method) {
             $method = strtoupper($method);
             $this->routes[$method] = array_filter($this->routes[$method], fn(Route $r) => $r !== $route);
         }
@@ -395,8 +410,11 @@ class Router
      * @param array $params
      * @param bool $absolute
      * @return string
-     * @throws RouteNotFoundException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      * @throws RouteNeedParamsException
+     * @throws RouteNotFoundException
      */
     public function getUrlFromName(string $name, array $params = [], bool $absolute = true): string
     {
@@ -461,7 +479,7 @@ class Router
         foreach ($this->routes as $method => $routes) {
             foreach ($routes as $route) {
                 $paths = explode('/', trim($route->getUrl(), '/'));
-                if(in_array($namespace, $paths)){
+                if (in_array($namespace, $paths)) {
                     unset($paths[0]);
                     $currentPath = "\t/" . join('/', $paths);
                 } else {

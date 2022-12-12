@@ -3,6 +3,7 @@
 namespace MkyCore\Console;
 
 use Exception;
+use MkyCore\Application;
 
 class Command
 {
@@ -21,11 +22,12 @@ class Command
             'notificationSystem'
         ],
         'show' => [
-            'route'
+            'route',
+            'module'
         ]
     ];
 
-    public function __construct()
+    public function __construct(private readonly Application $app)
     {
 
     }
@@ -67,7 +69,7 @@ class Command
         }
         $class = 'MkyCore\Console\\' . ucfirst($action) . '\\' . ucfirst($getOpt[$action]);
         array_shift($getOpt);
-        $instance = new $class($getOpt);
+        $instance = new $class($this->app, $getOpt);
         return $instance->process();
     }
 }

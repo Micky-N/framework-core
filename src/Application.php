@@ -2,14 +2,14 @@
 
 namespace MkyCore;
 
-use App\Providers\AppServiceProvider;
-use MkyCore\Abstracts\ModuleKernel;
-use ReflectionException;
+use Exception;
 use MkyCore\Abstracts\Entity;
+use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Exceptions\Config\ConfigNotFoundException;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
-use MkyCore\Interfaces\ListenerInterface;
+use MkyCore\Router\Route;
+use ReflectionException;
 
 class Application extends Container
 {
@@ -17,6 +17,8 @@ class Application extends Container
     private array $modules = [];
 
     private string $basePath;
+
+    private ?Route $currentRoute = null;
 
     /**
      * @var array<string, array>
@@ -41,13 +43,13 @@ class Application extends Container
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
-    public function __construct(string $basePath = ROOT_APP)
+    public function __construct(string $basePath)
     {
         $this->setBasePath($basePath);
         $this->registerBaseBindings();
         $this->setInitModules();
         $this->registerServiceProviders();
-        $this->loadEnvironment($basePath.DIRECTORY_SEPARATOR.'.env');
+        $this->loadEnvironment($basePath . DIRECTORY_SEPARATOR . '.env');
     }
 
     private function setBasePath(string $basePath): void
@@ -65,12 +67,6 @@ class Application extends Container
         $this->setInstance('path:public', $this->basePath . DIRECTORY_SEPARATOR . 'public');
     }
 
-    private function setInitModules()
-    {
-        $appProvider = $this->get(AppServiceProvider::class);
-        $appProvider->registerModule();
-    }
-
     /**
      * @throws ConfigNotFoundException
      * @throws FailedToResolveContainerException
@@ -80,15 +76,23 @@ class Application extends Container
     private function registerBaseBindings()
     {
         static::setBaseInstance($this);
-        $config = new Config($this->get('path:config'));
+        $config = new Config($this, $this->get('path:config'));
         date_default_timezone_set($config->get('app.default_timezone', 'Europe/Paris'));
         $this->setInstance(Application::class, $this);
         $this->setInstance(Container::class, $this);
     }
 
-    public function addModules(array $modules): void
+    /**
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     */
+    private function setInitModules()
     {
-        $this->modules = $modules;
+        if (class_exists('App\Providers\AppServiceProvider')) {
+            $appProvider = $this->get(\App\Providers\AppServiceProvider::class);
+            $appProvider->registerModule();
+        }
     }
 
     /**
@@ -98,7 +102,7 @@ class Application extends Container
      */
     private function registerServiceProviders()
     {
-        $module = dirname(__FILE__).DIRECTORY_SEPARATOR.'Providers';
+        $module = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Providers';
         foreach (scandir($module) as $path) {
             if (in_array($path, ['.', '..'])) {
                 continue;
@@ -107,15 +111,16 @@ class Application extends Container
             $provider = str_replace('.php', '', $path);
             $provider = "$namespace\\$provider";
             $provider = $this->get($provider);
-            if(method_exists($provider, 'register')){
+            if (method_exists($provider, 'register')) {
                 $provider->register();
             }
         }
         $modules = $this->modules;
+        $providerPath = '';
         foreach ($modules as $module) {
             $module = $this->get($module);
-            if($module instanceof ModuleKernel){
-                $providerPath = $module->getModulePath().DIRECTORY_SEPARATOR .'Providers';
+            if ($module instanceof ModuleKernel) {
+                $providerPath = $module->getModulePath() . DIRECTORY_SEPARATOR . 'Providers';
             }
             if (is_dir($providerPath)) {
                 foreach (scandir($providerPath) as $path) {
@@ -127,12 +132,49 @@ class Application extends Container
                     $namespace = str_replace($reflectionModule->getShortName(), 'Providers', get_class($module));
                     $provider = "$namespace\\$provider";
                     $provider = $this->get($provider);
-                    if(method_exists($provider, 'register')){
+                    if (method_exists($provider, 'register')) {
                         $provider->register();
                     }
                 }
             }
         }
+    }
+
+    /**
+     * @param string $envFile
+     * @return void
+     */
+    public function loadEnvironment(string $envFile): void
+    {
+        if (file_exists($envFile)) {
+            $dotEnv = new DotEnv($envFile);
+            $dotEnv->load();
+            $this->environmentFile = $envFile;
+        }
+    }
+
+    public function addModules(array $modules): void
+    {
+        $this->modules = $modules;
+    }
+
+    /**
+     * @param string $alias
+     * @param string $moduleKernel
+     * @return void
+     * @throws Exception
+     */
+    public function addModule(string $alias, string $moduleKernel): void
+    {
+        if ($this->hasModule($alias)) {
+            throw new Exception("Alias $alias already set");
+        }
+        $this->modules[$alias] = $moduleKernel;
+    }
+
+    public function hasModule(string $module): bool
+    {
+        return isset($this->modules[$module]);
     }
 
     /**
@@ -143,14 +185,19 @@ class Application extends Container
         return $this->modules;
     }
 
-    public function getModule(string $module): ?string
-    {
-        return $this->modules[$module] ?? null;
-    }
-    
+    /**
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     */
     public function getModuleKernel(string $module): ?ModuleKernel
     {
         return $this->get($this->getModule($module)) ?? null;
+    }
+
+    public function getModule(string $module): ?string
+    {
+        return $this->modules[$module] ?? null;
     }
 
     /**
@@ -158,7 +205,7 @@ class Application extends Container
      */
     public function getInstanceEntity(Entity|string $entity, mixed $primaryKey): \MkyCore\Abstracts\Entity
     {
-        if(is_string($entity)){
+        if (is_string($entity)) {
             $entity = new $entity();
         }
         $manager = $entity->getManager();
@@ -167,7 +214,7 @@ class Application extends Container
 
     public function addEvent(string $event, array|string $listeners)
     {
-        $listeners = (array) $listeners;
+        $listeners = (array)$listeners;
         $this->events[$event] = $listeners;
     }
 
@@ -202,19 +249,6 @@ class Application extends Container
     }
 
     /**
-     * @param string $envFile
-     * @return void
-     */
-    public function loadEnvironment(string $envFile): void
-    {
-        if(file_exists($envFile)){
-            $dotEnv = new DotEnv($envFile);
-            $dotEnv->load();
-            $this->environmentFile = $envFile;
-        }
-    }
-
-    /**
      * @return string
      */
     public function getEnvironmentFile(): string
@@ -228,5 +262,15 @@ class Application extends Container
     public function getBasePath(): string
     {
         return $this->basePath;
+    }
+
+    public function getCurrentRoute(): ?Route
+    {
+        return $this->currentRoute;
+    }
+
+    public function setCurrentRoute(Route $route)
+    {
+        $this->currentRoute = $route;
     }
 }

@@ -7,6 +7,7 @@ use Closure;
 class Rule
 {
 
+    private ?string $param;
 
     public function __construct(protected ?Closure $callback, protected ?string $errorMessage, protected mixed $params = null)
     {

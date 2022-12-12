@@ -5,6 +5,8 @@ namespace MkyCore\Middlewares;
 use Exception;
 use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Application;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Request;
 use MkyCore\Response;
@@ -20,10 +22,26 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
     private int $index = 0;
 
     /**
-     * @throws ReflectionException
+     * @param Application $app
      */
     public function __construct(private readonly Application $app)
     {
+    }
+
+    /**
+     * @inheritDoc
+     * @throws Exception
+     */
+    public function process(Request $request, callable $next): mixed
+    {
+        if (!$this->moduleMiddlewares) {
+            $this->setMiddlewareFromModuleAliasFile($request);
+        }
+        if (!empty($this->moduleMiddlewares)) {
+            $middleware = $this->getCurrentMiddleware();
+            return $middleware->process($request, $next);
+        }
+        return $next($request);
     }
 
     /**
@@ -32,7 +50,9 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
      */
     private function setMiddlewareFromModuleAliasFile(Request $request): void
     {
-        $route = $request->getAttribute(Route::class);
+        if (!($route = $request->getAttribute(Route::class))) {
+            return;
+        }
 
         if (!($module = $route->getModule())) {
             return;
@@ -42,7 +62,7 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
             throw new Exception("No kernel found for the module $module");
         }
 
-        if(!($moduleKernel instanceof ModuleKernel)){
+        if (!($moduleKernel instanceof ModuleKernel)) {
             return;
         }
         $modulePath = $moduleKernel->getModulePath();
@@ -62,23 +82,10 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @inheritDoc
-     * @throws Exception
-     */
-    public function process(Request $request, callable $next): mixed
-    {
-        if(!$this->moduleMiddlewares){
-            $this->setMiddlewareFromModuleAliasFile($request);
-        }
-        if (!empty($this->moduleMiddlewares)) {
-            $middleware = $this->getCurrentMiddleware();
-            return $middleware->process($request, $next);
-        }
-        return $next($request);
-    }
-
-    /**
+     * @return ResponseInterface|MiddlewareInterface|array
      * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      */
     private function getCurrentMiddleware(): ResponseInterface|MiddlewareInterface|array
     {

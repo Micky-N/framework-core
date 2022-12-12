@@ -3,13 +3,15 @@
 namespace MkyCore\View;
 
 
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Facades\Config;
 use MkyCore\Request;
-use MkyCore\Session;
+use ReflectionException;
 
 class TwigRequest
 {
-    public function __construct(private Request $request)
+    public function __construct(private readonly Request $request)
     {
     }
 
@@ -37,12 +39,17 @@ class TwigRequest
     {
         return $this->request->hasFlash($name);
     }
-    
+
+    /**
+     * @throws NotInstantiableContainerException
+     * @throws FailedToResolveContainerException
+     * @throws ReflectionException
+     */
     public function auth()
     {
         return $this->request->auth();
     }
-    
+
     public function config(string $key, mixed $default = null)
     {
         return Config::get($key, $default);

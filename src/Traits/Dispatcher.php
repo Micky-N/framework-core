@@ -4,15 +4,14 @@
 namespace MkyCore\Traits;
 
 
-use ReflectionClass;
-use ReflectionException;
-use MkyCore\Application;
 use MkyCore\Exceptions\Dispatcher\EventNotFoundException;
 use MkyCore\Exceptions\Dispatcher\EventNotImplementException;
 use MkyCore\Exceptions\Dispatcher\ListenerNotFoundException;
 use MkyCore\Exceptions\Dispatcher\ListenerNotImplementException;
 use MkyCore\Interfaces\EventInterface;
 use MkyCore\Interfaces\ListenerInterface;
+use ReflectionClass;
+use ReflectionException;
 
 trait Dispatcher
 {

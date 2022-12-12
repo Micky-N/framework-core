@@ -3,7 +3,6 @@
 namespace MkyCore\Validate;
 
 use Exception;
-use MkyCore\RedirectResponse;
 
 class Validator
 {
@@ -40,10 +39,10 @@ class Validator
         }
         foreach ($this->data as $key => $d) {
             $customMessages = [];
-            if($this->messages){
-                foreach ($this->messages as $name => $message){
-                    if(str_starts_with($name, $key)){
-                        $name = str_replace($key.':', '', $name);
+            if ($this->messages) {
+                foreach ($this->messages as $name => $message) {
+                    if (str_starts_with($name, $key)) {
+                        $name = str_replace($key . ':', '', $name);
                         $customMessages[$name] = $message;
                     }
                 }

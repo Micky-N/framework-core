@@ -2,11 +2,12 @@
 
 namespace MkyCore;
 
-use App\PersonnageModule\Managers\PersonnageManager;
 use Exception;
-use ReflectionException;
 use MkyCore\Abstracts\Entity;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\AuthSystemInterface;
+use ReflectionException;
 
 class AuthManager
 {
@@ -31,7 +32,7 @@ class AuthManager
      */
     public function attempt(array $credentials): bool
     {
-        if(empty($this->provider['manager'])){
+        if (empty($this->provider['manager'])) {
             throw new Exception("No config set for \"$this->providerName\" provider");
         }
         $manager = $this->app->get($this->provider['manager']);
@@ -54,16 +55,19 @@ class AuthManager
     public function use(string $provider): static
     {
         $this->providerName = $provider;
-        $this->provider = $this->config->get('auth.providers.'.$provider);
+        $this->provider = $this->config->get('auth.providers.' . $provider);
         return $this;
     }
 
     /**
+     * @return bool|Entity|null
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
     public function user(): bool|Entity|null
     {
-        if(!empty($this->provider)){
+        if (!empty($this->provider)) {
             if ($this->isLogin()) {
                 $manager = $this->app->get($this->provider['manager']);
                 $id = $this->session->get('auth');
