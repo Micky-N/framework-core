@@ -4,6 +4,8 @@ namespace MkyCore\Middlewares;
 
 use Exception;
 use MkyCore\Application;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
@@ -20,6 +22,9 @@ class RouteHandlerMiddleware implements MiddlewareInterface
     private int $index = 0;
 
     /**
+     * @param Application $app
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
     public function __construct(private readonly Application $app)
@@ -28,6 +33,8 @@ class RouteHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
     private function setMiddlewareFromAliasFile(): void
@@ -59,7 +66,7 @@ class RouteHandlerMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, callable $next): mixed
     {
-        if($request->getAttribute(Route::class)){
+        if ($request->getAttribute(Route::class)) {
             $this->route = $request->getAttribute(Route::class);
             if ($this->route && $this->routeHasMiddlewares()) {
                 $this->routeMiddlewares = $this->getRouteMiddlewaresByRoute();
@@ -106,6 +113,8 @@ class RouteHandlerMiddleware implements MiddlewareInterface
      * @param Request $request
      * @param callable $next
      * @return ResponseHandlerInterface
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
     public function processRoute(Request $request, callable $next): ResponseHandlerInterface
@@ -115,7 +124,10 @@ class RouteHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
+     * @return ResponseInterface|MiddlewareInterface|array
      * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      */
     private function getCurrentMiddleware(): ResponseInterface|MiddlewareInterface|array
     {

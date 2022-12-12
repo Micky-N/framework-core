@@ -13,7 +13,8 @@ class Manager extends Create
 
     protected function handleQuestions(array $replaceParams, array $params = []): array
     {
-        if(!($table = $this->moduleOptions['table'])){
+        $table = $this->moduleOptions['table'] ?? false;
+        if(!$table){
             $getTables = array_map(function ($tables) {
                 return $tables['Tables_in_'.DB::getDatabase()];
             }, DB::query('SHOW TABLES'));
@@ -27,12 +28,13 @@ class Manager extends Create
             } while (!$confirm);
         }
 
-        if(!($entity = $this->moduleOptions['entity'])){
+        $entity = $this->moduleOptions['entity'] ?? false;
+        if(!$entity){
             do {
                 $confirm = true;
                 $entity = trim($this->sendQuestion('Enter the name of entity, or skip'));
                 if ($entity) {
-                    $confirm = $this->getModuleAndClass($entity, 'entities');
+                    $confirm = $this->getModuleAndClass($entity, 'entities', '', $replaceParams['module'] ?? '');
                     if($confirm){
                         $entity = $confirm;
                     }

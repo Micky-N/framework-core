@@ -64,22 +64,11 @@ class QueryBuilderMysql
     }
 
     /**
-     * @see \PDO::query()
-     * @param string $statement
-     * @return array
-     * @throws Exception
-     */
-    public function query(string $statement): array
-    {
-        return Database::query($statement);
-    }
-
-    /**
-     * @see Database::prepare()
      * @param string $statement
      * @param array $attribute
      * @return array
      * @throws Exception
+     * @see Database::prepare()
      */
     public function prepare(string $statement, array $attribute): array
     {
@@ -119,27 +108,6 @@ class QueryBuilderMysql
             $this->conditions[] = sprintf('%s = "%s"', $column, ...$condition);
         else if (count($condition) === 2)
             $this->conditions[] = sprintf('%s %s "%s"', $column, ...$condition);
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function orderBy(string $column, string $order = 'ASC'): static
-    {
-        $this->order[] = "$column $order";
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function limit(int $limit, int $offset = null): static
-    {
-        if (!is_null($offset)) {
-            $limit .= " OFFSET $offset";
-        }
-        $this->limit[] = $limit;
         return $this;
     }
 
@@ -195,24 +163,31 @@ class QueryBuilderMysql
     }
 
     /**
-     * Get all key column data
-     *
-     * @param mixed $key
-     * @param array $query
+     * @param string $statement
      * @return array
+     * @throws Exception
+     * @see \PDO::query()
      */
-    private function mapping(mixed $key, array $query = []): array
+    public function query(string $statement): array
     {
-        return array_map(function ($km) use ($key) {
-            if (is_string($key)) {
-                return $km[$key];
-            }
-            $map = [];
-            foreach ($key as $k => $v) {
-                $map[$v] = $km[$v];
-            }
-            return $map;
-        }, $query);
+        return Database::query($statement);
+    }
+
+    /**
+     * Get request as string
+     *
+     * @return string
+     * @throws Exception
+     */
+    public function stringify(): string
+    {
+        return $this->hasFields()
+            . $this->hasFrom()
+            . $this->hasJoin()
+            . $this->hasConditions()
+            . $this->hasGroup()
+            . $this->hasOrder()
+            . $this->hasLimit();
     }
 
     /**
@@ -225,39 +200,6 @@ class QueryBuilderMysql
         } else {
             return 'SELECT *';
         }
-    }
-
-    /**
-     * @return string
-     */
-    private function hasLimit(): string
-    {
-        if (!empty($this->limit))
-            return ' LIMIT ' . implode(' ', $this->limit);
-        else
-            return '';
-    }
-
-    /**
-     * @return string
-     */
-    private function hasConditions(): string
-    {
-        if (!empty($this->conditions))
-            return ' WHERE ' . implode(' AND ', $this->conditions);
-        else
-            return '';
-    }
-
-    /**
-     * @return string
-     */
-    private function hasOrder(): string
-    {
-        if (!empty($this->order))
-            return ' ORDER BY ' . implode(', ', $this->order);
-        else
-            return '';
     }
 
     /**
@@ -290,12 +232,66 @@ class QueryBuilderMysql
     /**
      * @return string
      */
+    private function hasConditions(): string
+    {
+        if (!empty($this->conditions))
+            return ' WHERE ' . implode(' AND ', $this->conditions);
+        else
+            return '';
+    }
+
+    /**
+     * @return string
+     */
     private function hasGroup(): string
     {
         if (!empty($this->group))
             return ' GROUP BY ' . implode(', ', $this->group);
         else
             return '';
+    }
+
+    /**
+     * @return string
+     */
+    private function hasOrder(): string
+    {
+        if (!empty($this->order))
+            return ' ORDER BY ' . implode(', ', $this->order);
+        else
+            return '';
+    }
+
+    /**
+     * @return string
+     */
+    private function hasLimit(): string
+    {
+        if (!empty($this->limit))
+            return ' LIMIT ' . implode(' ', $this->limit);
+        else
+            return '';
+    }
+
+    /**
+     * Get all key column data
+     *
+     * @param mixed $key
+     * @param array $query
+     * @return array
+     */
+    private function mapping(mixed $key, array $query = []): array
+    {
+        return array_map(function ($km) use ($key) {
+            if (is_string($key)) {
+                return $km[$key];
+            }
+            $map = [];
+            foreach ($key as $k => $v) {
+                $map[$v] = $km[$v];
+            }
+            return $map;
+        }, $query);
     }
 
     /**
@@ -334,6 +330,18 @@ class QueryBuilderMysql
     }
 
     /**
+     * @return $this
+     */
+    public function limit(int $limit, int $offset = null): static
+    {
+        if (!is_null($offset)) {
+            $limit .= " OFFSET $offset";
+        }
+        $this->limit[] = $limit;
+        return $this;
+    }
+
+    /**
      * Get the last record
      *
      * @return Entity|bool
@@ -347,19 +355,11 @@ class QueryBuilderMysql
     }
 
     /**
-     * Get request as string
-     *
-     * @return string
-     * @throws Exception
+     * @return $this
      */
-    public function stringify(): string
+    public function orderBy(string $column, string $order = 'ASC'): static
     {
-        return $this->hasFields()
-            . $this->hasFrom()
-            . $this->hasJoin()
-            . $this->hasConditions()
-            . $this->hasGroup()
-            . $this->hasOrder()
-            . $this->hasLimit();
+        $this->order[] = "$column $order";
+        return $this;
     }
 }

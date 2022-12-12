@@ -27,7 +27,7 @@ class Command
         ]
     ];
 
-    public function __construct(private Application $app)
+    public function __construct(private readonly Application $app)
     {
 
     }

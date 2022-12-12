@@ -2,10 +2,8 @@
 
 namespace MkyCore\TwigExtensions;
 
-use Exception;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
-use MkyCore\Facades\Session;
 use ReflectionException;
 use Twig\TwigFunction;
 
@@ -69,12 +67,22 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
     {
         return public_path($path);
     }
-    
+
+    /**
+     * @param mixed $var
+     * @param mixed ...$moreVars
+     * @return void
+     */
     public function dump(mixed $var, mixed ...$moreVars)
     {
         dump($var, ...$moreVars);
     }
 
+    /**
+     * @param mixed $var
+     * @param mixed ...$moreVars
+     * @return void
+     */
     public function dd(mixed $var, mixed ...$moreVars)
     {
         dd($var, ...$moreVars);

@@ -3,28 +3,34 @@
 namespace MkyCore;
 
 use GuzzleHttp\Psr7\UploadedFile;
+use League\Flysystem\FilesystemException;
 
 class File extends UploadedFile
 {
-    
-    public static function makePath(array $path): string
+
+    public static function makePath(array $path, bool $withCheck = false): string|bool
     {
         $path = array_filter($path, fn($p) => $p);
-        return join(DIRECTORY_SEPARATOR, $path);
+        $path = array_map(fn($p) => trim($p, '\/'), $path);
+        $res = join(DIRECTORY_SEPARATOR, $path);
+        if ($withCheck) {
+            return file_exists($res) || is_dir($res) ? $res : false;
+        }
+        return $res;
     }
 
-    public function extension()
+    public function extension(): bool|string
     {
         $mediatype = explode('/', $this->getClientMediaType());
         return end($mediatype);
     }
 
-    public function filename()
+    public function filename(): array|string|null
     {
         return str_replace('.' . $this->realExtension(), '', $this->getClientFilename());
     }
 
-    public function realExtension()
+    public function realExtension(): bool|string
     {
         $clientFilename = explode('.', $this->getClientFilename(), 2);
         return end($clientFilename);
@@ -38,6 +44,9 @@ class File extends UploadedFile
         return $this->getError() === UPLOAD_ERR_OK;
     }
 
+    /**
+     * @throws FilesystemException
+     */
     public function store(string|array $path, string $rename = null): bool
     {
         $space = null;

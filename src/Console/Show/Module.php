@@ -2,9 +2,7 @@
 
 namespace MkyCore\Console\Show;
 
-use MkyCore\Application;
 use MkyCore\Console\Color;
-use MkyCore\Facades\Router;
 
 class Module extends Show
 {
@@ -13,7 +11,7 @@ class Module extends Show
         'getAlias' => 'Alias',
         'getModuleKernel' => 'Kernel',
     ];
-    
+
     use Color;
 
 
@@ -24,22 +22,22 @@ class Module extends Show
         $table->setHeaders(array_map(fn($header) => $this->getColoredString($header, 'green'), array_values(self::HEADERS)));
         $modules = array_keys($this->app->getModules());
         $headers = array_keys(self::HEADERS);
-        for($i = 0; $i < count($modules); $i++) {
+        for ($i = 0; $i < count($modules); $i++) {
             $module = $this->app->getModuleKernel($modules[$i]);
             $array = [];
             foreach ($headers as $header) {
-                if($header == 'getModuleKernel'){
+                if ($header == 'getModuleKernel') {
                     $array[] = get_class($module);
-                }else{
+                } else {
                     $array[] = $module->{$header}();
                 }
             }
             $table->addRow($array);
         }
-        if($print){
+        if ($print) {
             echo "List of modules:\n";
         }
-        
+
         $table->setPadding(2)
             ->setIndent(2)
             ->showAllBorders()

@@ -32,7 +32,7 @@ class Provider extends Create
      * Register all permissions with Allows facade
      * @example \MkyCore\Facades\Allows::define(alias, callback(user, entity))
      * To use the permission, alias must be implements in a route definition like
-     * @exemple Route('/', cans: [alias])
+     * @exemple Route('/', allows: [alias])
      * 
      * @return void
      */

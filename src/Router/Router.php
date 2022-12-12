@@ -8,6 +8,8 @@ use GuzzleHttp\Psr7\Request;
 use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Annotation\Annotation;
 use MkyCore\Application;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Exceptions\Router\RouteAlreadyExistException;
 use MkyCore\Exceptions\Router\RouteNeedParamsException;
 use MkyCore\Exceptions\Router\RouteNotFoundException;
@@ -165,6 +167,11 @@ class Router
         return false;
     }
 
+    /**
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     */
     private function parseModule(string $controller): ?ModuleKernel
     {
         $controller = new \ReflectionClass($controller);
@@ -281,7 +288,6 @@ class Router
      * @param string $namespace
      * @param string $controller
      * @param string $moduleName
-     * @param array $only
      * @return RouteCrud
      */
     public function crud(string $namespace, string $controller, string $moduleName = 'root'): RouteCrud
@@ -404,8 +410,11 @@ class Router
      * @param array $params
      * @param bool $absolute
      * @return string
-     * @throws RouteNotFoundException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      * @throws RouteNeedParamsException
+     * @throws RouteNotFoundException
      */
     public function getUrlFromName(string $name, array $params = [], bool $absolute = true): string
     {

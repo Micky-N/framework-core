@@ -4,7 +4,6 @@ namespace MkyCore\Middlewares;
 
 use Exception;
 use MkyCore\Exceptions\Router\RouteNotFoundException;
-use MkyCore\Facades\Config;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
@@ -17,8 +16,8 @@ class NotFoundMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, callable $next): ResponseHandlerInterface
     {
-        if(env('APP_ENV', 'local') === 'local'){
-            return new ResponseHandlerNotFound(404 ,[], '', '', "Route '{$request->path()}' not found");
+        if (env('APP_ENV', 'local') === 'local') {
+            return new ResponseHandlerNotFound(404, [], '', '', "Route '{$request->path()}' not found");
         }
         throw new RouteNotFoundException("Route '{$request->path()}' not found", 404);
     }

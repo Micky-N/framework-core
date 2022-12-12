@@ -128,6 +128,10 @@ abstract class Create
         }
         $message .= ":\n";
         echo $message;
+        foreach (array_keys($this->app->getModules()) as $index => $val){
+            $index++;
+            echo "$index. $val\n";
+        }
         return trim((string)readline("> "));
     }
 
@@ -143,7 +147,7 @@ abstract class Create
         return $replaceParams;
     }
 
-    protected function getModuleNamespace(string $module)
+    protected function getModuleNamespace(string $module): string
     {
         return $this->app->getModuleKernel($module)->getModulePath(true);
     }
@@ -152,6 +156,21 @@ abstract class Create
     {
         echo "\n" . $this->getColoredString($message, 'green', 'bold') . ": $res\n";
         return true;
+    }
+
+    protected function getModuleAndClass(string $moduleClass, string $type, string $end = '', string $moduleAlias = ''): string
+    {
+        $module = 'App';
+        $moduleClass = explode(':', $moduleClass);
+        if (count($moduleClass) == 2) {
+            $module = array_shift($moduleClass);
+            if($module == '@'){
+                $module = $moduleAlias;
+            }
+            $module = $this->app->getModuleKernel($module)->getModulePath(true);
+        }
+        $class = [$module, ucfirst($type), ucfirst(array_shift($moduleClass)) . ucfirst($end)];
+        return join('\\', $class);
     }
 
 }

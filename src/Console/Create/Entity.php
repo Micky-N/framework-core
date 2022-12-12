@@ -8,12 +8,13 @@ class Entity extends Create
 
     protected function handleQuestions(array $replaceParams, array $params = []): array
     {
-        if(!($manager = $this->moduleOptions['manager'] ?: '')){
+        $manager = $this->moduleOptions['manager'] ?? false;
+        if(!$manager){
             do{
                 $confirm = true;
                 $manager = trim($this->sendQuestion('Enter the name of manager, or skip'));
                 if ($manager) {
-                    $confirm = $this->getModuleAndClass($manager, 'managers', 'manager');
+                    $confirm = $this->getModuleAndClass($manager, 'managers', 'manager', $replaceParams['module'] ?? '');
                     if($confirm){
                         $manager = $confirm;
                     }

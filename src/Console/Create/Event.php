@@ -2,6 +2,8 @@
 
 namespace MkyCore\Console\Create;
 
+use Exception;
+
 class Event extends Create
 {
     protected string $outputDirectory = 'Events';
@@ -9,6 +11,12 @@ class Event extends Create
         'name' => ['ucfirst', 'ends:Event'],
     ];
 
+    /**
+     * @param array $replaceParams
+     * @param array $params
+     * @return array
+     * @throws Exception
+     */
     public function handleQuestions(array $replaceParams, array $params = []): array
     {
         $eventServiceProvider = $this->app->getModuleKernel($replaceParams['module'])->getModulePath(true) .'\Providers\EventServiceProvider';
@@ -30,11 +38,11 @@ class Event extends Create
     /**
      * @param string $module
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     private function createEventServiceProvider(string $module): void
     {
-        $provider = new Provider([], ['name' => 'event', 'module' => $module]);
+        $provider = new Provider($this->app, [], ['name' => 'event', 'module' => $module]);
         if($provider->process()){
             $message = 'Provider created';
             $module = $this->app->getModuleKernel($module)->getModulePath();

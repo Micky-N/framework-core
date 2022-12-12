@@ -4,14 +4,14 @@
 namespace MkyCore;
 
 
-use Psr\Http\Message\ResponseInterface;
-use ReflectionException;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Exceptions\Middleware\MiddlewareException;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Tests\App\Middleware\ResponseHandlerTest;
+use Psr\Http\Message\ResponseInterface;
+use ReflectionException;
 
 class Middleware
 {
@@ -61,7 +61,7 @@ class Middleware
     private function process(Request $request): ResponseInterface
     {
         $middleware = $this->getCurrentMiddleware();
-        if($middleware instanceof MiddlewareInterface){
+        if ($middleware instanceof MiddlewareInterface) {
             return $middleware->process($request, fn($request) => $this->process($request));
         }
         return $middleware;

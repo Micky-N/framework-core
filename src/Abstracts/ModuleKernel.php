@@ -14,12 +14,25 @@ abstract class ModuleKernel
 
     public function getConfig(string $name = null, mixed $default = null): mixed
     {
-        $configPath = $this->getModulePath().DIRECTORY_SEPARATOR.'config.php';
+        $configPath = $this->getModulePath() . DIRECTORY_SEPARATOR . 'config.php';
         if (!file_exists($configPath)) {
             return [];
         }
         $config = include($configPath);
         return $name ? ($config[$name] ?? $default) : $config;
+    }
+
+    public function getModulePath(bool $namespaced = false): string
+    {
+        $reflection = new \ReflectionClass($this);
+        $shortName = $reflection->getShortName();
+        $res = '';
+        if ($namespaced) {
+            $res = str_replace("\\$shortName", '', $reflection->getNamespaceName());
+        } else {
+            $res = str_replace("\\$shortName.php", '', $reflection->getFileName());
+        }
+        return $res;
     }
 
     public function getAlias(): string
@@ -30,35 +43,43 @@ abstract class ModuleKernel
 
     }
 
-    public function getModulePath(bool $namespace = false): string
+    public function getAncestorsKernel(int $limit = 0): array
     {
-        $reflection = new \ReflectionClass($this);
-        $shortName = $reflection->getShortName();
-        $res = '';
-        if($namespace){
-            $res = str_replace("\\$shortName", '', $reflection->getNamespaceName());
-        }else{
-            $res = str_replace("\\$shortName.php", '', $reflection->getFileName());
-        }
-        return $res;
+        $ancestors = [];
+        $ancestors = $this->getAncestorsRecursive($ancestors, $limit);
+        return $ancestors;
     }
 
-    public function getParentKernel(): ?ModuleKernel
+    private function getAncestorsRecursive(array &$ancestors = [], int $limit = 0): array
     {
-        if (!class_exists($this->parent)) {
-            return null;
+        if ($limit > 0 && count($ancestors) >= $limit) {
+            return $ancestors;
         }
-        $parent = $this->app->get($this->parent);
-        if (!($parent instanceof ModuleKernel)) {
-            return null;
+        if ($this->isNestedModule()) {
+            $parent = $this->getParentKernel();
+            $ancestors[] = $parent;
+            if ($parent->isNestedModule()) {
+                return $parent->getAncestorsRecursive($ancestors, $limit);
+            }
         }
-        return $parent;
-
+        return $ancestors;
     }
 
     public function isNestedModule(): bool
     {
         return $this->parent !== '';
+    }
+
+    public function getParentKernel(): ?ModuleKernel
+    {
+        if (!class_exists($this->app->getModule($this->parent))) {
+            return null;
+        }
+        $parent = $this->app->getModuleKernel($this->parent);
+        if (!($parent instanceof ModuleKernel)) {
+            return null;
+        }
+        return $parent;
     }
 
 }

@@ -16,8 +16,8 @@ class LocalFileSystem extends \League\Flysystem\Filesystem
     {
         // SETUP
         $config = array_replace_recursive([
-            'public_url' => trim($fileConfig['url'] ?? Request::baseUri(), '/').'/',
-            'temporary_url' => trim($fileConfig['url'] ?? Request::baseUri(), '/').'/tmp/'
+            'public_url' => trim($fileConfig['url'] ?? Request::baseUri(), '/') . '/',
+            'temporary_url' => trim($fileConfig['url'] ?? Request::baseUri(), '/') . '/tmp/'
         ], $config);
         $permissionMap = [
             'file' => [
@@ -37,24 +37,23 @@ class LocalFileSystem extends \League\Flysystem\Filesystem
             ),
             config: $config,
             pathNormalizer: $pathNormalizer ?? null,
-            publicUrlGenerator: new class() implements PublicUrlGenerator
-            {
+            publicUrlGenerator: new class() implements PublicUrlGenerator {
                 public function publicUrl(string $path, Config $config): string
                 {
-                    return $config->get('public_url').$path;
+                    return $config->get('public_url') . $path;
                 }
             },
-            temporaryUrlGenerator: new class() implements TemporaryUrlGenerator
-            {
+            temporaryUrlGenerator: new class() implements TemporaryUrlGenerator {
                 public function temporaryUrl(
-                    string $path,
+                    string             $path,
                     \DateTimeInterface $expiresAt,
-                    Config $config
-                ): string {
-                    return $config->get('temporary_url').$path.'?expires_at='.$expiresAt->format('U');
+                    Config             $config
+                ): string
+                {
+                    return $config->get('temporary_url') . $path . '?expires_at=' . $expiresAt->format('U');
                 }
             }
         );
     }
-    
+
 }

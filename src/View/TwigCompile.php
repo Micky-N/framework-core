@@ -5,13 +5,9 @@ namespace MkyCore\View;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Facades\Config;
-use MkyCore\Facades\Request;
-use MkyCore\Facades\Session;
 use MkyCore\Interfaces\ViewCompileInterface;
 use MkyCore\TwigExtensions\TwigExtensionFilter;
 use MkyCore\TwigExtensions\TwigExtensionFunction;
-use MkyCore\TwigExtensions\TwigFilter;
-use MkyCore\TwigExtensions\TwigFunction;
 use ReflectionException;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -28,7 +24,7 @@ class TwigCompile implements ViewCompileInterface
 
     public function __construct(array $options)
     {
-        $baseViews = str_replace(DIRECTORY_SEPARATOR.'public', '', getcwd()).DIRECTORY_SEPARATOR.'views';
+        $baseViews = str_replace(DIRECTORY_SEPARATOR . 'public', '', getcwd()) . DIRECTORY_SEPARATOR . 'views';
         $this->loader = new FilesystemLoader($baseViews);
         $this->twig = new Environment($this->loader, $options);
     }
@@ -71,6 +67,9 @@ class TwigCompile implements ViewCompileInterface
         return $this->twig->render($view, $params);
     }
 
+    /**
+     * @throws LoaderError
+     */
     public function addPath(string $path, string $namespace)
     {
         $this->loader->addPath($path, $namespace);

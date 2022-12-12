@@ -2,13 +2,14 @@
 
 namespace MkyCore\Middlewares;
 
-use Psr\Http\Message\ResponseInterface;
-use ReflectionException;
 use MkyCore\Application;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\MiddlewareInterface;
-use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
 use MkyCore\Response;
+use Psr\Http\Message\ResponseInterface;
+use ReflectionException;
 
 class GlobalHandlerMiddleware implements MiddlewareInterface
 {
@@ -17,6 +18,9 @@ class GlobalHandlerMiddleware implements MiddlewareInterface
     private int $index = 0;
 
     /**
+     * @param Application $app
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
     public function __construct(private readonly Application $app)
@@ -25,6 +29,8 @@ class GlobalHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
     private function setGlobalMiddlewareFromAliasFile(): void
@@ -44,11 +50,16 @@ class GlobalHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
+     * @param Request $request
+     * @param callable $next
+     * @return mixed
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
     public function process(Request $request, callable $next): mixed
     {
-        if(!empty($this->globalMiddlewares)){
+        if (!empty($this->globalMiddlewares)) {
             $middleware = $this->getCurrentMiddleware();
             return $middleware->process($request, $next);
         }
@@ -56,7 +67,10 @@ class GlobalHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
+     * @return ResponseInterface|MiddlewareInterface
      * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      */
     private function getCurrentMiddleware(): ResponseInterface|MiddlewareInterface
     {

@@ -4,10 +4,14 @@ namespace MkyCore;
 
 use Exception;
 use MkyCore\Abstracts\ModuleKernel;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Exceptions\ViewSystemException;
 use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Interfaces\ViewCompileInterface;
 use MkyCore\View\TwigCompile;
+use ReflectionException;
+use Twig\Error\LoaderError;
 
 class View implements ResponseHandlerInterface
 {
@@ -15,7 +19,7 @@ class View implements ResponseHandlerInterface
     private ?string $renderedView = null;
     private ViewCompileInterface $compile;
 
-    public function __construct(private Application $app)
+    public function __construct(private readonly Application $app)
     {
         $compile = new TwigCompile(\MkyCore\Facades\Config::get('twig_options', []));
         $this->compile = $compile;
@@ -40,6 +44,7 @@ class View implements ResponseHandlerInterface
             switch ($viewsModuleConfig) {
                 case 'parent':
                     $this->getParentViewsDirectory($module);
+                    break;
                 case 'module':
                     $this->getModuleViewsDirectory($module);
             }
@@ -51,6 +56,9 @@ class View implements ResponseHandlerInterface
         return $this;
     }
 
+    /**
+     * @throws LoaderError
+     */
     public function addPath(string $path, string $namespace)
     {
         $this->compile->addPath($path, $namespace);
@@ -61,9 +69,18 @@ class View implements ResponseHandlerInterface
 
     }
 
+    /**
+     * @param ModuleKernel $moduleKernel
+     * @return void
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws LoaderError
+     * @throws ReflectionException
+     * @throws Exception
+     */
     private function getModuleViewsDirectory(ModuleKernel $moduleKernel): void
     {
-        $viewsModules = (array) $moduleKernel->getConfig('modules', []);
+        $viewsModules = (array)$moduleKernel->getConfig('modules', []);
         if (!$viewsModules) {
             return;
         }

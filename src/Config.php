@@ -43,12 +43,17 @@ class Config
         return $config;
     }
 
+    /**
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     */
     private function getMergedConfig(string $moduleDirectory): ?array
     {
         $moduleKey = false;
         $moduleConfig = [];
         $moduleDirectory = explode('::', $moduleDirectory);
-        if(count($moduleDirectory) == 2){
+        if (count($moduleDirectory) == 2) {
             $moduleKey = array_shift($moduleDirectory);
         }
         $directory = array_shift($moduleDirectory);

@@ -2,13 +2,11 @@
 
 namespace MkyCore;
 
-use Exception;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
-use MkyCore\Abstracts\Entity;
-use MkyCore\Exceptions\Container\FailedToResolveContainerException;
-use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 
 class Container implements ContainerInterface
 {
@@ -24,40 +22,6 @@ class Container implements ContainerInterface
      */
     private array $sharedInstances = [];
 
-    /**
-     * @param string $alias
-     * @param $options
-     * @return mixed
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     */
-    public function get(string $alias, ...$options): mixed
-    {
-        if($this->hasInstance($alias)){
-            return $this->sharedInstances[$alias];
-        }
-
-        if ($this->has($alias)) {
-            $entryConcrete = $this->getConcrete($alias);
-            if(!is_callable($entryConcrete)){
-                if (is_string($entryConcrete)) {
-                    return $this->get($entryConcrete);
-                }else{
-                    return $entryConcrete;
-                }
-            }
-            
-            $resolve = $entryConcrete($this, ...$options);
-
-            if($this->isShared($alias)){
-                $this->setInstance($alias, $resolve);
-            }
-            return $resolve;
-        }
-        return $this->resolve($alias, ...$options);
-    }
-
     public static function setBaseInstance(mixed $instance)
     {
         static::$_instance = $instance;
@@ -68,20 +32,38 @@ class Container implements ContainerInterface
         return static::$_instance;
     }
 
-    public function setInstance(string $alias, mixed $instance): Container
+    /**
+     * @param string $alias
+     * @param $options
+     * @return mixed
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    public function get(string $alias, ...$options): mixed
     {
-        $this->sharedInstances[$alias] = $instance;
-        return $this;
-    }
+        if ($this->hasInstance($alias)) {
+            return $this->sharedInstances[$alias];
+        }
 
-    public function getInstance(string $alias): mixed
-    {
-        return $this->sharedInstances[$alias];
-    }
+        if ($this->has($alias)) {
+            $entryConcrete = $this->getConcrete($alias);
+            if (!is_callable($entryConcrete)) {
+                if (is_string($entryConcrete)) {
+                    return $this->get($entryConcrete);
+                } else {
+                    return $entryConcrete;
+                }
+            }
 
-    public function has(string $alias): bool
-    {
-        return isset($this->entries[$alias]);
+            $resolve = $entryConcrete($this, ...$options);
+
+            if ($this->isShared($alias)) {
+                $this->setInstance($alias, $resolve);
+            }
+            return $resolve;
+        }
+        return $this->resolve($alias, ...$options);
     }
 
     public function hasInstance(string $alias): bool
@@ -89,21 +71,9 @@ class Container implements ContainerInterface
         return isset($this->sharedInstances[$alias]);
     }
 
-    private function set(string $alias, mixed $concrete, bool $shared = false): void
+    public function has(string $alias): bool
     {
-        $this->entries[$alias] = compact('concrete', 'shared');
-    }
-
-    public function bind(string $alias, mixed $concrete): Container
-    {
-        $this->set($alias, $concrete);
-        return $this;
-    }
-
-    public function singleton(string $alias, mixed $concrete): Container
-    {
-        $this->set($alias, $concrete, true);
-        return $this;
+        return isset($this->entries[$alias]);
     }
 
     protected function getConcrete(string $alias): mixed
@@ -116,6 +86,12 @@ class Container implements ContainerInterface
         return isset($this->entries[$alias]['shared']) && $this->entries[$alias]['shared'] === true;
     }
 
+    public function setInstance(string $alias, mixed $instance): Container
+    {
+        $this->sharedInstances[$alias] = $instance;
+        return $this;
+    }
+
     /**
      * @param string $alias
      * @param $options
@@ -126,7 +102,7 @@ class Container implements ContainerInterface
     private function resolve(string $alias, ...$options): mixed
     {
         // 1. Check if class exists
-        if(!class_exists($alias)){
+        if (!class_exists($alias)) {
             return $alias;
         }
         // 2. Inspect the class that we are trying to get from the container
@@ -156,9 +132,9 @@ class Container implements ContainerInterface
                 throw new FailedToResolveContainerException("Failed to resolve class \"$alias\" because param \"$name\" is missing a type hint");
             }
             if ($type instanceof \ReflectionUnionType) {
-                if(isset($options[$parameter->getName()])){
+                if (isset($options[$parameter->getName()])) {
                     return $options[$parameter->getName()];
-                }else if ($parameter->isDefaultValueAvailable()) {
+                } else if ($parameter->isDefaultValueAvailable()) {
                     return $parameter->getDefaultValue();
                 }
                 throw new FailedToResolveContainerException("Failed to resolve class \"$alias\" because of param \"$name\"");
@@ -167,9 +143,9 @@ class Container implements ContainerInterface
             if ($type instanceof \ReflectionNamedType) {
                 if (!$type->isBuiltin()) {
                     return $this->get($type->getName(), ...$options);
-                } else if(isset($options[$parameter->getName()])){
+                } else if (isset($options[$parameter->getName()])) {
                     return $options[$parameter->getName()];
-                }else if ($parameter->isDefaultValueAvailable()) {
+                } else if ($parameter->isDefaultValueAvailable()) {
                     return $parameter->getDefaultValue();
                 }
             }
@@ -177,6 +153,22 @@ class Container implements ContainerInterface
             throw new FailedToResolveContainerException("Failed to resolve class \"$alias\" because of param \"$name\"");
         }, $parameters);
         return $reflectedClass->newInstanceArgs($constructorArgs);
+    }
+
+    public function getInstance(string $alias): mixed
+    {
+        return $this->sharedInstances[$alias];
+    }
+
+    public function bind(string $alias, mixed $concrete): Container
+    {
+        $this->set($alias, $concrete);
+        return $this;
+    }
+
+    private function set(string $alias, mixed $concrete, bool $shared = false): void
+    {
+        $this->entries[$alias] = compact('concrete', 'shared');
     }
 
     public function getEntries(): array
@@ -188,17 +180,23 @@ class Container implements ContainerInterface
     {
         return $this->sharedInstances;
     }
-    
-    public function removeInstance(string $alias)
+
+    public function forceSingleton(string $alias, mixed $concrete): Container
+    {
+        return $this->removeInstance($alias)
+            ->singleton($alias, $concrete);
+    }
+
+    public function singleton(string $alias, mixed $concrete): Container
+    {
+        $this->set($alias, $concrete, true);
+        return $this;
+    }
+
+    public function removeInstance(string $alias): static
     {
         unset($this->sharedInstances[$alias]);
         unset($this->entries[$alias]);
         return $this;
-    }
-    
-    public function forceSingleton(string $alias, mixed $concrete)
-    {
-        return $this->removeInstance($alias)
-            ->singleton($alias, $concrete);
     }
 }

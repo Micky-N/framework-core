@@ -2,7 +2,6 @@
 
 namespace MkyCore\Console\Show;
 
-use MkyCore\Console\Show\Show;
 use MkyCore\Console\Color;
 use MkyCore\Facades\Router;
 
