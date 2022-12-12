@@ -58,4 +58,32 @@ trait Color
         $colored_string .= $string . "\e[0m";
         return $colored_string;
     }
+
+    protected function sendSuccess(string $message, string $res = ''): bool
+    {
+        echo "\n" . $this->getColoredString($message, 'green', 'bold') . ($res ? ": $res" : '') . "\n";
+        return true;
+    }
+
+    protected function sendError(string $message, string $res = ''): bool
+    {
+        echo "\n" . $this->getColoredString($message, 'red', 'bold') . ($res ? ": $res" : '') . "\n";
+        return false;
+    }
+
+    protected function sendQuestion(string $question, string $default = ''): string
+    {
+        $message = "\n" . $this->getColoredString($question, 'blue', 'bold');
+        if ($default) {
+            $message .= $this->getColoredString(" [$default]", 'light_yellow');
+        }
+        $message .= ":\n";
+        echo $message;
+        return trim((string)readline("> "));
+    }
+    
+    protected static function getInstance()
+    {
+        return new self;
+    }
 }

@@ -32,11 +32,11 @@
     },
     "autoload": {
         "psr-4": {
-            "MkyCore\\": "src/",
-            "MkyCore\\Console\\": "src/Console/"
+            "MkyCore\\": "src/"
         },
         "files": [
-            "src/Helpers/helpers.php"
+            "src/Helpers/helpers.php",
+            "src/Migration/Config/Database/Config.php"
         ]
     },
     "autoload-dev": {

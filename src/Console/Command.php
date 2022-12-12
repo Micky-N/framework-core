@@ -24,6 +24,15 @@ class Command
         'show' => [
             'route',
             'module'
+        ],
+        'migration' => [
+            'create',
+            'run',
+            'rollback'
+        ],
+        'seeder' => [
+            'create',
+            'run'
         ]
     ];
 

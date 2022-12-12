@@ -1,0 +1,15 @@
+<?php
+
+
+use MkyCore\Abstracts\Migration;
+use MkyCore\Migration\MethodType;
+use MkyCore\Migration\Schema;
+
+return new class extends Migration {
+    !order
+    public function up()
+    {
+
+    }
+
+};

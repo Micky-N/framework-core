@@ -114,23 +114,6 @@ abstract class Create
         return $value;
     }
 
-    protected function sendError(string $message, string $res = ''): bool
-    {
-        echo "\n" . $this->getColoredString($message, 'red', 'bold') . ($res ? ": $res" : '') . "\n";
-        return false;
-    }
-
-    protected function sendQuestion(string $question, string $default = ''): string
-    {
-        $message = "\n" . $this->getColoredString($question, 'blue', 'bold');
-        if ($default) {
-            $message .= $this->getColoredString(" [$default]", 'light_yellow');
-        }
-        $message .= ":\n";
-        echo $message;
-        return trim((string)readline("> "));
-    }
-
     protected function getOutPutDir(string $module = 'root'): string
     {
         $module = $this->app->getModuleKernel($module);
@@ -146,12 +129,6 @@ abstract class Create
     protected function getModuleNamespace(string $module): string
     {
         return $this->app->getModuleKernel($module)->getModulePath(true);
-    }
-
-    protected function sendSuccess(string $message, string $res): bool
-    {
-        echo "\n" . $this->getColoredString($message, 'green', 'bold') . ": $res\n";
-        return true;
     }
 
     protected function getModuleAndClass(string $moduleClass, string $type, string $end = '', string $moduleAlias = ''): string
