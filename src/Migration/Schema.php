@@ -107,7 +107,7 @@ class Schema
 
     /**
      * @param string $table
-     * @return bool|string
+     * @return bool
      */
     public static function drop(string $table): bool
     {

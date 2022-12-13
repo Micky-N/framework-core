@@ -27,7 +27,12 @@ class MigrationFile
     }
 
     /**
+     * @param string $direction
+     * @param string|null $file
+     * @throws FailedToResolveContainerException
      * @throws MigrationException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
     public function actionMigration(string $direction = 'up', ?string $file = null): void
     {
@@ -37,6 +42,12 @@ class MigrationFile
         $this->browser_dir($direction, $file);
     }
 
+    /**
+     * @throws FailedToResolveContainerException
+     * @throws MigrationException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
     private function browser_dir(string $direction = 'up', ?string $file = null): void
     {
         if ($file) {
@@ -67,6 +78,11 @@ class MigrationFile
         }
     }
 
+    /**
+     * @param string $direction
+     * @param Migration $migration
+     * @return void
+     */
     private function instantiateMigration(string $direction, Migration $migration)
     {
         if (in_array($direction, ['up', 'down'])) {

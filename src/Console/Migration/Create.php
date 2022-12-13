@@ -48,30 +48,21 @@ class Create extends AbstractCreate
 
     private function migrateQuestion(array $params): array
     {
-        $type = '';
-        do{
+        do {
             $confirm = true;
             $type = $this->sendQuestion('Migration file type (create/alter)', 'create') ?: 'create';
-            if(!in_array($type, ['create', 'alter'])){
+            if (!in_array($type, ['create', 'alter'])) {
                 $this->sendError('Type not right', $type);
                 $confirm = false;
             }
-        }while(!$confirm);
+        } while (!$confirm);
         $params['type'] = $type;
         return $params;
-    }
-    
-    private function setReturn(string $type): string
-    {
-        if($type !== 'create'){
-            return '//';
-        }
-        return '$table->id()->autoIncrement()->createRow(),';
     }
 
     private function setDown(string $type): string
     {
-        if($type !== 'create'){
+        if ($type !== 'create') {
             return '';
         }
         return <<<DOWN
@@ -81,6 +72,14 @@ class Create extends AbstractCreate
         Schema::drop('!table');
     }
 DOWN;
+    }
+
+    private function setReturn(string $type): string
+    {
+        if ($type !== 'create') {
+            return '//';
+        }
+        return '$table->id()->autoIncrement()->createRow(),';
     }
 
 }
