@@ -6,6 +6,7 @@ use MkyCore\Abstracts\ServiceProvider;
 use MkyCore\Application;
 use MkyCore\Config;
 use MkyCore\Container;
+use MkyCore\Database;
 use MkyCore\FileManager;
 use MkyCore\Request;
 use MkyCore\Response;
@@ -44,6 +45,12 @@ class AppServiceProvider extends ServiceProvider
             $space = $container->get(Config::class)->get('filesystems.default', 'public');
             $fsConfig = $container->get(Config::class)->get('filesystems.spaces.' . $space);
             return new FileManager($space, $fsConfig);
+        });
+        
+        $this->app->singleton(Database::class, function(Container $container){
+            $system = $container->get(Config::class)->get('database.default', 'mysql');
+            $configDB = array_merge($container->get(Config::class)->get('database.connections.' . $system), compact('system'));
+            return new Database($configDB);
         });
     }
 }

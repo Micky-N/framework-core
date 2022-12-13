@@ -4,13 +4,13 @@ namespace MkyCore\Abstracts;
 
 class Migration
 {
-    protected int $order = 1;
+    protected int $priority = 1;
 
     /**
      * @return int
      */
-    public function getOrder(): int
+    public function getPriority(): int
     {
-        return $this->order;
+        return $this->priority;
     }
 }

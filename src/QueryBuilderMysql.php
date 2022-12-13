@@ -5,6 +5,7 @@ namespace MkyCore;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Manager;
+use MkyCore\Facades\DB;
 
 class QueryBuilderMysql
 {
@@ -60,7 +61,7 @@ class QueryBuilderMysql
     public function __construct(Manager $instance)
     {
         $this->instance = $instance;
-        $this->pdoConnection = Database::getConnection();
+        $this->pdoConnection = DB::getConnection();
     }
 
     /**
@@ -68,11 +69,11 @@ class QueryBuilderMysql
      * @param array $attribute
      * @return array
      * @throws Exception
-     * @see Database::prepare()
+     * @see DB::prepare()
      */
     public function prepare(string $statement, array $attribute): array
     {
-        return Database::prepare($statement, $attribute);
+        return DB::prepare($statement, $attribute);
     }
 
     /**
@@ -152,7 +153,7 @@ class QueryBuilderMysql
      */
     public function map(string $key = '', mixed $value = null): array
     {
-        $query = Database::query($this->stringify());
+        $query = DB::query($this->stringify());
         $value = str_replace(' ', '', $value);
         $valuemap = !empty($value) ? $this->mapping($value, $query) : $query;
         if ($key) {
@@ -170,7 +171,7 @@ class QueryBuilderMysql
      */
     public function query(string $statement): array
     {
-        return Database::query($statement);
+        return DB::query($statement);
     }
 
     /**
@@ -302,7 +303,7 @@ class QueryBuilderMysql
      */
     public function get(): bool|array
     {
-        return Database::query($this->stringify(), $this->instance->getEntity());
+        return DB::query($this->stringify(), $this->instance->getEntity());
     }
 
     /**
@@ -314,7 +315,7 @@ class QueryBuilderMysql
      */
     public function toArray(bool $one = false): bool|array
     {
-        return Database::query($this->stringify(), null, $one);
+        return DB::query($this->stringify(), null, $one);
     }
 
     /**
@@ -326,7 +327,7 @@ class QueryBuilderMysql
     public function first(): bool|Entity
     {
         $this->limit(1);
-        return Database::query($this->stringify(), $this->instance->getEntity(), true);
+        return DB::query($this->stringify(), $this->instance->getEntity(), true);
     }
 
     /**
@@ -351,7 +352,7 @@ class QueryBuilderMysql
     {
         $this->limit(1);
         $this->orderBy($this->instance->getPrimaryKey(), 'DESC');
-        return Database::query($this->stringify(), $this->instance->getEntity(), true);
+        return DB::query($this->stringify(), $this->instance->getEntity(), true);
     }
 
     /**

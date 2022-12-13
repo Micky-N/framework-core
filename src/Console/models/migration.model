@@ -6,10 +6,14 @@ use MkyCore\Migration\MethodType;
 use MkyCore\Migration\Schema;
 
 return new class extends Migration {
-    !order
+    !priority
     public function up()
     {
-
+        Schema::!type('!table', function (MethodType $table) {
+            return [
+                !return
+            ];
+        });
     }
-
+    !down
 };

@@ -2,6 +2,10 @@
 
 namespace MkyCore\Migration;
 
+use MkyCore\Exceptions\Migration\MethodTypeException;
+use MkyCore\Facades\DB;
+use ReflectionClass;
+use ReflectionMethod;
 
 class MethodType implements MethodTypeInterface
 {
@@ -62,7 +66,19 @@ class MethodType implements MethodTypeInterface
 
     public function bigInt(string $name): static
     {
-        $this->query = "`$name` bigInt";
+        $this->query = "`$name` BIGINT";
+        return $this;
+    }
+
+    public function smallInt(string $name): static
+    {
+        $this->query = "`$name` SMALLINT";
+        return $this;
+    }
+
+    public function tinyInt(string $name): static
+    {
+        $this->query = "`$name` TINYINT";
         return $this;
     }
 
@@ -75,6 +91,15 @@ class MethodType implements MethodTypeInterface
     public function datetime(string $name): static
     {
         $this->query = "`$name` datetime";
+        return $this;
+    }
+
+    public function timestamps(): static
+    {
+        $this->createAt();
+        $query = $this->query;
+        $this->updateAt();
+        $this->query = "$query,\n$this->query";
         return $this;
     }
 
@@ -109,15 +134,6 @@ class MethodType implements MethodTypeInterface
     public function unique(): static
     {
         $this->query .= ' UNIQUE ';
-        return $this;
-    }
-
-    public function foreignKey(string $name): static
-    {
-        $rand = rand();
-        $constrain = "CONSTRAINT  `" . $name . "_foreignKey_" . $rand . "` ";
-        $foreignKey = "FOREIGN KEY (`" . $name . "`)";
-        $this->query = $constrain . $foreignKey;
         return $this;
     }
 
@@ -190,24 +206,114 @@ class MethodType implements MethodTypeInterface
         return $this;
     }
 
-    public function add()
+    public function dropColumnAndForeignKey(string $foreignKey): static
     {
-
+        $foreignKeysDb = $this->getForeignKeysDb($foreignKey);
+        $queries = [];
+        for ($i = 0; $i < count($foreignKeysDb); $i++) {
+            $fkDb = $foreignKeysDb[$i];
+            $this->dropForeignKey($fkDb);
+            $queries[] = $this->query;
+        }
+        $this->dropColumn($foreignKey);
+        $queries[] = $this->query;
+        $this->query = join(", ", $queries);
+        return $this;
     }
 
-    public function drop()
+    private function getForeignKeysDb(string $foreignKey): array
     {
+        $FKs = DB::prepare("SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS 
+WHERE information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE = 'FOREIGN KEY' 
+AND information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA = :schema
+AND information_schema.TABLE_CONSTRAINTS.TABLE_NAME = :table
+AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getDatabase(), 'fk' => "FK_{$foreignKey}%"]);
 
+        return array_map(function (array $fk) {
+            return array_shift($fk);
+        }, $FKs);
     }
 
-    public function modify()
+    public function dropForeignKey(string $foreignKey): static
     {
-
+        $this->query = "DROP FOREIGN KEY $foreignKey";
+        return $this;
     }
 
-    public function rename()
+    public function dropColumn(string $column): static
     {
-
+        $this->query = "DROP COLUMN `$column`";
+        return $this;
     }
 
+    public function dropTable(): static
+    {
+        $this->query = "DROP TABLE IF EXISTS `$this->table`";
+        return $this;
+    }
+
+    /**
+     * @throws MethodTypeException
+     */
+    public function modify(string $column, string $type, array $options = []): static
+    {
+        $this->useMethod($type, $column, $options);
+        $query = 'MODIFY ';
+        $this->query = $query . $this->query;
+        return $this;
+    }
+
+    /**
+     * @param string $method
+     * @param string $column
+     * @param array $options
+     * @return mixed
+     * @throws MethodTypeException
+     */
+    private function useMethod(string $method, string $column, array $options = []): mixed
+    {
+        $reflectionClass = new ReflectionClass($this);
+        $methods = array_map(fn(ReflectionMethod $meth) => $meth->getName(), $reflectionClass->getMethods());
+        if (!in_array($method, $methods)) {
+            throw new MethodTypeException("Method $method not found or implement");
+        }
+        return $this->{$method}($column, ...$options);
+    }
+
+    /**
+     * @throws MethodTypeException
+     */
+    public function rename(string $column, string $name, string $newType = null, array $options = []): static
+    {
+        $type = '';
+        if (!$newType) {
+            $res = $this->getColumnType($column);
+            $type = " $res";
+        } else {
+            $this->useMethod($newType, $column, $options);
+        }
+        $this->query = "CHANGE `$column` `$name`$type";
+        return $this;
+    }
+
+    private function getColumnType(string $column): string
+    {
+        $res = DB::prepare("
+SELECT COLUMN_TYPE 
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_SCHEMA = :schema
+AND TABLE_NAME = :table 
+AND COLUMN_NAME = :column", ['table' => $this->table, 'column' => $column, 'schema' => DB::getDatabase()], null, true);
+        return array_shift($res);
+    }
+
+    public function foreignKey(string $name): static
+    {
+        $fk = "FK_{$name}_" . rand();
+        $constrain = "CONSTRAINT `$fk`";
+        $foreignKey = "FOREIGN KEY (`$name`)";
+        $query = $this->query;
+        $this->query = "$constrain $foreignKey";
+        return $this;
+    }
 }

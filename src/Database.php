@@ -9,8 +9,58 @@ use PDOException;
 class Database
 {
 
-    private static ?PDO $connection = null;
-    private static array $config = [];
+    private ?PDO $connection;
+
+    /**
+     * Create and get PDO connection
+     *
+     * @return PDO
+     * @throws Exception
+     */
+    public function __construct(private readonly array $config)
+    {
+        $pdo = match ($this->config['system']) {
+            'sqlite' => $this->setSqlitePDO($this->config),
+            default => $this->setMysqlPDO($this->config)
+        };
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->query("SET NAMES utf8");
+        $this->connection = $pdo;
+    }
+
+    private function setSqlitePDO(array $config): PDO
+    {
+        return new PDO('sqlite:' . $config['file']);
+    }
+
+    private function setMysqlPDO(array $config): PDO
+    {
+        return new PDO("mysql:host={$config['host']};dbname={$config['name']}", $config['user'], $config['password']);
+    }
+
+    /**
+     * Run query request
+     *
+     * @param $statement
+     * @param null $class_name
+     * @param bool $one
+     * @return array|mixed
+     * @throws Exception
+     */
+    public function query($statement, $class_name = null, bool $one = false): mixed
+    {
+        $req = $this->connection->query($statement);
+        $req->setFetchMode(PDO::FETCH_ASSOC);
+        if ($class_name) {
+            return $one ? new $class_name($req->fetch()) : array_map(fn($fetch) => new $class_name($fetch), $req->fetchAll());
+        }
+        return $one ? $req->fetch() : $req->fetchAll();
+    }
+
+    public function getDatabase(): string
+    {
+        return $this->config['name'];
+    }
 
     /**
      * Run prepare request
@@ -22,10 +72,10 @@ class Database
      * @return array|bool|mixed
      * @throws Exception
      */
-    public static function prepare($statement, $attribute, $class_name = null, bool $one = false): mixed
+    public function prepare($statement, $attribute, $class_name = null, bool $one = false): mixed
     {
-        $getPdoParams = self::getPdoParams($attribute);
-        $req = self::getConnection()->prepare($statement);
+        $getPdoParams = $this->getPdoParams($attribute);
+        $req = $this->connection->prepare($statement);
         foreach ($attribute as $key => $value) {
             $req->bindValue(":$key", $value, $getPdoParams[$key]);
         }
@@ -44,7 +94,7 @@ class Database
         return $one ? $req->fetch() : $req->fetchAll();
     }
 
-    private static function getPdoParams(array $arrayEntity): array
+    private function getPdoParams(array $arrayEntity): array
     {
         $res = [];
         foreach ($arrayEntity as $key => $value) {
@@ -60,70 +110,12 @@ class Database
     }
 
     /**
-     * Create and get PDO connection
-     *
-     * @return PDO
-     * @throws Exception
-     */
-    public static function getConnection(): PDO
-    {
-        if (is_null(self::$connection) || !method_exists(self::$connection, 'getAttribute') || self::$connection->getAttribute(PDO::ATTR_DRIVER_NAME) !== 'mysql') {
-            $default = config('database.default', 'mysql');
-            $config = config('database.connections.' . $default);
-            self::$config = $config;
-            $pdo = match ($default) {
-                'sqlite' => self::setSqlitePDO($config),
-                default => self::setMysqlPDO($config)
-            };
-            $pdo->query("SET NAMES utf8");
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $pdo->query("SET NAMES utf8");
-            self::$connection = $pdo;
-        }
-        return self::$connection;
-    }
-
-    private static function setSqlitePDO(array $config): PDO
-    {
-        return new PDO('sqlite:' . $config['file']);
-    }
-
-    private static function setMysqlPDO(array $config): PDO
-    {
-        return new PDO("mysql:host={$config['host']};dbname={$config['name']}", $config['user'], $config['password']);
-    }
-
-    /**
-     * Run query request
-     *
-     * @param $statement
-     * @param null $class_name
-     * @param bool $one
-     * @return array|mixed
-     * @throws Exception
-     */
-    public static function query($statement, $class_name = null, bool $one = false): mixed
-    {
-        $req = self::getConnection()->query($statement);
-        $req->setFetchMode(PDO::FETCH_ASSOC);
-        if ($class_name) {
-            return $one ? new $class_name($req->fetch()) : array_map(fn($fetch) => new $class_name($fetch), $req->fetchAll());
-        }
-        return $one ? $req->fetch() : $req->fetchAll();
-    }
-
-    public static function getDatabase(): string
-    {
-        return static::$config['name'];
-    }
-
-    /**
      * @param mixed $config
      * @param string $connection
      * @return PDO
      * @throws PDOException
      */
-    private static function getPdo(mixed $config, string $connection): PDO
+    private function getPdo(mixed $config, string $connection): PDO
     {
         $startDsn = "$connection:";
         switch ($connection) {

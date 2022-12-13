@@ -14,4 +14,9 @@ class MigrationException extends \Exception
     {
         return new static("Database migration directory not found");
     }
+
+    public static function MIGRATION_FILE_NOT_FOUND(string $fileName): static
+    {
+        return new static("File $fileName not found");
+    }
 }

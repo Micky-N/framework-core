@@ -3,6 +3,7 @@
 namespace MkyCore\Abstracts;
 
 use Exception;
+use MkyCore\Facades\DB;
 use ReflectionClass;
 use ReflectionException;
 use MkyCore\Annotation\Annotation;
@@ -90,7 +91,7 @@ abstract class Manager
             implode(', ', $keys) .
             ')';
         $statement .= ' VALUES (' . implode(', ', $inter) . ')';
-        Database::prepare($statement, $values);
+        DB::prepare($statement, $values);
         return $this->last();
     }
 
@@ -122,7 +123,7 @@ abstract class Manager
     {
         return array_map(function ($column) {
             return $column['Field'];
-        }, Database::query("SHOW COLUMNS FROM " . $this->getTable()));
+        }, DB::query("SHOW COLUMNS FROM " . $this->getTable()));
     }
 
     /**
@@ -165,7 +166,7 @@ abstract class Manager
             $this->getPrimaryKey() .
             ' = :' . $this->getPrimaryKey();
         $values[$this->getPrimaryKey()] = $primaryKey;
-        Database::prepare($statement, $values);
+        DB::prepare($statement, $values);
         return $this->find($primaryKey);
     }
 
@@ -199,7 +200,7 @@ abstract class Manager
             ' WHERE ' .
             $this->getPrimaryKey() .
             ' = :' . $this->getPrimaryKey();
-        Database::prepare($statement, [$this->getPrimaryKey() => $entity->{$this->getPrimaryKey()}()]);
+        DB::prepare($statement, [$this->getPrimaryKey() => $entity->{$this->getPrimaryKey()}()]);
         return $this->all();
     }
 
