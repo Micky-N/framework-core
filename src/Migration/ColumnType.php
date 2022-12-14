@@ -3,17 +3,19 @@
 namespace MkyCore\Migration;
 
 use MkyCore\Exceptions\Migration\MethodTypeException;
+use MkyCore\Exceptions\Migration\MigrationException;
 use MkyCore\Facades\DB;
 use ReflectionClass;
 use ReflectionMethod;
 
-class MethodType implements MethodTypeInterface
+class ColumnType
 {
 
     private string $query = '';
 
-    public function __construct(private readonly string $table)
+    public function __construct(private string $table, string $column, string $type, ...$options)
     {
+        $this->{$type}($column, ...$options);
     }
 
     /**
@@ -27,17 +29,6 @@ class MethodType implements MethodTypeInterface
     public function createRow(): string
     {
         return preg_replace('/\s+/', ' ', trim($this->query));
-    }
-
-    public function id(bool $isInteger = true): static
-    {
-        if ($isInteger) {
-            $this->integer('id')->unsigned()->notNull()->primaryKey();
-        } else {
-            $this->bigint('id')->unsigned()->notNull()->primaryKey();
-        }
-
-        return $this;
     }
 
     public function primaryKey(): static
@@ -94,21 +85,6 @@ class MethodType implements MethodTypeInterface
         return $this;
     }
 
-    public function timestamps(): static
-    {
-        $this->createAt();
-        $query = $this->query;
-        $this->updateAt();
-        $this->query = "$query,\n$this->query";
-        return $this;
-    }
-
-    public function createAt(): static
-    {
-        $this->timestamp('created_at')->notNull()->default('CURRENT_TIMESTAMP');
-        return $this;
-    }
-
     /**
      * @param mixed|null $value
      * @return $this
@@ -122,12 +98,6 @@ class MethodType implements MethodTypeInterface
     public function timestamp(string $name): static
     {
         $this->query = "`$name` timestamp";
-        return $this;
-    }
-
-    public function updateAt(): static
-    {
-        $this->timestamp('updated_at')->notNull()->default('CURRENT_TIMESTAMP  ON UPDATE CURRENT_TIMESTAMP');
         return $this;
     }
 
@@ -288,15 +258,19 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
         $type = '';
         if (!$newType) {
             $res = $this->getColumnType($column);
+            $res = $res ?: 'varchar(255)';
             $type = " $res";
+            
         } else {
-            $this->useMethod($newType, $column, $options);
+            $type = $this->useMethod($newType, $column, $options);
+            $type = str_replace("`$column`", '', $type->getQuery());
+            $type = " ".trim($type);
         }
         $this->query = "CHANGE `$column` `$name`$type";
         return $this;
     }
 
-    private function getColumnType(string $column): string
+    private function getColumnType(string $column): string|bool
     {
         $res = DB::prepare("
 SELECT COLUMN_TYPE 
@@ -304,7 +278,7 @@ FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_SCHEMA = :schema
 AND TABLE_NAME = :table 
 AND COLUMN_NAME = :column", ['table' => $this->table, 'column' => $column, 'schema' => DB::getDatabase()], null, true);
-        return array_shift($res);
+        return $res ? array_shift($res) : $res;
     }
 
     public function foreignKey(string $name): static
@@ -315,5 +289,13 @@ AND COLUMN_NAME = :column", ['table' => $this->table, 'column' => $column, 'sche
         $query = $this->query;
         $this->query = "$constrain $foreignKey";
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getQuery(): string
+    {
+        return $this->query;
     }
 }

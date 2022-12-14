@@ -2,18 +2,20 @@
 
 
 use MkyCore\Abstracts\Migration;
-use MkyCore\Migration\MethodType;
+use MkyCore\Migration\MigrationTable;
 use MkyCore\Migration\Schema;
 
-return new class extends Migration {
-    !priority
+class !name extends Migration
+{
+
     public function up()
     {
-        Schema::!type('!table', function (MethodType $table) {
-            return [
-                !return
-            ];
-        });
+
     }
-    !down
-};
+
+    public function down()
+    {
+
+    }
+
+}

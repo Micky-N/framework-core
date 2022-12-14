@@ -36,8 +36,7 @@
             "MkyCore\\": "src/"
         },
         "files": [
-            "src/Helpers/helpers.php",
-            "src/Migration/Config/Database/Config.php"
+            "src/Helpers/helpers.php"
         ]
     },
     "autoload-dev": {

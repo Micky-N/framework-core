@@ -19,20 +19,24 @@ class Schema
     public static array $SUCCESS = [];
     public static array $ERRORS = [];
 
-    /**
-     * @throws Exception
-     */
+
     public static function create(string $table, $callback): bool
     {
-        $callbackValues = $callback(new MethodType($table));
-        return self::createQuery($table, $callbackValues);
+        $migrationTable = new MigrationTable($table);
+        $callbackValues = $callback($migrationTable);
+        return self::createQuery($table, $migrationTable);
     }
 
     /**
-     * @throws Exception
+     * @param string $table
+     * @param MigrationTable $migrationTable
+     * @return bool
      */
-    private static function createQuery(string $table, array $values): bool
+    private static function createQuery(string $table, MigrationTable $migrationTable): bool
     {
+        $values = array_map(function($value){
+            return $value->createRow();
+        }, $migrationTable->getColumns());
         $queryCreate = "CREATE TABLE `$table`\n";
         $queryCreate .= "(\n    ";
         $queryCreate .= implode(",\n    ", $values);
@@ -51,17 +55,11 @@ class Schema
             echo $query;
             return true;
         }
-        try {
-            if (self::migrationTable($query)) {
-                self::$SUCCESS[] = ['database table ' . ($creating ? 'created' : 'updated'), $table];
-                return true;
-            }
-            self::$ERRORS[] = ['error in ' . ($creating ? 'creation' : 'alteration') . ' table in database', $table];
-            return false;
-        } catch (Exception $ex) {
-            self::$ERRORS[] = ['error in ' . ($creating ? 'creation' : 'alteration') . ' table in database', $ex->getMessage()];
-            return false;
+        if (self::migrationTable($query)) {
+            self::$SUCCESS[] = ['database table ' . ($creating ? 'created' : 'updated'), $table];
+            return true;
         }
+        return false;
     }
 
     /**
@@ -71,36 +69,35 @@ class Schema
      */
     private static function migrationTable(string $query): bool
     {
+        $creating = str_contains($query, 'CREATE TABLE');
         try {
             return DB::prepare($query, []) !== false;
-        } catch (PDOException $e) {
-            throw new PDOException($e->getMessage());
+        } catch (PDOException $ex) {
+            self::$ERRORS[] = ['error in ' . ($creating ? 'creation' : 'alteration') . ' table in database', $ex->getMessage()];
+            return false;
         }
     }
-
-    /**
-     * @throws Exception
-     */
+    
     public static function alter(string $table, $callback): bool
     {
-        $callbackValues = $callback(new MethodType($table));
-        return self::alterQuery($table, $callbackValues);
+        $migrationTable = new MigrationTable($table);
+        $callbackValues = $callback($migrationTable);
+        return self::alterQuery($table, $migrationTable);
     }
 
-    /**
-     * @throws Exception
-     */
-    private static function alterQuery(string $table, array $values): bool
+
+    private static function alterQuery(string $table, MigrationTable $migrationTable): bool
     {
         $queryCreate = "ALTER TABLE `$table`\n";
         $queryCreate .= implode(",\n", array_map(function ($value) {
+            $value = $value->createRow();
             $test = explode(' ', $value);
             $test = $test[0];
             if (!in_array($test, self::ALTERS)) {
                 return "ADD $value";
             }
             return $value;
-        }, $values));
+        }, $migrationTable->getColumns()));
         $queryCreate .= ";\n\n";
         return self::runQuery($table, $queryCreate);
     }

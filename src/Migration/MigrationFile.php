@@ -58,22 +58,16 @@ class MigrationFile
             $this->instantiateMigration($direction, require $migrationFile);
         } else {
             $dir = glob(File::makePath([$this->databaseDir, "*"]));
-            usort($dir, fn($d1, $d2) => ($direction == 'up' ? str_contains($d1, 'alter_') : !str_contains($d1, 'alter_')) ? 1 : -1);
-            $arrayDirs = [];
+            $dir = $this->sortMigrationFile($dir);
+            dd($dir);
+            $migrationFiles = [];
             for ($i = 0; $i < count($dir); $i++) {
                 $migrationFile = $dir[$i];
                 $type = str_contains($migrationFile, 'alter_') ? 'alteration' : 'creation';
-                $arrayDirs[$type][] = require $migrationFile;
-            }
-            $types = $direction == 'up' ? self::TYPES : array_reverse(self::TYPES);
-            for ($i = 0; $i < count($types); $i++) {
-                $type = $types[$i];
-                $dirsType = $arrayDirs[$type] ?? [];
-                usort($dirsType, fn(Migration $file1, Migration $file2) => $file1->getPriority() < $file2->getPriority() ? 1 : -1);
-                for ($j = 0; $j < count($dirsType); $j++) {
-                    $migration = $dirsType[$j];
-                    $this->instantiateMigration($direction, $migration);
-                }
+                require $migrationFile;
+                $class = $this->getClassFromFile($migrationFile);
+                $instantiateMigration = new $class();
+                $instantiateMigration->{$direction}();
             }
         }
     }
@@ -90,5 +84,38 @@ class MigrationFile
                 $migration->{$direction}();
             }
         }
+    }
+
+    private function sortMigrationFile(array $dir): array
+    {
+        usort($dir, function ($file1, $file2) {
+            return $this->compareFileTime($file1, $file2) ? -1 : 1;
+        });
+        return $dir;
+    }
+
+    private function compareFileTime(string $file1, string $file2): bool
+    {
+        $file1 = str_replace([$this->app->get('path:database') . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR, '.php'], '', $file1);
+        $file2 = str_replace([$this->app->get('path:database') . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR, '.php'], '', $file2);
+        $file1 = preg_replace('/[_a-z+]/', '', $file1);
+        $file2 = preg_replace('/[_a-z+]/', '', $file2);
+        return (int) $file2 > (int) $file1;
+    }
+
+    private function getClassFromFile(string $file): string
+    {
+        $text = preg_replace('/[0-9+]/', '', $file);
+        $text = str_replace([$this->app->get('path:database') . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR, '.php'], '', $text);
+        return $this->toPascal($text);
+    }
+
+    private function toPascal(string $text): string
+    {
+        return preg_replace_callback('/_[a-z]/', function ($exp) {
+            if (isset($exp[0])) {
+                return str_replace('_', '', strtoupper($exp[0]));
+            }
+        }, $text);
     }
 }
