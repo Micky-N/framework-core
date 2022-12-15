@@ -34,7 +34,7 @@ class Schema
      */
     private static function createQuery(string $table, MigrationTable $migrationTable): bool
     {
-        $values = array_map(function($value){
+        $values = array_map(function ($value) {
             return $value->createRow();
         }, $migrationTable->getColumns());
         $queryCreate = "CREATE TABLE `$table`\n";
@@ -77,7 +77,7 @@ class Schema
             return false;
         }
     }
-    
+
     public static function alter(string $table, $callback): bool
     {
         $migrationTable = new MigrationTable($table);
@@ -120,7 +120,7 @@ class Schema
         }
         $tableExists = self::tableExists($table);
         if (self::migrationTable($queryCreate)) {
-            if($tableExists){
+            if ($tableExists) {
                 self::$SUCCESS[] = ['database table dropped', $table];
             }
             return true;
@@ -128,7 +128,7 @@ class Schema
         self::$ERRORS[] = ['error while dropping table from database', $table];
         return false;
     }
-    
+
     /**
      * Check if a table exists in the current database.
      *
@@ -136,7 +136,8 @@ class Schema
      * @param string $table Table to search for.
      * @return bool TRUE if table exists, FALSE if no table found.
      */
-    private static function tableExists(string $table) {
+    private static function tableExists(string $table)
+    {
 
         try {
             $result = DB::query("SELECT 1 FROM {$table} LIMIT 1");
