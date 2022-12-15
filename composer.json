@@ -23,7 +23,8 @@
         "middlewares/whoops": "^2.0",
         "ext-readline": "*",
         "twig/twig": "^3.4",
-        "league/flysystem": "^3.11"
+        "league/flysystem": "^3.11",
+        "fakerphp/faker": "^1.21"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
@@ -32,11 +33,10 @@
     },
     "autoload": {
         "psr-4": {
-            "MkyCore\\": "src/",
-            "MkyCore\\Console\\": "src/Console/"
+            "MkyCore\\": "core/"
         },
         "files": [
-            "src/Helpers/helpers.php"
+            "core/Helpers/helpers.php"
         ]
     },
     "autoload-dev": {

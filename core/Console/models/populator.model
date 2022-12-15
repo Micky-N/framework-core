@@ -1,0 +1,21 @@
+<?php
+
+namespace Database\Populators;
+
+use !manager;
+use MkyCore\Abstracts\Populator;
+
+class !name extends Populator
+{
+
+    protected string $manager = !class;
+
+
+    public function definition(): array
+    {
+        return [
+            //
+        ];
+    }
+
+}
