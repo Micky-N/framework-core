@@ -100,7 +100,9 @@ class Database
     {
         $res = [];
         foreach ($arrayEntity as $key => $value) {
-            if (is_numeric($value)) {
+            if (is_float($value)) {
+                $res[$key] = PDO::PARAM_STR;
+            } else if (is_integer($value)) {
                 $res[$key] = PDO::PARAM_INT;
             } else if (is_bool($value)) {
                 $res[$key] = PDO::PARAM_BOOL;

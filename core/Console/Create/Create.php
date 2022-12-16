@@ -2,7 +2,6 @@
 
 namespace MkyCore\Console\Create;
 
-use Exception;
 use MkyCore\Application;
 use MkyCore\Console\Color;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
@@ -158,32 +157,32 @@ abstract class Create
         $moduleClass = explode(':', $moduleClass);
         if (count($moduleClass) == 2) {
             $module = array_shift($moduleClass);
-            if($module == '@'){
+            if ($module == '@') {
                 $module = $moduleAlias;
             }
             $module = $this->app->getModuleKernel($module);
-            if(!$module){
+            if (!$module) {
                 return $this->sendError("Module not found", $module);
             }
             $module = $module->getModulePath(true);
         }
         $class = [$module, ucfirst($type), ucfirst(array_shift($moduleClass)) . ucfirst($end)];
         $final = join('\\', $class);
-        if(!class_exists($final)){
+        if (!class_exists($final)) {
             return $this->sendError("Class not exists", $final);
         }
         return $final;
     }
-    
+
     protected function parseParams(): array
     {
         $params = [];
-        foreach ($this->params as $index => $param){
-            if(str_contains($param, '=')){
-                $param = explode('=', $param);
+        foreach ($this->params as $index => $param) {
+            $param = explode('=', $param);
+            if (count($param) == 2) {
                 $index = array_shift($param);
             }
-            $params[$index] = $param[0];
+            $params[$index] = array_shift($param);
         }
         return $params;
     }

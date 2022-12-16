@@ -4,20 +4,22 @@ namespace MkyCore\Abstracts;
 
 use Exception;
 use MkyCore\Annotation\Annotation;
-use MkyCore\Facades\DB;
+use MkyCore\Database;
 use MkyCore\Traits\QueryMysql;
+use ReflectionClass;
 use ReflectionException;
 use stdClass;
 
 abstract class Manager
 {
 
+    const DEFAULT_PRIMARY_KEY = 'id';
     use QueryMysql;
 
     /**
      * @throws Exception
      */
-    public function __construct()
+    public function __construct(protected readonly Database $db)
     {
     }
 
@@ -48,16 +50,34 @@ abstract class Manager
     public function getPrimaryKey(): ?string
     {
         $entity = (new Annotation($this->getEntity()))->newInstance();
-        return $entity->getPrimaryKey();
+        if ($pk = $entity->getPrimaryKey()) {
+            return $pk;
+        }
+        return self::DEFAULT_PRIMARY_KEY;
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function getEntity(): string
+    public function getEntity(): ?string
     {
         $annotation = (new Annotation($this))->getClassAnnotation('Entity');
-        return $annotation->getProperty();
+        if ($annotation) {
+            $entity = $annotation->getProperty();
+        } else {
+            try {
+                $shortManager = (new ReflectionClass($this))->getShortName();
+                $shortEntity = str_replace('Manager', '', $shortManager);
+                $explodedNamespace = explode('\\', get_class($this));
+                $entityIndex = array_search('Managers', $explodedNamespace);
+                $explodedNamespace = array_slice($explodedNamespace, 0, $entityIndex);
+                $moduleNamespace = join('\\', $explodedNamespace) . "\Entities\\$shortEntity";
+                if (!class_exists($moduleNamespace)) {
+                    return null;
+                }
+                $entity = $moduleNamespace;
+            } catch (Exception $ex) {
+                return null;
+            }
+        }
+        return $entity;
     }
 
     public function create(array $data, string $table = '')
@@ -96,7 +116,7 @@ abstract class Manager
             implode(', ', $keys) .
             ')';
         $statement .= ' VALUES (' . implode(', ', $inter) . ')';
-        DB::prepare($statement, $values);
+        $this->db->prepare($statement, $values);
         return $this->last();
     }
 
@@ -128,7 +148,7 @@ abstract class Manager
     {
         return array_map(function ($column) {
             return $column['Field'];
-        }, DB::query("SHOW COLUMNS FROM " . $this->getTable()));
+        }, $this->db->query("SHOW COLUMNS FROM " . $this->getTable()));
     }
 
     /**
@@ -180,7 +200,7 @@ abstract class Manager
             $this->getPrimaryKey() .
             ' = :' . $this->getPrimaryKey();
         $values[$this->getPrimaryKey()] = $primaryKey;
-        DB::prepare($statement, $values);
+        $this->db->prepare($statement, $values);
         return $this->find($primaryKey);
     }
 
@@ -214,7 +234,7 @@ abstract class Manager
             ' WHERE ' .
             $this->getPrimaryKey() .
             ' = :' . $this->getPrimaryKey();
-        DB::prepare($statement, [$this->getPrimaryKey() => $entity->{$this->getPrimaryKey()}()]);
+        $this->db->prepare($statement, [$this->getPrimaryKey() => $entity->{$this->getPrimaryKey()}()]);
         return $this->all();
     }
 

@@ -58,30 +58,31 @@ class NodeRequestHandler implements RequestHandlerInterface
     }
 
     /**
-     * @param ServerRequestInterface $request
+     * @param Request $request
      * @return ResponseInterface
      * @throws Exception
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $response = $this->process($request);
+        $headers = [];
         if (is_array($response) || (is_object($response) && !($response instanceof ResponseHandlerInterface))) {
-            $response = json_encode($response);
+            $response = json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         }
-        return Response::getFromHandler($response);
+        return Response::getFromHandler($response, $headers);
     }
 
     /**
      * @param Request $request
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function process(Request $request): mixed
     {
         try {
             $middleware = $this->getCurrentMiddleware();
             return $middleware->process($request, [$this, 'process']);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             if (env('APP_ENV', 'local') === 'local') {
                 throw $exception;
             }

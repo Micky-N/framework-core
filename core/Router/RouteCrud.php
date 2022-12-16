@@ -105,4 +105,42 @@ class RouteCrud
 
         return $this;
     }
+
+    public function params(array $params): RouteCrud
+    {
+        $newNamespaces = [];
+        if (isset($params['*'])) {
+            $param = $params['*'];
+            foreach ($this->routes as $method => $route) {
+                $oldUrl = $this->routes[$method]->getUrl();
+                $namespaces = explode('.', $this->namespace);
+                $paramExplode = explode('.', $param);
+                for ($i = 0; $i < count($namespaces); $i++) {
+                    $namespace = $namespaces[$i];
+                    $currentParam = $paramExplode[$i] ?? $namespace;
+                    $oldUrl = str_replace('{' . $namespace . '}', '{' . $currentParam . '}', $oldUrl);
+                    $newNamespaces[] = $currentParam;
+                }
+                $this->routes[$method]->setUrl($oldUrl);
+            }
+            unset($params['*']);
+        }
+        $namespaces = $newNamespaces ?? null;
+        if ($params) {
+            foreach ($params as $method => $param) {
+                $oldUrl = $this->routes[$method]->getUrl();
+                if (!$namespaces) {
+                    $namespaces = explode('.', $this->namespace);
+                }
+                $paramExplode = explode('.', $param);
+                for ($i = 0; $i < count($namespaces); $i++) {
+                    $namespace = $namespaces[$i];
+                    $currentParam = $paramExplode[$i] ?? $namespace;
+                    $oldUrl = str_replace('{' . $namespace . '}', '{' . $currentParam . '}', $oldUrl);
+                }
+                $this->routes[$method]->setUrl($oldUrl);
+            }
+        }
+        return $this;
+    }
 }

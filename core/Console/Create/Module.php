@@ -44,7 +44,7 @@ class Module extends Create
         $parentNamespace = $parent->getModulePath(true);
         $name = array_shift($params);
         if (!$name) {
-            return $this->sendError("No name entered", 'NULL');
+            return $this->sendError("No name given");
         }
         $module = ucfirst($name) . 'Module';
         $newPath = File::makePath([$parentPath, $module]);

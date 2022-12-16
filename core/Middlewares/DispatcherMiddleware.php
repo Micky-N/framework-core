@@ -13,6 +13,8 @@ use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
 use MkyCore\Router\Route;
 use ReflectionException;
+use ReflectionUnionType;
+use ReflectionNamedType;
 
 class DispatcherMiddleware implements MiddlewareInterface
 {
@@ -55,9 +57,13 @@ class DispatcherMiddleware implements MiddlewareInterface
             for ($i = 0; $i < count($reflectionParameters); $i++) {
                 $reflectionParameter = $reflectionParameters[$i];
                 $name = $reflectionParameter->getName();
-                if ($reflectionParameter->getType() && !$reflectionParameter->getType()->isBuiltin()) {
+                $paramType = $reflectionParameter->getType();
+                if($paramType instanceof ReflectionUnionType){
+                    $paramType = $paramType->getTypes()[0];
+                }
+                if ($paramType && !$paramType->isBuiltin()) {
                     $param = isset($routeParams[$name]) ? [$name => $routeParams[$name]] : [];
-                    $class = $reflectionParameter->getType()->getName();
+                    $class = $paramType->getName();
                     if (class_exists($class) && is_string($class)) {
                         $class = $this->app->get($class);
                         if ($class instanceof Entity) {
@@ -66,10 +72,10 @@ class DispatcherMiddleware implements MiddlewareInterface
                     } elseif (interface_exists($class) && is_string($class)) {
                         $param[$name] = $this->app->get($class, $param[$name] ?? []);
                     }
-                    $params[$name] = $param[$name] ?? $this->app->get($reflectionParameter->getType()->getName(), $param);
-                } elseif ($reflectionParameter->getType() && $reflectionParameter->getType()->isBuiltin() && !empty($routeParams[$name])) {
+                    $params[$name] = $param[$name] ?? $this->app->get($paramType->getName(), $param);
+                } elseif ($paramType && $paramType->isBuiltin() && !empty($routeParams[$name])) {
                     $params[$name] = $routeParams[$name];
-                } elseif (!$reflectionParameter->getType() && !empty($routeParams[$name])) {
+                } elseif (!$paramType && !empty($routeParams[$name])) {
                     $params[$name] = (string)$routeParams[$name];
                 } elseif ($route->isOptionalParam($name)) {
                     $params[$name] = $reflectionParameter->isDefaultValueAvailable() ? $reflectionParameter->getDefaultValue() : null;

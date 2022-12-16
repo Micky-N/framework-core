@@ -91,9 +91,9 @@ class MigrationTable
         return $this->timestamp($column)->notNull()->default('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
     }
 
-    public function float(string $column): ColumnType
+    public function float(string $column, array $precision = []): ColumnType
     {
-        return $this->columns[] = $this->addColumn($column, 'float');
+        return $this->columns[] = $this->addColumn($column, 'float', $precision);
     }
 
     public function text(string $name): ColumnType

@@ -3,14 +3,16 @@
 namespace MkyCore\Abstracts;
 
 use Exception;
+use JsonSerializable;
 use MkyCore\Annotation\Annotation;
 use MkyCore\Annotation\ParamAnnotation;
 use MkyCore\Facades\DB;
 use MkyCore\Traits\RelationShip;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionProperty;
 
-abstract class Entity
+abstract class Entity implements JsonSerializable
 {
 
     use RelationShip;
@@ -59,17 +61,34 @@ abstract class Entity
         return $this->getManager()->delete($this);
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function getManager(): Manager
+    public function getManager(): ?Manager
     {
-        $annotation = (new Annotation($this))->getClassAnnotation('Manager');
-        $manager = $annotation->getProperty();
-        if ($manager) {
-            $manager = new $manager();
+        try {
+            $annotation = (new Annotation($this))->getClassAnnotation('Manager');
+            if ($annotation) {
+                $manager = $annotation->getProperty();
+                if ($manager) {
+                    $manager = new $manager();
+                }
+            } else {
+                try {
+                    $shortEntity = (new ReflectionClass($this))->getShortName();
+                    $explodedNamespace = explode('\\', get_class($this));
+                    $entityIndex = array_search('Entities', $explodedNamespace);
+                    $explodedNamespace = array_slice($explodedNamespace, 0, $entityIndex);
+                    $moduleNamespace = join('\\', $explodedNamespace) . "\Managers\\{$shortEntity}Manager";
+                    if (!class_exists($moduleNamespace)) {
+                        return null;
+                    }
+                    $manager = app()->get($moduleNamespace);
+                } catch (Exception $ex) {
+                    return null;
+                }
+            }
+            return $manager;
+        } catch (Exception $ex) {
+            return null;
         }
-        return $manager;
     }
 
     /**
@@ -186,6 +205,21 @@ abstract class Entity
         $statement = 'INSERT INTO ' . $pivot . ' (' . implode(', ', $keys) . ')';
         $statement .= ' VALUES (' . implode(', ', $inter) . ')';
         return DB::prepare($statement, $values);
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        $reflectionEntity = new ReflectionClass($this);
+        $properties = $reflectionEntity->getProperties(ReflectionProperty::IS_PRIVATE);
+        $array = [];
+        for($i = 0; $i < count($properties); $i++){
+            $property = $properties[$i];
+            $name = $property->getName();
+            if(method_exists($this, $name)){
+                $array[$name] = $this->$name();
+            }
+        }
+        return $array;
     }
 
     /**
