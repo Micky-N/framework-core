@@ -13,7 +13,6 @@ use stdClass;
 abstract class Manager
 {
 
-    const DEFAULT_PRIMARY_KEY = 'id';
     use QueryMysql;
 
     /**
@@ -53,7 +52,7 @@ abstract class Manager
         if ($pk = $entity->getPrimaryKey()) {
             return $pk;
         }
-        return self::DEFAULT_PRIMARY_KEY;
+        return null;
     }
 
     public function getEntity(): ?string

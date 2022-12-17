@@ -15,6 +15,7 @@ use ReflectionProperty;
 abstract class Entity implements JsonSerializable
 {
 
+    const DEFAULT_PRIMARY_KEY = 'id';
     use RelationShip;
 
     /**
@@ -124,7 +125,7 @@ abstract class Entity implements JsonSerializable
                 return $column->getProperty();
             }
         }
-        return null;
+        return self::DEFAULT_PRIMARY_KEY;
     }
 
     /**
