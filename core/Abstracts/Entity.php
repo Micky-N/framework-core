@@ -18,29 +18,39 @@ abstract class Entity implements JsonSerializable
     const DEFAULT_PRIMARY_KEY = 'id';
     use RelationShip;
 
+    protected array $casts = [];
+    protected array $hiddens = [];
+
     /**
      * @throws ReflectionException
      */
-    public function __construct(array $donnees = [])
+    public function __construct(array $data = [])
     {
-        if ($donnees) {
-            $this->hydrate($donnees);
+        if ($data) {
+            $this->hydrate($data);
         }
     }
 
     /**
      * @throws ReflectionException
      */
-    public function hydrate(array $donnees): void
+    public function hydrate(array $data): void
     {
-        foreach ($donnees as $key => $donnee) {
+        $this->attributes = [];
+        foreach ($data as $key => $value) {
             $key = $this->camelize($key);
             $method = 'set' . ucfirst($key);
             if (method_exists($this, $method)) {
-                $this->$method($donnee);
-            } else {
-                $this->relation[$key] = $donnee;
+                if (array_key_exists($key, $this->casts)) {
+                    $value = $this->transformCast($key, $value);
+                }
+                $this->$method($value);
+            }else{
+                $this->attributes[$key] = $value;
             }
+        }
+        if(empty($this->attributes)){
+            unset($this->attributes);
         }
     }
 
@@ -48,9 +58,30 @@ abstract class Entity implements JsonSerializable
      * @param string $input
      * @return string
      */
-    private function camelize(string $input): string
+    public function camelize(string $input): string
     {
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
+    }
+
+    private function transformCast(string $key, mixed $value): mixed
+    {
+        $type = $this->casts[$key] ?? 'string';
+        if ($this->isDefaultTypes($type)) {
+            $value = settype($value, $type);
+        } elseif (method_exists($this, $type)) {
+            $value = $this->$type($value, $key);
+        }
+        return $value;
+    }
+
+    private function isDefaultTypes(string $type): bool
+    {
+        return in_array($type, $this->getDefaultTypes());
+    }
+
+    private function getDefaultTypes(): array
+    {
+        return ['string', 'int', 'integer', 'float', 'boolean', 'bool', 'array', 'object'];
     }
 
     /**
@@ -69,7 +100,7 @@ abstract class Entity implements JsonSerializable
             if ($annotation) {
                 $manager = $annotation->getProperty();
                 if ($manager) {
-                    $manager = new $manager();
+                    $manager = app()->get($manager);
                 }
             } else {
                 try {
@@ -93,27 +124,6 @@ abstract class Entity implements JsonSerializable
     }
 
     /**
-     * Create new record in the relation table
-     *
-     * @param Entity $entity
-     * @param string $foreignKey
-     * @return bool|$this
-     * @throws ReflectionException
-     */
-    public function add(Entity $entity, string $foreignKey = ''): bool|Entity
-    {
-        $primaryKey = $entity->getPrimaryKey();
-        if ($relation = $this->getRelations($entity->getManager()->getTable())) {
-            $foreignKey = $relation->getForeignKey();
-        } else {
-            $preForeignKey = strtolower((new ReflectionClass($this))->getShortName());
-            $foreignKey = $foreignKey ?: $preForeignKey . '_' . $primaryKey;
-        }
-        $entity->{'set' . ucfirst($this->camelize($foreignKey))}($this->{$primaryKey}());
-        return $entity->getManager()->save($entity);
-    }
-
-    /**
      * @return string|null
      * @throws ReflectionException
      */
@@ -131,96 +141,44 @@ abstract class Entity implements JsonSerializable
     /**
      * @throws ReflectionException
      */
-    public function attach(Entity $entity, string $foreignKey = ''): bool|Entity
-    {
-        $primaryKey = $entity->getPrimaryKey();
-        if ($relation = $this->getRelations($entity->getManager()->getTable())) {
-            $foreignKey = $relation->getForeignKey();
-        } else {
-            $preForeignKey = strtolower((new ReflectionClass($entity))->getShortName());
-            $foreignKey = $foreignKey ?: $preForeignKey . '_' . $primaryKey;
-        }
-        $this->{'set' . ucfirst($this->camelize($foreignKey))}($entity->{$primaryKey}());
-        return $this->getManager()->update($this);
-    }
-
-    /**
-     * @throws ReflectionException
-     */
     public function update(): Entity|bool
     {
         return $this->getManager()->update($this);
     }
 
-    /**
-     * @throws ReflectionException
-     * @throws Exception
-     */
-    public function attachOnPivot(Entity $entityRelation, array $options = [], string $pivot = '', string $foreignKeyOne = '', string $foreignKeyTwo = ''): bool|Entity
+    public function jsonSerialize(): array
     {
-        $primaryKeyOne = $this->getPrimaryKey();
-        $primaryKeyTwo = $entityRelation->getPrimaryKey();
-        $preForeignKeyOne = strtolower((new ReflectionClass($this))->getShortName());
-        $preForeignKeyTwo = strtolower((new ReflectionClass($entityRelation))->getShortName());
-        if ($relation = $this->getRelations($primaryKeyOne . '_' . $preForeignKeyTwo)) {
-            $foreignKeyOne = $relation->getForeignKeyOne();
-            $foreignKeyTwo = $relation->getForeignKeyTwo();
-            $pivot = $relation->getPivot();
-        } else if ($relation = $this->getRelations($preForeignKeyTwo . '_' . $primaryKeyOne)) {
-            $foreignKeyOne = $relation->getForeignKeyOne();
-            $foreignKeyTwo = $relation->getForeignKeyTwo();
-            $pivot = $relation->getPivot();
-        } else {
-            $foreignKeyOne = $foreignKeyOne ?: $preForeignKeyOne . '_' . $primaryKeyOne;
-            $foreignKeyTwo = $foreignKeyTwo ?: $preForeignKeyTwo . '_' . $primaryKeyTwo;
-            $all = DB::query(
-                'SHOW TABLES FROM ' . config('database.connections.mysql.name', 'database')
-            );
-            if (empty($pivot)) {
-                foreach ($all as $a) {
-                    if (str_contains($a['Tables_in_' . config('database.connections.mysql.name', 'database')], '_')) {
-                        $test = explode('_', $a['Tables_in_' . config('database.connections.mysql.name', 'database')]);
-                        if (in_array($preForeignKeyOne, $test) && in_array($preForeignKeyTwo, $test)) {
-                            $pivot = $a['Tables_in_' . config('database.connections.mysql.name', 'database')];
-                        }
-                    }
-                }
-            }
-        }
-        $data = [];
-        $data[$foreignKeyOne] = $this->{$primaryKeyOne}();
-        $data[$foreignKeyTwo] = $entityRelation->{$primaryKeyTwo}();
-        if ($options) {
-            foreach ($options as $key => $option) {
-                $data[$key] = $option;
-            }
-        }
-        $keys = [];
-        $values = [];
-        $inter = [];
-        foreach ($data as $k => $v) {
-            $keys[] = $k;
-            $values[$k] = $v;
-            $inter[] = ":$k";
-        }
-        $statement = 'INSERT INTO ' . $pivot . ' (' . implode(', ', $keys) . ')';
-        $statement .= ' VALUES (' . implode(', ', $inter) . ')';
-        return DB::prepare($statement, $values);
+        return $this->toArray();
     }
 
-    public function jsonSerialize(): mixed
+    public function toArray(): array
     {
         $reflectionEntity = new ReflectionClass($this);
         $properties = $reflectionEntity->getProperties(ReflectionProperty::IS_PRIVATE);
         $array = [];
-        for($i = 0; $i < count($properties); $i++){
+        for ($i = 0; $i < count($properties); $i++) {
             $property = $properties[$i];
             $name = $property->getName();
-            if(method_exists($this, $name)){
+            if (!in_array($name, $this->hiddens) && method_exists($this, $name)) {
                 $array[$name] = $this->$name();
             }
         }
         return $array;
+    }
+
+    public function __get(string $name)
+    {
+        try {
+
+            if(method_exists($this, $name)){
+                $this->$name();
+                if (array_key_exists($name, $this->relations)) {
+                    return $this->getRelations($name)->get();
+                }
+            }
+        } catch (Exception $exception) {
+            return null;
+        }
     }
 
     /**

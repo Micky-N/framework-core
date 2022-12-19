@@ -60,6 +60,11 @@ class MigrationTable
         return $this->columns[] = $this->addColumn($column, 'tinyInt');
     }
 
+    public function boolean(string $column): ColumnType
+    {
+        return $this->columns[] = $this->addColumn($column, 'tinyInt');
+    }
+
     public function string(string $column, int $limit = 255): ColumnType
     {
         return $this->columns[] = $this->addColumn($column, 'string', $limit);

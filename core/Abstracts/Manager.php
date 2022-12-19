@@ -131,7 +131,9 @@ abstract class Manager
         $columns = $this->getColumns();
         $filteredData = [];
         foreach ($columns as $key => $column) {
-            $filteredData[$column] = $entity->{$this->camelize($column)}() ?? null;
+            if (!is_null($value = $entity->{$this->camelize($column)}())) {
+                $filteredData[$column] = $value;
+            }
         }
         return $filteredData;
     }
@@ -222,10 +224,10 @@ abstract class Manager
      * Delete a record
      *
      * @param Entity $entity
-     * @return array
+     * @return Entity|null
      * @throws Exception
      */
-    public function delete(Entity $entity): array
+    public function delete(Entity $entity): ?Entity
     {
         $statement =
             'DELETE FROM ' .
@@ -234,7 +236,7 @@ abstract class Manager
             $this->getPrimaryKey() .
             ' = :' . $this->getPrimaryKey();
         $this->db->prepare($statement, [$this->getPrimaryKey() => $entity->{$this->getPrimaryKey()}()]);
-        return $this->all();
+        return $entity;
     }
 
     /**

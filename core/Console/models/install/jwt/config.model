@@ -1,0 +1,29 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cross-Origin Resource Sharing (CORS) Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Here you may configure your settings for cross-origin resource sharing
+    | or "CORS". This determines what cross-origin operations may execute
+    | in web browsers. You are free to adjust these settings as needed.
+    |
+    */
+    'allowed_origins' => ['*'],
+
+    'allowed_methods' => ['*'],
+
+    'allowed_headers' => ['*'],
+
+    'allowed_credentials' => true,
+
+    'max_age' => 43200, // 12h
+
+    'charset' => 'utf-8', // for french character
+
+    'lifetime' => 60 // in minutes
+
+];

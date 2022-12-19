@@ -230,9 +230,15 @@ class Request extends ServerRequest implements ServerRequestInterface
         return new static($this->method(), $this->fullUri() . '?' . $queryString, $this->getHeaders());
     }
 
-    public function bearerToken(): string|null
+    public function bearerToken(): string|false
     {
-        return $this->getAttribute('Authorization');
+        $headerAuthorization = $this->header('Authorization');
+        $authorization = false;
+        if($headerAuthorization){
+            $headerAuthorization = reset($headerAuthorization);
+            $authorization = trim(str_replace(['bearer', 'Bearer'], '', $headerAuthorization));
+        }
+        return $authorization;
     }
 
     /**

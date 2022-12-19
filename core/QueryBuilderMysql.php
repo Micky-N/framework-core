@@ -293,10 +293,10 @@ class QueryBuilderMysql
     /**
      * Get all records
      *
-     * @return array|bool
+     * @return array|false
      * @throws Exception
      */
-    public function get(): bool|array
+    public function get(): false|array
     {
         return $this->db->query($this->stringify(), $this->instance->getEntity());
     }
@@ -316,10 +316,10 @@ class QueryBuilderMysql
     /**
      * Get the first record
      *
-     * @return Entity|bool
+     * @return Entity|false
      * @throws Exception
      */
-    public function first(): bool|Entity
+    public function first(): false|Entity
     {
         $this->limit(1);
         return $this->db->query($this->stringify(), $this->instance->getEntity(), true);

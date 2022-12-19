@@ -91,7 +91,7 @@ class ColumnType
      */
     public function default(mixed $value = null): static
     {
-        $this->query .= "DEFAULT " . $value;
+        $this->query .= " DEFAULT " . (is_bool($value) ? (int) $value : $value);
         return $this;
     }
 

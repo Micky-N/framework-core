@@ -1,0 +1,29 @@
+<?php
+
+
+use MkyCore\Abstracts\Migration;
+use MkyCore\Migration\MigrationTable;
+use MkyCore\Migration\Schema;
+
+class CreateJsonWebTokensTable extends Migration
+{
+
+    public function up()
+    {
+        Schema::create('json_web_tokens', function (MigrationTable $table) {
+            $table->id()->autoIncrement();
+            $table->string('entity', 40)->notNull();
+            $table->integer('entity_id')->notNull();
+            $table->string('name')->notNull();
+            $table->string('token')->notNull();
+            $table->integer('expire_at')->notNull();
+            $table->createAt();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropTable('json_web_tokens');
+    }
+
+}

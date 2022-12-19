@@ -3,17 +3,17 @@
 namespace MkyCore\Api;
 
 
-use MkyCore\Abstracts\Entity;
-
 /**
- * @Manager('MkyCore\Api\ApiTokenManager')
+ * @Manager('MkyCore\Api\JsonWebTokenManager')
  */
-class ApiToken extends Entity
+class JsonWebToken extends \MkyCore\Abstracts\Entity
 {
 
     private $id;
     private $entity;
+    private $entityId;
     private $token;
+    private $name;
     private $expireAt;
     private $createdAt;
 
@@ -47,6 +47,32 @@ class ApiToken extends Entity
     public function setEntity($entity): void
     {
         $this->entity = $entity;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function entityId()
+    {
+        return $this->entityId;
+    }
+
+    /**
+     * @param mixed $entityId
+     */
+    public function setEntityId($entityId): void
+    {
+        $this->entityId = $entityId;
+    }
+
+    public function name()
+    {
+        return $this->name;
+    }
+
+    public function setName($name)
+    {
+        $this->name = $name;
     }
 
     /**

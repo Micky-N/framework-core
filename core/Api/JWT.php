@@ -3,97 +3,103 @@
 namespace MkyCore\Api;
 
 use MkyCore\Abstracts\Entity;
-use MkyCore\Exceptions\Container\FailedToResolveContainerException;
-use MkyCore\Exceptions\Container\NotInstantiableContainerException;
-use ReflectionException;
+use MkyCore\QueryBuilderMysql;
+use MkyCore\RelationEntity\HasMany;
 
-class JWT
+class Jwt
 {
 
-    private const HEADER = ['typ' => 'JWT', 'alg' => 'HS256'];
+    private const HEADER = ['typ' => 'Jwt', 'alg' => 'HS256'];
 
-    public function __construct(private readonly Entity $entity)
+    private static function jsonWebTokenManager(): JsonWebTokenManager
     {
+        return app()->get(JsonWebTokenManager::class);
     }
 
-    /**
-     * @throws ReflectionException
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     */
-    public function create(): string
+    public static function createJwt(Entity $entity, string $name)
     {
-        $expire = time() + 10;
-        $payload = $this->makePayload($expire);
+        $expireTime = time() + (60 * (float) config('jwt.lifetime', 1));
+        $payload = self::makePayload($entity, $expireTime);
 
-        $base64UrlHeader = $this->toBase64Url(json_encode(self::HEADER));
-        $base64UrlPayload = $this->toBase64Url(json_encode($payload));
+        $base64UrlHeader = self::toBase64Url(json_encode(self::HEADER));
+        $base64UrlPayload = self::toBase64Url(json_encode($payload));
 
-        $signature = $this->makeSignature($base64UrlHeader, $base64UrlPayload, $expire);
+        $signature = self::makeSignature($base64UrlHeader, $base64UrlPayload, env('API_SECRET', $expireTime));
 
-        $base64UrlSecurity = $this->toBase64Url($signature);
+        $base64UrlSecurity = self::toBase64Url($signature);
 
-        /** @var ApiTokenManager $apiTokenManager */
-        $apiTokenManager = app()->get(ApiTokenManager::class);
-
-        $apiTokenManager->create([
-            'entity' => get_class($this->entity) . '::' . $this->entity->{$this->entity->getPrimaryKey()}(),
+        $jsonWebToken = $entity->tokens()->add(new JsonWebToken([
+            'entity' => self::stringifyEntity($entity),
+            'name' => $name,
             'token' => $base64UrlSecurity,
-            'expireAt' => $expire,
+            'expireAt' => $expireTime,
             'createdAt' => now()->format('Y-m-d H:i:s')
-        ]);
+        ]));
 
-        return $base64UrlPayload;
+        return new NewJWT($jsonWebToken, $base64UrlPayload);
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    private function makePayload(string $expire): array
+    private static function makePayload(Entity $entity, int $expireTime): array
     {
-        $primaryKey = $this->entity->getPrimaryKey();
-        return [
-            'entity' => get_class($this),
-            $primaryKey => $this->entity->{$primaryKey}(),
-            'expireAt' => $expire,
+        $primaryKey = $entity->getPrimaryKey();
+        $defaultPayload = [
+            'iat' => time(),
+            'entity' => self::stringifyEntity($entity),
+            'id' => $entity->{$primaryKey}(),
+            'expireAt' => $expireTime,
         ];
+        $customPayload = [];
+
+        if (method_exists($entity, 'payload')) {
+            $customPayload = $entity->payload();
+        }
+
+        return array_replace_recursive($defaultPayload, $customPayload);
     }
 
-    private function toBase64Url(string $hash): string
+    public static function stringifyEntity(Entity $entity): string
+    {
+        return str_replace('\\', '.', get_class($entity));
+    }
+
+    private static function toBase64Url(string $hash): string
     {
         return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($hash));
     }
 
-    private function makeSignature(string $base64UrlHeader, string $base64UrlPayload, int $expire): string
+    private static function makeSignature(string $base64UrlHeader, string $base64UrlPayload, string $secret): string
     {
-        return hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, $expire, true);
+        return hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, base64_encode($secret), true);
     }
 
-    /**
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     * @throws FailedToResolveContainerException
-     */
-    public function verify(string $jwt): bool
+    public static function verifyJwt(string $jwt): bool
+    {
+        if (!($jwtEntity = $jwtEntity = self::retrieveJwt($jwt))) {
+            return false;
+        }
+        return ($jwtEntity->expireAt() - time()) > 0;
+    }
+
+    public static function retrieveJwt(string $jwt): JsonWebToken|false
     {
         // split the jwt
         $payload = json_decode(base64_decode($jwt));
-        $expireAt = $payload->expireAt;
+        $secret = env('API_SECRET', $payload->expireAt);
 
-        // check the expiration time - note this will cause an error if there is no 'exp' claim in the jwt
-        if (($expireAt - time()) < 0) {
+        $base64UrlHeader = self::toBase64Url(json_encode(self::HEADER));
+        $signature = self::makeSignature($base64UrlHeader, $jwt, $secret);
+
+        $base64UrlSecurity = self::toBase64Url($signature);
+
+        return self::jsonWebTokenManager()->where('token', $base64UrlSecurity)->first();
+    }
+
+    public static function revokeJwt(string $jwt): JsonWebToken|false
+    {
+        $jwtEntity = self::retrieveJwt($jwt);
+        if (!$jwtEntity) {
             return false;
         }
-        
-        $base64UrlHeader = $this->toBase64Url(json_encode(self::HEADER));
-        $signature = $this->makeSignature($base64UrlHeader, $jwt, $expireAt);
-
-        $base64UrlSecurity = $this->toBase64Url($signature);
-        $manager = app()->get(ApiTokenManager::class);
-
-        $isValid = $manager->where('token', $base64UrlSecurity)->first();
-
-        // verify if the signature created exists
-        return !!$isValid;
+        return self::jsonWebTokenManager()->delete($jwtEntity) ?? false;
     }
 }
