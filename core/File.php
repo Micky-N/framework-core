@@ -14,9 +14,23 @@ class File extends UploadedFile
         $path = array_map(fn($p) => trim($p, '\/'), $path);
         $res = join(DIRECTORY_SEPARATOR, $path);
         if ($withCheck) {
-            return file_exists($res) || is_dir($res) ? $res : false;
+            if(!file_exists($res) && !is_dir($res)){
+                return false;
+            }
         }
         return $res;
+    }
+
+    public static function makeNamespace(string $file, bool $withCheck = false): string|bool
+    {
+        $file = str_replace([app()->get('path:app'), '.php', '/'], ['App', '', '\\'], $file);
+        $file = trim($file, '\/');
+        if ($withCheck) {
+            if(!class_exists($file)){
+                return false;
+            }
+        }
+        return $file;
     }
 
     public function extension(): bool|string

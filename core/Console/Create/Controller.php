@@ -13,15 +13,16 @@ class Controller extends Create
     {
         $replaceParams['crud'] = '';
         $replaceParams['head'] = '';
+        $name = $replaceParams['name'];
         $crud = in_array('--crud', $params) || in_array('--crud', $this->moduleOptions);
         $crudApi = in_array('--crud-api', $params) || in_array('--crud-api', $this->moduleOptions);
         if ($crud || $crudApi) {
             if ($crud) {
-                $replaceParams['crud'] = $this->implementCrud();
+                $replaceParams['crud'] = $this->implementCrud($name);
             } elseif ($crudApi) {
-                $replaceParams['crud'] = $this->implementCrudApi();
+                $replaceParams['crud'] = $this->implementCrudApi($name);
             }
-            $replaceParams['head'] = $this->implementHead($replaceParams['name'], $replaceParams['parent'] ?? '');
+            $replaceParams['head'] = $this->implementHead($name, $replaceParams['parent'] ?? '');
         }
         return $replaceParams;
     }
@@ -29,8 +30,9 @@ class Controller extends Create
     /**
      * @return string
      */
-    private function implementCrud(): string
+    private function implementCrud(string $name): string
     {
+        $name = strtolower(str_replace('Controller', '', $name));
         return <<<CRUD
 /**
      * @Router('/', name:'index', methods:['GET'])
@@ -66,9 +68,9 @@ class Controller extends Create
      * @Router('/{id}', name:'show', methods:['GET'])
      * Display the specified resource.
      *
-     * @param  int|string \$id
+     * @param  int|string \$$name
      */
-    public function show(int|string \$id)
+    public function show(int|string \$$name)
     {
         //
     }
@@ -77,9 +79,9 @@ class Controller extends Create
      * @Router('/{id}/edit', name:'edit', methods:['GET'])
      * Show the form for editing the specified resource.
      *
-     * @param  int|string \$id
+     * @param  int|string \$$name
      */
-    public function edit(int|string \$id)
+    public function edit(int|string \$$name)
     {
         //
     }
@@ -88,9 +90,9 @@ class Controller extends Create
      * @Router('/{id}', name:'update', methods:['PUT'])
      * Update the specified resource in storage.
      *
-     * @param  int|string \$id
+     * @param  int|string \$$name
      */
-    public function update(int|string \$id)
+    public function update(int|string \$$name)
     {
         //
     }
@@ -99,9 +101,9 @@ class Controller extends Create
      * @Router('/{id}', name:'destroy', methods:['DELETE'])
      * Remove the specified resource from storage.
      *
-     * @param int|string \$id
+     * @param int|string \$$name
      */
-    public function destroy(int|string \$id)
+    public function destroy(int|string \$$name)
     {
         //
     }
@@ -111,8 +113,9 @@ CRUD;
     /**
      * @return string
      */
-    private function implementCrudApi(): string
+    private function implementCrudApi(string $name): string
     {
+        $name = strtolower(str_replace('Controller', '', $name));
         return <<<CRUD
 /**
      * @Router('/', name:'index', methods:['GET'])
@@ -138,9 +141,9 @@ CRUD;
      * @Router('/{id}', name:'show', methods:['GET'])
      * Display the specified resource.
      *
-     * @param  int|string \$id
+     * @param  int|string \$$name
      */
-    public function show(int|string \$id)
+    public function show(int|string \$$name)
     {
         //
     }
@@ -149,9 +152,9 @@ CRUD;
      * @Router('/{id}', name:'update', methods:['PUT'])
      * Update the specified resource in storage.
      *
-     * @param  int|string \$id
+     * @param  int|string \$$name
      */
-    public function update(int|string \$id)
+    public function update(int|string \$$name)
     {
         //
     }
@@ -160,9 +163,9 @@ CRUD;
      * @Router('/{id}', name:'destroy', methods:['DELETE'])
      * Remove the specified resource from storage.
      *
-     * @param int|string \$id
+     * @param int|string \$$name
      */
-    public function destroy(int|string \$id)
+    public function destroy(int|string \$$name)
     {
         //
     }

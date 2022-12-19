@@ -72,7 +72,12 @@ class Request extends ServerRequest implements ServerRequestInterface
 
     public function post(string $name = null, mixed $default = null): mixed
     {
-        return $this->getRequestData($name, $this->getParsedBody(), $default);
+        return $this->getRequestData($name, $this->getParsedBody() ?: $this->getRawFormData(), $default);
+    }
+
+    private function getRawFormData(): array
+    {
+        return json_decode(file_get_contents('php://input'), true) ?? [];
     }
 
     /**
@@ -225,9 +230,15 @@ class Request extends ServerRequest implements ServerRequestInterface
         return new static($this->method(), $this->fullUri() . '?' . $queryString, $this->getHeaders());
     }
 
-    public function bearerToken(): string|null
+    public function bearerToken(): string|false
     {
-        return $this->getAttribute('Authorization');
+        $headerAuthorization = $this->header('Authorization');
+        $authorization = false;
+        if($headerAuthorization){
+            $headerAuthorization = reset($headerAuthorization);
+            $authorization = trim(str_replace(['bearer', 'Bearer'], '', $headerAuthorization));
+        }
+        return $authorization;
     }
 
     /**
@@ -238,7 +249,7 @@ class Request extends ServerRequest implements ServerRequestInterface
      */
     public function auth(): AuthManager
     {
-        return app()->get(\MkyCore\AuthManager::class);
+        return app()->get(AuthManager::class);
     }
 
     public function ip(): string
@@ -295,9 +306,6 @@ class Request extends ServerRequest implements ServerRequestInterface
      * @param string|null $name
      * @param mixed|null $default
      * @return mixed
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
      */
     public function session(string $name = null, mixed $default = null): mixed
     {
@@ -332,7 +340,7 @@ class Request extends ServerRequest implements ServerRequestInterface
      */
     public function hasFlash(string $name): bool
     {
-        return \MkyCore\Facades\Session::has('_flash:' . $name);
+        return Session::has('_flash:' . $name);
     }
 
     public function backUrl(): string|null
@@ -343,8 +351,8 @@ class Request extends ServerRequest implements ServerRequestInterface
     public function old(string $name, mixed $default = null): mixed
     {
         $input = $default;
-        if (\MkyCore\Facades\Session::has('_input:' . $name)) {
-            $input = \MkyCore\Facades\Session::pull('_input:' . $name);
+        if (Session::has('_input:' . $name)) {
+            $input = Session::pull('_input:' . $name);
         }
         return $input;
     }
@@ -355,6 +363,6 @@ class Request extends ServerRequest implements ServerRequestInterface
      */
     public function hasOld(string $name): bool
     {
-        return \MkyCore\Facades\Session::has('_old:' . $name);
+        return Session::has('_old:' . $name);
     }
 }

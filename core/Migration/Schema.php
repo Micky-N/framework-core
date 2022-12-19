@@ -20,10 +20,15 @@ class Schema
     public static array $ERRORS = [];
 
 
-    public static function create(string $table, $callback): bool
+    /**
+     * @param string $table
+     * @param callable $callback
+     * @return bool
+     */
+    public static function create(string $table, callable $callback): bool
     {
         $migrationTable = new MigrationTable($table);
-        $callbackValues = $callback($migrationTable);
+        $callback($migrationTable);
         return self::createQuery($table, $migrationTable);
     }
 
@@ -44,6 +49,11 @@ class Schema
         return self::runQuery($table, $queryCreate);
     }
 
+    /**
+     * @param string $table
+     * @param string $query
+     * @return bool
+     */
     private static function runQuery(string $table, string $query): bool
     {
         $creating = str_contains($query, 'CREATE TABLE');
@@ -78,14 +88,24 @@ class Schema
         }
     }
 
-    public static function alter(string $table, $callback): bool
+    /**
+     * @param string $table
+     * @param callable $callback
+     * @return bool
+     */
+    public static function alter(string $table, callable $callback): bool
     {
         $migrationTable = new MigrationTable($table);
-        $callbackValues = $callback($migrationTable);
+        $callback($migrationTable);
         return self::alterQuery($table, $migrationTable);
     }
 
 
+    /**
+     * @param string $table
+     * @param MigrationTable $migrationTable
+     * @return bool
+     */
     private static function alterQuery(string $table, MigrationTable $migrationTable): bool
     {
         $queryCreate = "ALTER TABLE `$table`\n";
@@ -111,6 +131,10 @@ class Schema
         return self::dropTableIfExists($table);
     }
 
+    /**
+     * @param string $table
+     * @return bool
+     */
     private static function dropTableIfExists(string $table): bool
     {
         $queryCreate = "DROP TABLE IF EXISTS `$table`\n\n";
@@ -132,11 +156,10 @@ class Schema
     /**
      * Check if a table exists in the current database.
      *
-     * @param PDO $pdo PDO instance connected to a database.
      * @param string $table Table to search for.
      * @return bool TRUE if table exists, FALSE if no table found.
      */
-    private static function tableExists(string $table)
+    private static function tableExists(string $table): bool
     {
 
         try {

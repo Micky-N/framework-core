@@ -5,7 +5,6 @@ namespace MkyCore;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Manager;
-use MkyCore\Facades\DB;
 
 class QueryBuilderMysql
 {
@@ -52,14 +51,12 @@ class QueryBuilderMysql
      */
     private array $group = [];
 
-    private Manager $instance;
 
     /**
      * @throws Exception
      */
-    public function __construct(Manager $instance)
+    public function __construct(private readonly Database $db, private readonly Manager $instance)
     {
-        $this->instance = $instance;
     }
 
     /**
@@ -67,11 +64,11 @@ class QueryBuilderMysql
      * @param array $attribute
      * @return array
      * @throws Exception
-     * @see DB::prepare()
+     * @see $this->>db->prepare()
      */
     public function prepare(string $statement, array $attribute): array
     {
-        return DB::prepare($statement, $attribute);
+        return $this->db->prepare($statement, $attribute);
     }
 
     /**
@@ -151,7 +148,7 @@ class QueryBuilderMysql
      */
     public function map(string $key = '', mixed $value = null): array
     {
-        $query = DB::query($this->stringify());
+        $query = $this->db->query($this->stringify());
         $value = str_replace(' ', '', $value);
         $valuemap = !empty($value) ? $this->mapping($value, $query) : $query;
         if ($key) {
@@ -169,7 +166,7 @@ class QueryBuilderMysql
      */
     public function query(string $statement): array
     {
-        return DB::query($statement);
+        return $this->db->query($statement);
     }
 
     /**
@@ -296,12 +293,12 @@ class QueryBuilderMysql
     /**
      * Get all records
      *
-     * @return array|bool
+     * @return array|false
      * @throws Exception
      */
-    public function get(): bool|array
+    public function get(): false|array
     {
-        return DB::query($this->stringify(), $this->instance->getEntity());
+        return $this->db->query($this->stringify(), $this->instance->getEntity());
     }
 
     /**
@@ -313,19 +310,19 @@ class QueryBuilderMysql
      */
     public function toArray(bool $one = false): bool|array
     {
-        return DB::query($this->stringify(), null, $one);
+        return $this->db->query($this->stringify(), null, $one);
     }
 
     /**
      * Get the first record
      *
-     * @return Entity|bool
+     * @return Entity|false
      * @throws Exception
      */
-    public function first(): bool|Entity
+    public function first(): false|Entity
     {
         $this->limit(1);
-        return DB::query($this->stringify(), $this->instance->getEntity(), true);
+        return $this->db->query($this->stringify(), $this->instance->getEntity(), true);
     }
 
     /**
@@ -350,7 +347,7 @@ class QueryBuilderMysql
     {
         $this->limit(1);
         $this->orderBy($this->instance->getPrimaryKey(), 'DESC');
-        return DB::query($this->stringify(), $this->instance->getEntity(), true);
+        return $this->db->query($this->stringify(), $this->instance->getEntity(), true);
     }
 
     /**

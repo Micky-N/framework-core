@@ -91,7 +91,7 @@ class ColumnType
      */
     public function default(mixed $value = null): static
     {
-        $this->query .= "DEFAULT " . $value;
+        $this->query .= " DEFAULT " . (is_bool($value) ? (int) $value : $value);
         return $this;
     }
 
@@ -158,9 +158,12 @@ class ColumnType
      * @param string $name
      * @return $this
      */
-    public function float(string $name): static
+    public function float(string $name, array $precision = []): static
     {
         $this->query = "`$name` FLOAT";
+        if($precision && count($precision) <= 2){
+            $this->query .= '('.join(',', $precision).')';
+        }
         return $this;
     }
 

@@ -36,7 +36,7 @@ trait QueryMysql
      */
     public function __call(string $method, $arguments)
     {
-        $queryBuilder = new QueryBuilderMysql($this);
+        $queryBuilder = new QueryBuilderMysql($this->db, $this);
         return call_user_func_array([$queryBuilder, $method], $arguments);
     }
 }

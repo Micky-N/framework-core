@@ -17,7 +17,7 @@ class Route
     private array $optionalParams = [];
 
     public function __construct(
-        private readonly string        $url,
+        private string                 $url,
         private readonly array         $methods,
         private readonly Closure|array $action = [],
         private readonly string        $module = '',
@@ -42,6 +42,15 @@ class Route
     public function getUrl(): string
     {
         return $this->url;
+    }
+
+    /**
+     * @return string
+     */
+    public function setUrl(string $url): static
+    {
+        $this->url = $url;
+        return $this;
     }
 
     /**

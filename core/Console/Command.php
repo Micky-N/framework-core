@@ -28,11 +28,15 @@ class Command
         'migration' => [
             'create',
             'run',
-            'rollback'
+            'rollback',
+            'reset'
         ],
         'populator' => [
             'create',
             'run'
+        ],
+        'install' => [
+            'jwt'
         ]
     ];
 

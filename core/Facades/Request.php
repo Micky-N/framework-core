@@ -37,6 +37,7 @@ use MkyCore\Abstracts\Facade;
  * @method static \MkyCore\AuthManager auth()
  * @method static string ip()
  * @method static \MkyCore\RedirectResponse|bool validate(array $rules)
+ * @method static mixed server(string $key, mixed $default = null)
  * @see \MkyCore\Request
  */
 class Request extends Facade

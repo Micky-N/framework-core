@@ -2,6 +2,7 @@
 
 namespace MkyCore\Traits;
 
+use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Facades\DB;
 use MkyCore\Interfaces\RelationEntityInterface;
@@ -9,7 +10,6 @@ use MkyCore\RelationEntity\HasMany;
 use MkyCore\RelationEntity\HasOne;
 use MkyCore\RelationEntity\ManyToMany;
 use ReflectionClass;
-use Exception;
 
 trait RelationShip
 {
@@ -18,19 +18,30 @@ trait RelationShip
     /**
      * @throws ReflectionException
      */
-    public function hasOne(Entity|string $entityRelation, string $foreignKey = '')
+    public function hasOne(Entity|string $entityRelation, string $foreignKey = ''): HasOne
     {
-        try{
+        try {
             $entityRelation = $this->getEntity($entityRelation);
             $primaryKey = $entityRelation->getPrimaryKey();
             $preForeignKey = strtolower((new ReflectionClass($entityRelation))->getShortName());
             $foreignKey = $foreignKey ?: $preForeignKey . '_' . $primaryKey;
             $relation = new HasOne($this, $entityRelation, $foreignKey);
-            $this->relations[$entityRelation->getManager()->getTable()] = $relation;
-            return $relation->get();
-        }catch(Exception $ex){
+            $name = debug_backtrace()[1]['function'] ?? $entityRelation->getManager()->getTable();
+            return $this->relations[$name] = $relation;
+        } catch (Exception $ex) {
             return false;
         }
+    }
+
+    private function getEntity(string|Entity $entity): Entity
+    {
+        if (is_string($entity)) {
+            $entity = new $entity();
+        }
+        if (!($entity instanceof Entity)) {
+            throw new Exception("Must be a instance of MkyCore\Abstract\Entity");
+        }
+        return $entity;
     }
 
     /**
@@ -38,21 +49,21 @@ trait RelationShip
      *
      * @param Entity|string $entityRelation
      * @param string $foreignKey
-     * @return array|bool|mixed
+     * @return HasMany
      * @throws ReflectionException
      * @example One to Many
      */
-    public function hasMany(Entity|string $entityRelation, string $foreignKey = '')
+    public function hasMany(Entity|string $entityRelation, string $foreignKey = ''): HasMany
     {
-        try{
+        try {
             $entityRelation = $this->getEntity($entityRelation);
             $primaryKey = $this->getPrimaryKey();
             $preForeignKey = strtolower((new ReflectionClass($this))->getShortName());
             $foreignKey = $foreignKey ?: $preForeignKey . '_' . $primaryKey;
             $relation = new HasMany($this, $entityRelation, $foreignKey);
-            $this->relations[$entityRelation->getManager()->getTable()] = $relation;
-            return $relation->get();
-        }catch(Exception $ex){
+            $name = debug_backtrace()[1]['function'] ?? $entityRelation->getManager()->getTable();
+            return $this->relations[$name] = $relation;
+        } catch (Exception $ex) {
             return false;
         }
     }
@@ -70,7 +81,7 @@ trait RelationShip
      */
     public function manyToMany(Entity|string $entityRelation, string $pivot = '', string $foreignKeyOne = '', string $foreignKeyTwo = ''): mixed
     {
-        try{
+        try {
             $primaryKeyOne = $this->getPrimaryKey();
             $entityRelation = $this->getEntity($entityRelation);
             $primaryKeyTwo = $entityRelation->getPrimaryKey();
@@ -91,10 +102,10 @@ trait RelationShip
                     }
                 }
             }
-            $relation = new ManyToMany($this, $entityRelation, $foreignKeyOne, $foreignKeyTwo, $pivot);
-            $this->relations[$preForeignKeyOne.'_'.$preForeignKeyTwo] = $relation;
-            return $relation->get();
-        }catch(Exception $ex){
+            $name = debug_backtrace()[1]['function'] ?? $preForeignKeyOne . '_' . $preForeignKeyTwo;
+            $relation = new ManyToMany($name, $this, $entityRelation, $foreignKeyOne, $foreignKeyTwo, $pivot);
+            return $this->relations[$name] = $relation;
+        } catch (Exception $ex) {
             return false;
         }
     }
@@ -105,16 +116,5 @@ trait RelationShip
     public function getRelations(string $relation = null): array|RelationEntityInterface
     {
         return $relation ? ($this->relations[$relation] ?? []) : $this->relations;
-    }
-    
-    private function getEntity(string|Entity $entity): Entity
-    {
-        if (is_string($entity)) {
-            $entity = new $entity();
-        }
-        if (!($entity instanceof Entity)) {
-            throw new Exception("Must be a instance of MkyCore\Abstract\Entity");
-        }
-        return $entity;
     }
 }

@@ -112,7 +112,7 @@ abstract class Populator
      */
     public function getManager(): Manager
     {
-        return new $this->manager();
+        return app()->get($this->manager);
     }
 
     private function useOperation()

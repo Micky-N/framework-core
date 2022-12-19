@@ -3,7 +3,6 @@
 namespace MkyCore\Annotation;
 
 use ReflectionException;
-use MkyCore\Abstracts\Controller;
 
 class Annotation
 {
@@ -51,20 +50,6 @@ class Annotation
         $this->classAnnotations = new ParamsAnnotation($classAnnotations);
     }
 
-    private function setPropertiesAnnotations(\ReflectionClass $reflectionClass): void
-    {
-        $reflectionProperties = $reflectionClass->getProperties();
-        $propertiesAnnotations = [];
-        foreach ($reflectionProperties as $reflectionProperty) {
-            $docs = $reflectionProperty->getDocComment();
-            $propertiesDocAnnotations = $this->parseDocComment($docs);
-            if($propertiesDocAnnotations){
-                $propertiesAnnotations[$reflectionProperty->name] = new ParamsAnnotation($propertiesDocAnnotations);
-            }
-        }
-        $this->propertiesAnnotations = $propertiesAnnotations;
-    }
-
     /**
      * @param bool|string $docs
      * @return array
@@ -74,7 +59,7 @@ class Annotation
         preg_match_all('/@(.*?) *\((.*?)\)/', $docs, $annotationsMatches);
         $classAnnotations = [];
         foreach ($annotationsMatches[2] as $index => $annotationMatches) {
-            if($annotationMatches){
+            if ($annotationMatches) {
                 $paramsAnnotation = explode(',', $annotationMatches);
                 $default = null;
                 $defaultMatch = null;
@@ -149,11 +134,25 @@ class Annotation
         foreach ($reflectionMethods as $reflectionMethod) {
             $docs = $reflectionMethod->getDocComment();
             $methodsDocAnnotations = $this->parseDocComment($docs);
-            if($methodsDocAnnotations){
+            if ($methodsDocAnnotations) {
                 $methodsAnnotations[$reflectionMethod->name] = new ParamsAnnotation($methodsDocAnnotations);
             }
         }
         $this->methodsAnnotations = $methodsAnnotations;
+    }
+
+    private function setPropertiesAnnotations(\ReflectionClass $reflectionClass): void
+    {
+        $reflectionProperties = $reflectionClass->getProperties();
+        $propertiesAnnotations = [];
+        foreach ($reflectionProperties as $reflectionProperty) {
+            $docs = $reflectionProperty->getDocComment();
+            $propertiesDocAnnotations = $this->parseDocComment($docs);
+            if ($propertiesDocAnnotations) {
+                $propertiesAnnotations[$reflectionProperty->name] = new ParamsAnnotation($propertiesDocAnnotations);
+            }
+        }
+        $this->propertiesAnnotations = $propertiesAnnotations;
     }
 
     /**

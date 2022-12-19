@@ -30,7 +30,7 @@ class AuthManager
      * @throws ReflectionException
      * @throws Exception
      */
-    public function attempt(array $credentials): bool
+    public function attempt(array $credentials): bool|Entity
     {
         if (empty($this->provider['manager'])) {
             throw new Exception("No config set for \"$this->providerName\" provider");
@@ -44,7 +44,7 @@ class AuthManager
         if ($entity = $manager->passwordCheck($credentials)) {
             $primaryKey = $entity->getPrimaryKey();
             $this->session->set('auth', $entity->{$primaryKey}());
-            return true;
+            return $entity;
         }
         return false;
     }
