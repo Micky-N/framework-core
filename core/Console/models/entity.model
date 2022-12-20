@@ -7,4 +7,7 @@ use MkyCore\Abstracts\Entity;
 class !name extends Entity
 {
 
+    !properties
+
+    !getters
 }

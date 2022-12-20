@@ -3,122 +3,127 @@
 namespace MkyCore\Api;
 
 
+use MkyCore\Abstracts\Entity;
+
 /**
  * @Manager('MkyCore\Api\JsonWebTokenManager')
  */
-class JsonWebToken extends \MkyCore\Abstracts\Entity
+class JsonWebToken extends Entity
 {
 
-    private $id;
-    private $entity;
-    private $entityId;
-    private $token;
-    private $name;
-    private $expireAt;
-    private $createdAt;
+    private int $id;
+    private string $entity;
+    private int|string $entityId;
+    private string $token;
+    private string $name;
+    private int $expireAt;
+    private string $createdAt;
 
     /**
-     * @return mixed
+     * @return int
      */
-    public function id()
+    public function id(): int
     {
         return $this->id;
     }
 
     /**
-     * @param mixed $id
+     * @param int $id
      */
-    public function setId($id): void
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function entity()
+    public function entity(): string
     {
         return $this->entity;
     }
 
     /**
-     * @param mixed $entity
+     * @param string $entity
      */
-    public function setEntity($entity): void
+    public function setEntity(string $entity): void
     {
         $this->entity = $entity;
     }
 
     /**
-     * @return mixed
+     * @return string|int
      */
-    public function entityId()
+    public function entityId(): string|int
     {
         return $this->entityId;
     }
 
     /**
-     * @param mixed $entityId
+     * @param int|string $entityId
      */
-    public function setEntityId($entityId): void
+    public function setEntityId(int|string $entityId): void
     {
         $this->entityId = $entityId;
     }
 
-    public function name()
+    public function name(): string
     {
         return $this->name;
     }
 
-    public function setName($name)
+    /**
+     * @param string $name
+     */
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function token()
+    public function token(): string
     {
         return $this->token;
     }
 
     /**
-     * @param mixed $token
+     * @param string $token
      */
-    public function setToken($token): void
+    public function setToken(string $token): void
     {
         $this->token = $token;
     }
 
     /**
-     * @return mixed
+     * @return int
      */
-    public function expireAt()
+    public function expireAt(): int
     {
         return $this->expireAt;
     }
 
     /**
-     * @param mixed $expireAt
+     * @param int $expireAt
      */
-    public function setExpireAt($expireAt): void
+    public function setExpireAt(int $expireAt): void
     {
         $this->expireAt = $expireAt;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function createdAt()
+    public function createdAt(): string
     {
         return $this->createdAt;
     }
 
     /**
-     * @param mixed $createdAt
+     * @param string $createdAt
      */
-    public function setCreatedAt($createdAt): void
+    public function setCreatedAt(string $createdAt): void
     {
         $this->createdAt = $createdAt;
     }

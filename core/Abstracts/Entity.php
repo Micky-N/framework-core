@@ -6,7 +6,8 @@ use Exception;
 use JsonSerializable;
 use MkyCore\Annotation\Annotation;
 use MkyCore\Annotation\ParamAnnotation;
-use MkyCore\Facades\DB;
+use MkyCore\Annotation\ParamsAnnotation;
+use MkyCore\Annotation\PropertyAnnotation;
 use MkyCore\Traits\RelationShip;
 use ReflectionClass;
 use ReflectionException;
@@ -41,15 +42,13 @@ abstract class Entity implements JsonSerializable
             $key = $this->camelize($key);
             $method = 'set' . ucfirst($key);
             if (method_exists($this, $method)) {
-                if (array_key_exists($key, $this->casts)) {
-                    $value = $this->transformCast($key, $value);
-                }
+                $value = $this->transformCast($key, $value);
                 $this->$method($value);
-            }else{
+            } else {
                 $this->attributes[$key] = $value;
             }
         }
-        if(empty($this->attributes)){
+        if (empty($this->attributes)) {
             unset($this->attributes);
         }
     }
@@ -63,13 +62,34 @@ abstract class Entity implements JsonSerializable
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
     }
 
+    private function isHidden($property): bool
+    {
+        $annotation = new Annotation($this);
+        /** @var ParamsAnnotation[] $propertiesAnnotation */
+        $propertiesAnnotation = $annotation->getPropertiesAnnotations();
+        foreach ($propertiesAnnotation as $name => $propertyAnnotation){
+            if($name == $property && $propertyAnnotation->hasParam('Hidden')){
+                return true;
+            }
+        }
+        return false;
+    }
+
     private function transformCast(string $key, mixed $value): mixed
     {
-        $type = $this->casts[$key] ?? 'string';
-        if ($this->isDefaultTypes($type)) {
-            $value = settype($value, $type);
-        } elseif (method_exists($this, $type)) {
-            $value = $this->$type($value, $key);
+        $annotation = new Annotation($this);
+        /** @var ParamsAnnotation[] $propertiesAnnotation */
+        $propertiesAnnotation = $annotation->getPropertiesAnnotations();
+        foreach ($propertiesAnnotation as $name => $propertyAnnotation){
+            if($name == $key && $propertyAnnotation->hasParam('Cast')){
+                $type = $propertyAnnotation->getParam('Cast')->getProperty();
+                if ($this->isDefaultTypes($type)) {
+                    $value = settype($value, $type);
+                } elseif (method_exists($this, $type)) {
+                    $value = $this->$type($value, $key);
+                }
+                break;
+            }
         }
         return $value;
     }
@@ -159,7 +179,7 @@ abstract class Entity implements JsonSerializable
         for ($i = 0; $i < count($properties); $i++) {
             $property = $properties[$i];
             $name = $property->getName();
-            if (!in_array($name, $this->hiddens) && method_exists($this, $name)) {
+            if(!$this->isHidden($name)){
                 $array[$name] = $this->$name();
             }
         }
@@ -170,7 +190,7 @@ abstract class Entity implements JsonSerializable
     {
         try {
 
-            if(method_exists($this, $name)){
+            if (method_exists($this, $name)) {
                 $this->$name();
                 if (array_key_exists($name, $this->relations)) {
                     return $this->getRelations($name)->get();

@@ -2,23 +2,17 @@
 
 namespace MkyCore\Api;
 
+use Exception;
 use MkyCore\Abstracts\Entity;
-use MkyCore\QueryBuilderMysql;
-use MkyCore\RelationEntity\HasMany;
 
 class Jwt
 {
 
     private const HEADER = ['typ' => 'Jwt', 'alg' => 'HS256'];
 
-    private static function jsonWebTokenManager(): JsonWebTokenManager
-    {
-        return app()->get(JsonWebTokenManager::class);
-    }
-
     public static function createJwt(Entity $entity, string $name)
     {
-        $expireTime = time() + (60 * (float) config('jwt.lifetime', 1));
+        $expireTime = time() + (60 * (float)config('jwt.lifetime', 1));
         $payload = self::makePayload($entity, $expireTime);
 
         $base64UrlHeader = self::toBase64Url(json_encode(self::HEADER));
@@ -94,12 +88,23 @@ class Jwt
         return self::jsonWebTokenManager()->where('token', $base64UrlSecurity)->first();
     }
 
+    private static function jsonWebTokenManager(): JsonWebTokenManager
+    {
+        return app()->get(JsonWebTokenManager::class);
+    }
+
     public static function revokeJwt(string $jwt): JsonWebToken|false
     {
         $jwtEntity = self::retrieveJwt($jwt);
         if (!$jwtEntity) {
             return false;
         }
-        return self::jsonWebTokenManager()->delete($jwtEntity) ?? false;
+        try {
+            /** @var JsonWebToken $res */
+            $res = self::jsonWebTokenManager()->delete($jwtEntity);
+            return $res;
+        } catch (Exception $exception) {
+            return false;
+        }
     }
 }

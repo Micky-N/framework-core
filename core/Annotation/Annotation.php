@@ -2,6 +2,9 @@
 
 namespace MkyCore\Annotation;
 
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use ReflectionClass;
 use ReflectionException;
 
 class Annotation
@@ -36,14 +39,14 @@ class Annotation
      */
     public function __construct(object|string $class)
     {
-        $reflectionClass = new \ReflectionClass($class);
+        $reflectionClass = new ReflectionClass($class);
         $this->name = $reflectionClass->name;
         $this->setClassAnnotations($reflectionClass);
         $this->setMethodsAnnotations($reflectionClass);
         $this->setPropertiesAnnotations($reflectionClass);
     }
 
-    private function setClassAnnotations(\ReflectionClass $reflectionClass): void
+    private function setClassAnnotations(ReflectionClass $reflectionClass): void
     {
         $docs = $reflectionClass->getDocComment();
         $classAnnotations = $this->parseDocComment($docs);
@@ -78,6 +81,8 @@ class Annotation
                     $paramsAnnotation = str_replace($defaultMatch, '', $annotationMatches);
                 }
                 $classAnnotations[$annotationsMatches[1][$index]] = $this->parseAnnotations($paramsAnnotation, $default);
+            } else {
+                $classAnnotations[$annotationsMatches[1][$index]] = [];
             }
         }
         return $classAnnotations;
@@ -127,7 +132,11 @@ class Annotation
         return $arrayParams;
     }
 
-    private function setMethodsAnnotations(\ReflectionClass $reflectionClass): void
+    /**
+     * @param ReflectionClass $reflectionClass
+     * @return void
+     */
+    private function setMethodsAnnotations(ReflectionClass $reflectionClass): void
     {
         $reflectionMethods = $reflectionClass->getMethods();
         $methodsAnnotations = [];
@@ -141,7 +150,11 @@ class Annotation
         $this->methodsAnnotations = $methodsAnnotations;
     }
 
-    private function setPropertiesAnnotations(\ReflectionClass $reflectionClass): void
+    /**
+     * @param ReflectionClass $reflectionClass
+     * @return void
+     */
+    private function setPropertiesAnnotations(ReflectionClass $reflectionClass): void
     {
         $reflectionProperties = $reflectionClass->getProperties();
         $propertiesAnnotations = [];
@@ -215,7 +228,10 @@ class Annotation
     }
 
     /**
+     * @return object
      * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      */
     public function newInstance(): object
     {

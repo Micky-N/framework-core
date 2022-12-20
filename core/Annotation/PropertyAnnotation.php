@@ -2,12 +2,14 @@
 
 namespace MkyCore\Annotation;
 
+use ReflectionException;
+
 class PropertyAnnotation
 {
     private ?ParamsAnnotation $annotation;
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function __construct(object|string $class, string $property)
     {
