@@ -22,19 +22,19 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
 
     private function getContentType(array $headers = []): array
     {
-        $headers['Content-Type'] = 'application/json; charset=' . config('api.charset');
+        $headers['Content-Type'] = 'application/json; charset=' . config('jwt.charset');
         return $headers;
     }
 
     private function getCacheControl(array $headers = []): array
     {
-        $headers['Cache-Control'] = 'max-age=' . config('api.max_age');
+        $headers['Cache-Control'] = 'max-age=' . config('jwt.max_age');
         return $headers;
     }
 
     private function getAllowOrigin(array $headers = []): array
     {
-        $allowedOrigins = config('api.allowed_origins');
+        $allowedOrigins = config('jwt.allowed_origins');
         $origin = $this->request->header('Origin')[0] ?? '';
         for ($i = 0; $i < count($allowedOrigins); $i++) {
             $allowedOrigin = $allowedOrigins[$i];
@@ -48,7 +48,7 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
 
     private function getAllowMethods(array $headers = []): array
     {
-        $allowedMethods = config('api.allowed_methods', ['GET']);
+        $allowedMethods = config('jwt.allowed_methods', ['GET']);
         $method = $this->request->method() ?? 'GET';
         for ($i = 0; $i < count($allowedMethods); $i++) {
             $allowedMethod = $allowedMethods[$i];
@@ -61,7 +61,7 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
 
     private function getAllowHeaders(array $headers = []): array
     {
-        $allowedHeaders = config('api.allowed_headers');
+        $allowedHeaders = config('jwt.allowed_headers');
         if (!in_array('*', $allowedHeaders)) {
             $headers['Access-Control-Allow-Headers'] = join(', ', $allowedHeaders) == '*' ? '' : join(', ', $allowedHeaders);
         }
@@ -70,7 +70,7 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
 
     private function getAllowCredentials(array $headers = []): array
     {
-        $headers['Access-Control-Allow-Credentials'] = config('api.allowed_credentials') ? 'true' : 'false';
+        $headers['Access-Control-Allow-Credentials'] = config('jwt.allowed_credentials') ? 'true' : 'false';
         return $headers;
     }
 

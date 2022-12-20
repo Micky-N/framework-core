@@ -9,7 +9,7 @@ class ParamsAnnotation
      */
     private array $params = [];
 
-    public function __construct(array $arrayParams)
+    public function __construct(array $arrayParams = [])
     {
         foreach ($arrayParams as $key => $params){
             $this->params[$key] = new ParamAnnotation($params);

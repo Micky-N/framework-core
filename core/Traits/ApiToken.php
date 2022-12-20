@@ -4,28 +4,14 @@ namespace MkyCore\Traits;
 
 use MkyCore\Api\JsonWebToken;
 use MkyCore\Api\JWT;
-use MkyCore\Api\NewJWT;
 use MkyCore\QueryBuilderMysql;
 use MkyCore\RelationEntity\HasMany;
 
 /**
- * @method NewJWT createJwt(string $name)
- * @method bool verifyJwt(string $jwt)
- * @method JsonWebToken|false retrieveJwt(string $jwt)
- * @method HasMany tokens()
  * @see JWT
  */
 trait ApiToken
 {
-    public function __call(string $method, array $arguments)
-    {
-        $accessTokenEntity = new JsonWebToken();
-        $jwt = new JWT($this, $accessTokenEntity->getManager());
-        if (method_exists($jwt, $method)) {
-            return call_user_func_array([$jwt, $method], $arguments);
-        }
-        return null;
-    }
 
     public function createJwt(string $name)
     {
@@ -45,5 +31,20 @@ trait ApiToken
             }
             return $queryBuilderMysql;
         });
+    }
+
+    public function verifyJwt(string $jwt): bool
+    {
+        return JWT::verifyJwt($jwt);
+    }
+
+    public function retrieveJwt(string $jwt): JsonWebToken|false
+    {
+        return JWT::retrieveJwt($jwt);
+    }
+
+    public function revokeJwt(string $jwt): JsonWebToken|false
+    {
+        return JWT::revokeJwt($jwt);
     }
 }

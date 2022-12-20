@@ -19,16 +19,6 @@ class ParamAnnotation
 
     /**
      * @param string $key
-     * @param mixed|null $default
-     * @return mixed
-     */
-    public function getProperty(string $key = 'default', mixed $default = null): mixed
-    {
-        return $this->properties[$key] ?? $default;
-    }
-
-    /**
-     * @param string $key
      * @return bool
      */
     public function hasProperty(string $key): bool
@@ -39,5 +29,15 @@ class ParamAnnotation
     public function __get(string $key)
     {
         return $this->getProperty($key);
+    }
+
+    /**
+     * @param string $key
+     * @param mixed|null $default
+     * @return mixed
+     */
+    public function getProperty(string $key = 'default', mixed $default = null): mixed
+    {
+        return $this->properties[$key] ?? $default;
     }
 }

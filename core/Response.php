@@ -16,40 +16,6 @@ class Response extends \GuzzleHttp\Psr7\Response implements \Psr\Http\Message\Re
         return new static(200, $headers, $response);
     }
 
-    /**
-     * @return void
-     */
-    public function send(): void
-    {
-        $code = $this->getStatusCode();
-        if ($code < 400) {
-            send($this);
-            die;
-        } else {
-            http_response_code($code);
-            if ($this->isJson()) {
-                send($this);
-                die;
-            }
-            $message = $this->getReasonPhrase();
-            $homeUrl = \MkyCore\Facades\Url::make(\MkyCore\Facades\Config::get('app.home', '/'));
-            $backUrl = \MkyCore\Facades\Request::backUrl() ?? $homeUrl;
-            die(require_once __DIR__ . '/views/error_page.php');
-        }
-    }
-
-    private function isJson(): bool
-    {
-        $contentType = $this->getHeader('Content-Type');
-        $match = preg_grep('/application\/json/', $contentType);
-        return !empty($match);
-    }
-
-    public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
-    {
-        return $this->withStatus($code, $reasonPhrase);
-    }
-
     public static function getErrorMessage(int $code): string
     {
         return [
@@ -143,5 +109,41 @@ class Response extends \GuzzleHttp\Psr7\Response implements \Psr\Http\Message\Re
             525 => 'SSL Handshake Failed', // Cloudflare
             527 => 'Railgun Error', // Cloudflare
         ][$code] ?: 'Internal Server Error';
+    }
+
+    /**
+     * @return void
+     */
+    public function send(): void
+    {
+        $code = $this->getStatusCode();
+        if ($code < 400) {
+            send($this);
+            die;
+        } else {
+            http_response_code($code);
+            if ($this->isJson()) {
+                send($this);
+                die;
+            }
+            $message = $this->getReasonPhrase();
+            $homeUrl = \MkyCore\Facades\Url::make(\MkyCore\Facades\Config::get('app.home', '/'));
+            $backUrl = \MkyCore\Facades\Request::backUrl() ?? $homeUrl;
+            $view = view('error_page.twig', compact('code', 'message', 'homeUrl', 'backUrl'));
+            send($view->handle());
+        }
+        die;
+    }
+
+    private function isJson(): bool
+    {
+        $contentType = $this->getHeader('Content-Type');
+        $match = preg_grep('/application\/json/', $contentType);
+        return !empty($match);
+    }
+
+    public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
+    {
+        return $this->withStatus($code, $reasonPhrase);
     }
 }

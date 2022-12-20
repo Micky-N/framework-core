@@ -67,19 +67,7 @@ class Module extends Create
                 $confirm = $this->sendError("Route mode not given", $routeMode);
             }
         } while (!$confirm);
-        do {
-            $confirm = true;
-            $table = $this->sendQuestion('Enter the table name for manager', 'n/ to skip');
-            if($table !== ''){
-                $getTables = array_map(function ($tables) {
-                    return $tables['Tables_in_' . DB::getDatabase()];
-                }, DB::query('SHOW TABLES'));
-                if (!in_array($table, $getTables)) {
-                    $this->sendError("Table not exists", $table ?: 'NULL');
-                    $confirm = false;
-                }
-            }
-        } while (!$confirm);
+        $table = $this->sendQuestion('Enter the table name for manager', 'n/ to skip');
         $dirs = [];
         for ($i = 0; $i < count(self::DEFAULT_DIRS); $i++) {
             $dir = self::DEFAULT_DIRS[$i];
@@ -123,6 +111,7 @@ class Module extends Create
 
         if($table){
             // entity
+            echo "\n".$this->getColoredString('Entity Creation', 'light_purple', 'bold');
             $entity = new Entity($this->app, [], [
                 'name' => $name,
                 'module' => $alias,
