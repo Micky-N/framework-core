@@ -47,11 +47,13 @@ class Middleware
         }
 
         $this->middlewares = (array)$middlewares;
-        $res = $this->process(Request::fromGlobals());
+        $res = $this->process($this->app->get(Request::class));
         return $res->getStatusCode() === 200;
     }
 
     /**
+     * handle middlewares
+     *
      * @param Request $request
      * @return ResponseInterface
      * @throws FailedToResolveContainerException

@@ -29,9 +29,7 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
     }
 
     /**
-     * @throws ReflectionException
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
+     * @return string
      */
     public function csrf(): string
     {
@@ -39,9 +37,8 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
     }
 
     /**
-     * @throws ReflectionException
-     * @throws NotInstantiableContainerException
-     * @throws FailedToResolveContainerException
+     * @param string $method
+     * @return string
      */
     public function method(string $method): string
     {
@@ -49,9 +46,8 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
     }
 
     /**
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     * @throws FailedToResolveContainerException
+     * @param string $asset
+     * @return string
      */
     public function asset(string $asset): string
     {
@@ -59,9 +55,8 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
     }
 
     /**
-     * @throws NotInstantiableContainerException
-     * @throws FailedToResolveContainerException
-     * @throws ReflectionException
+     * @param string $path
+     * @return string
      */
     public function public_path(string $path): string
     {
@@ -73,7 +68,7 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
      * @param mixed ...$moreVars
      * @return void
      */
-    public function dump(mixed $var, mixed ...$moreVars)
+    public function dump(mixed $var, mixed ...$moreVars): void
     {
         dump($var, ...$moreVars);
     }
@@ -83,7 +78,7 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
      * @param mixed ...$moreVars
      * @return void
      */
-    public function dd(mixed $var, mixed ...$moreVars)
+    public function dd(mixed $var, mixed ...$moreVars): void
     {
         dd($var, ...$moreVars);
     }

@@ -7,6 +7,8 @@ use ErrorException;
 interface NotificationSystemInterface
 {
     /**
+     * Send notification to entity (notifiable)
+     *
      * @param $notifiable
      * @param array $message
      * @throws ErrorException

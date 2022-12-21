@@ -7,7 +7,38 @@ use MkyCore\Application;
 
 class Command
 {
-
+    const HELPS = [
+        'create' => [
+            'module:--crud(-api)' => 'Create module structure',
+            'entity' => 'Create entity class',
+            'controller:--crud(-api)' => 'Create controller class, the name is suffix by \'Controller\'',
+            'manager' => 'Create manager class, the name is suffix by \'Manager\'',
+            'middleware' => 'Create middleware class, the name is suffix by \'Middleware\'',
+            'provider' => 'Create provider class, the name is suffix by \'ServiceProvider\'',
+            'listener' => 'Create listener class, the name is suffix by \'Listener\'',
+            'event' => 'Create event class, the name is suffix by \'Event\'',
+            'notification' => 'Create notification class, the name is suffix by \'Notification\'',
+            'notificationSystem' => 'Create notification system class, the name is suffix by \'NotificationSystem\''
+        ],
+        'migration' => [
+            'create' => 'Create migration file in format createUserTable => 123456_create_user_table.php',
+            'run:-f, --pop' => 'Migrate database table, -f to specify the file number, --pop to populate database',
+            'clear' => 'clear database',
+            'reset:--pop' => 'clear and migrate database'
+        ],
+        'populator' => [
+            'create' => 'Create populator class, the name is suffix by \'Populator\'',
+            'run:-f' => 'Populate database, -f to specify class'
+        ],
+        'install' => [
+            'jwt' => 'Implement jwt migration and config file'
+        ],
+        'show' => [
+            'route:--filterName' => 'Show list of routes, can be filtered by controller, request methods, name (regex) or/and url (regex)',
+            'module' => 'Show list of modules'
+        ],
+    ];
+    
     const STRUCTURE = [
         'create' => [
             'entity',
@@ -28,7 +59,7 @@ class Command
         'migration' => [
             'create',
             'run',
-            'rollback',
+            'clear',
             'reset'
         ],
         'populator' => [
@@ -42,7 +73,6 @@ class Command
 
     public function __construct(private readonly Application $app)
     {
-
     }
 
     /**
@@ -53,6 +83,9 @@ class Command
     public function run($argv): mixed
     {
         array_shift($argv);
+        if(isset($argv[0]) && in_array($argv[0], ['--help', '-h'])){
+            return $this->help();
+        }
         $getOpt = [];
         $index = 0;
         foreach ($argv as $arg) {
@@ -84,5 +117,11 @@ class Command
         array_shift($getOpt);
         $instance = new $class($this->app, $getOpt);
         return $instance->process();
+    }
+
+    public function help(): bool
+    {
+        // TODO implement help
+        return true;
     }
 }

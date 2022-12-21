@@ -4,6 +4,7 @@ namespace MkyCore;
 
 use Exception;
 use MkyCore\Abstracts\Entity;
+use MkyCore\Abstracts\Manager;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\AuthSystemInterface;
@@ -27,6 +28,8 @@ class AuthManager
     }
 
     /**
+     * Test credentials for authentication
+     *
      * @throws ReflectionException
      * @throws Exception
      */
@@ -50,6 +53,8 @@ class AuthManager
     }
 
     /**
+     * Change authentication provider
+     *
      * @throws Exception
      */
     public function use(string $provider): static
@@ -60,15 +65,18 @@ class AuthManager
     }
 
     /**
-     * @return bool|Entity|null
+     * Get user entity authenticated
+     *
+     * @return false|Entity|null
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
-    public function user(): bool|Entity|null
+    public function user(): false|Entity|null
     {
         if (!empty($this->provider)) {
             if ($this->isLogin()) {
+                /** @var Manager $manager */
                 $manager = $this->app->get($this->provider['manager']);
                 $id = $this->session->get('auth');
                 return $manager->find($id);
@@ -77,6 +85,11 @@ class AuthManager
         return null;
     }
 
+    /**
+     * Check if login
+     *
+     * @return bool
+     */
     public function isLogin(): bool
     {
         return !empty($this->session->get('auth'));
@@ -88,6 +101,8 @@ class AuthManager
     }
 
     /**
+     * Get authenticate provider
+     *
      * @return array
      */
     public function getProvider(): array
@@ -96,6 +111,8 @@ class AuthManager
     }
 
     /**
+     * Get authenticate provider name
+     *
      * @return string
      */
     public function getProviderName(): string

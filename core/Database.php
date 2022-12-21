@@ -14,7 +14,6 @@ class Database
     /**
      * Create and get PDO connection
      *
-     * @return PDO
      * @throws Exception
      */
     public function __construct(private readonly array $config)

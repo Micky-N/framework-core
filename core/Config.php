@@ -15,6 +15,8 @@ class Config
     }
 
     /**
+     * Get config name
+     *
      * @param string $key
      * @param mixed|null $default
      * @return mixed
@@ -44,6 +46,8 @@ class Config
     }
 
     /**
+     * Get config merged with module config
+     *
      * @throws ReflectionException
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException

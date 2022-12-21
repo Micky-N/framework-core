@@ -2,7 +2,7 @@
 
 namespace MkyCore\Console\Migration;
 
-class Rollback extends Migration
+class Clear extends Migration
 {
     protected string $direction = 'down';
 }

@@ -293,12 +293,13 @@ class QueryBuilderMysql
     /**
      * Get all records
      *
-     * @return array|false
+     * @param bool $one
+     * @return false|Entity|array
      * @throws Exception
      */
-    public function get(): false|array
+    public function get(bool $one = false): false|Entity|array
     {
-        return $this->db->query($this->stringify(), $this->instance->getEntity());
+        return $this->db->query($this->stringify(), $this->instance->getEntity(), $one);
     }
 
     /**

@@ -4,13 +4,21 @@ namespace MkyCore\Api;
 
 use Exception;
 use MkyCore\Abstracts\Entity;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use ReflectionException;
 
 class Jwt
 {
 
     private const HEADER = ['typ' => 'Jwt', 'alg' => 'HS256'];
 
-    public static function createJwt(Entity $entity, string $name)
+    /**
+     * Create token in database
+     *
+     * @throws ReflectionException
+     */
+    public static function createJwt(Entity $entity, string $name): NewJWT
     {
         $expireTime = time() + (60 * (float)config('jwt.lifetime', 1));
         $payload = self::makePayload($entity, $expireTime);
@@ -33,6 +41,14 @@ class Jwt
         return new NewJWT($jsonWebToken, $base64UrlPayload);
     }
 
+    /**
+     * Set the payload
+     *
+     * @param Entity $entity
+     * @param int $expireTime
+     * @return array
+     * @throws ReflectionException
+     */
     private static function makePayload(Entity $entity, int $expireTime): array
     {
         $primaryKey = $entity->getPrimaryKey();
@@ -51,21 +67,48 @@ class Jwt
         return array_replace_recursive($defaultPayload, $customPayload);
     }
 
+    /**
+     * Transform anti-slash to dot
+     *
+     * @param Entity $entity
+     * @return string
+     */
     public static function stringifyEntity(Entity $entity): string
     {
         return str_replace('\\', '.', get_class($entity));
     }
 
-    private static function toBase64Url(string $hash): string
+    /**
+     * Encode input to Base64Url
+     *
+     * @param string $input
+     * @return string
+     */
+    private static function toBase64Url(string $input): string
     {
-        return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($hash));
+        return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($input));
     }
 
+    /**
+     * Make signature
+     *
+     * @param string $base64UrlHeader
+     * @param string $base64UrlPayload
+     * @param string $secret
+     * @return string
+     */
     private static function makeSignature(string $base64UrlHeader, string $base64UrlPayload, string $secret): string
     {
         return hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, base64_encode($secret), true);
     }
 
+    /**
+     * Check if token is valid
+     *
+     * @param string $jwt
+     * @return bool
+     * @throws Exception
+     */
     public static function verifyJwt(string $jwt): bool
     {
         if (!($jwtEntity = $jwtEntity = self::retrieveJwt($jwt))) {
@@ -74,6 +117,13 @@ class Jwt
         return ($jwtEntity->expireAt() - time()) > 0;
     }
 
+    /**
+     * Retrieve token entity
+     *
+     * @param string $jwt
+     * @return JsonWebToken|false
+     * @throws Exception
+     */
     public static function retrieveJwt(string $jwt): JsonWebToken|false
     {
         // split the jwt
@@ -88,11 +138,26 @@ class Jwt
         return self::jsonWebTokenManager()->where('token', $base64UrlSecurity)->first();
     }
 
+    /**
+     * Get JsonWebTokenManager
+     *
+     * @return JsonWebTokenManager
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     */
     private static function jsonWebTokenManager(): JsonWebTokenManager
     {
         return app()->get(JsonWebTokenManager::class);
     }
 
+    /**
+     * Delete token
+     *
+     * @param string $jwt
+     * @return JsonWebToken|false
+     * @throws Exception
+     */
     public static function revokeJwt(string $jwt): JsonWebToken|false
     {
         $jwtEntity = self::retrieveJwt($jwt);

@@ -2,6 +2,8 @@
 
 namespace MkyCore\Console\Create;
 
+use MkyCore\Str;
+
 class Controller extends Create
 {
     protected string $outputDirectory = 'Controllers';
@@ -28,11 +30,13 @@ class Controller extends Create
     }
 
     /**
+     * @param string $name
      * @return string
      */
     private function implementCrud(string $name): string
     {
-        $name = strtolower(str_replace('Controller', '', $name));
+        $name = Str::singularize(strtolower(str_replace('Controller', '', $name)));
+        $param = '{'.$name.'}';
         return <<<CRUD
 /**
      * @Router('/', name:'index', methods:['GET'])
@@ -65,7 +69,7 @@ class Controller extends Create
     }
 
     /**
-     * @Router('/{id}', name:'show', methods:['GET'])
+     * @Router('/$param', name:'show', methods:['GET'])
      * Display the specified resource.
      *
      * @param  int|string \$$name
@@ -76,7 +80,7 @@ class Controller extends Create
     }
 
     /**
-     * @Router('/{id}/edit', name:'edit', methods:['GET'])
+     * @Router('/$param/edit', name:'edit', methods:['GET'])
      * Show the form for editing the specified resource.
      *
      * @param  int|string \$$name
@@ -87,7 +91,7 @@ class Controller extends Create
     }
 
     /**
-     * @Router('/{id}', name:'update', methods:['PUT'])
+     * @Router('/$param', name:'update', methods:['PUT'])
      * Update the specified resource in storage.
      *
      * @param  int|string \$$name
@@ -98,7 +102,7 @@ class Controller extends Create
     }
 
     /**
-     * @Router('/{id}', name:'destroy', methods:['DELETE'])
+     * @Router('/$param', name:'destroy', methods:['DELETE'])
      * Remove the specified resource from storage.
      *
      * @param int|string \$$name
@@ -111,11 +115,12 @@ CRUD;
     }
 
     /**
+     * @param string $name
      * @return string
      */
     private function implementCrudApi(string $name): string
     {
-        $name = strtolower(str_replace('Controller', '', $name));
+        $name = Str::singularize(strtolower(str_replace('Controller', '', $name)));
         return <<<CRUD
 /**
      * @Router('/', name:'index', methods:['GET'])
@@ -138,7 +143,7 @@ CRUD;
     }
 
     /**
-     * @Router('/{id}', name:'show', methods:['GET'])
+     * @Router('/$param', name:'show', methods:['GET'])
      * Display the specified resource.
      *
      * @param  int|string \$$name
@@ -149,7 +154,7 @@ CRUD;
     }
 
     /**
-     * @Router('/{id}', name:'update', methods:['PUT'])
+     * @Router('/$param', name:'update', methods:['PUT'])
      * Update the specified resource in storage.
      *
      * @param  int|string \$$name
@@ -160,7 +165,7 @@ CRUD;
     }
 
     /**
-     * @Router('/{id}', name:'destroy', methods:['DELETE'])
+     * @Router('/$param', name:'destroy', methods:['DELETE'])
      * Remove the specified resource from storage.
      *
      * @param int|string \$$name
@@ -175,8 +180,10 @@ CRUD;
     private function implementHead(string $name, string $parent = ''): string
     {
         $name = strtolower(str_replace('Controller', '', $name));
+        $name = Str::pluralize($name);
+        $parent = Str::pluralize($parent);
         $name = $parent ? "$parent.$name" : $name;
-        $prefix = $this->moduleOptions ? '' : $name;
+        $prefix = $this->moduleOptions ? Str::pluralize($this->moduleOptions['name']) : $name;
         return <<<ROUTER
 
 /**

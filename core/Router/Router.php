@@ -15,6 +15,7 @@ use MkyCore\Exceptions\Router\RouteNeedParamsException;
 use MkyCore\Exceptions\Router\RouteNotFoundException;
 use MkyCore\Facades\Config;
 use MkyCore\File;
+use MkyCore\Str;
 use ReflectionException;
 
 class Router
@@ -42,6 +43,8 @@ class Router
     }
 
     /**
+     * Get routes from controllers
+     *
      * @param string $controllerRootPath
      * @return void
      * @throws ReflectionException
@@ -79,12 +82,25 @@ class Router
         }
     }
 
+    /**
+     * Get all controller dirs
+     *
+     * @param string $controllerRootPath
+     * @return array
+     */
     private function getAllControllerDirs(string $controllerRootPath): array
     {
         $controllers = [];
         return $this->getAllControllerFiles($controllerRootPath, $controllers);
     }
 
+    /**
+     * Get all controller files
+     *
+     * @param $controllerPath
+     * @param array $arrayRes
+     * @return array
+     */
     private function getAllControllerFiles($controllerPath, array &$arrayRes = []): array
     {
         foreach (scandir($controllerPath) as $path) {
@@ -108,6 +124,9 @@ class Router
      * @param Closure|array $action
      * @param string $module
      * @return Route
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
@@ -122,8 +141,13 @@ class Router
     }
 
     /**
+     * Add a new route
+     *
      * @param array $routeData
      * @return Route
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
@@ -184,6 +208,8 @@ class Router
     }
 
     /**
+     * Get module kernel from route controller
+     *
      * @throws ReflectionException
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
@@ -194,7 +220,6 @@ class Router
         $controllerPath = $controller->getFileName();
         $explode = explode(DIRECTORY_SEPARATOR, $controllerPath);
         $explode = array_reverse($explode);
-        $exp = '';
         for ($i = 0; $i < count($explode) - 1; $i++) {
             $exp = $explode[$i];
             if (!str_ends_with($exp, 'Module')) {
@@ -215,7 +240,6 @@ class Router
         $namespace = $controller->getNamespaceName();
         $explode = explode(DIRECTORY_SEPARATOR, $namespace);
         $explode = array_reverse($explode);
-        $exp = '';
         for ($i = 0; $i < count($explode) - 1; $i++) {
             $exp = $explode[$i];
             if (!str_ends_with($exp, 'Module')) {
@@ -231,11 +255,11 @@ class Router
             return null;
         }
 
-        $module = $this->app->get($kernel);
-        if (!($module instanceof ModuleKernel)) {
+        $moduleKernel = $this->app->get($kernel);
+        if (!($moduleKernel instanceof ModuleKernel)) {
             return null;
         }
-        return $module;
+        return $moduleKernel;
     }
 
     /**
@@ -245,6 +269,9 @@ class Router
      * @param callable|array $action
      * @param string $module
      * @return Route
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
@@ -265,6 +292,9 @@ class Router
      * @param callable|array $action
      * @param string $module
      * @return Route
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
@@ -285,6 +315,9 @@ class Router
      * @param callable|array $action
      * @param string $module
      * @return Route
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
@@ -305,6 +338,9 @@ class Router
      * @param callable|array $action
      * @param string $module
      * @return Route
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
@@ -325,6 +361,9 @@ class Router
      * @param callable|array $action
      * @param string $module
      * @return Route
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
@@ -338,6 +377,14 @@ class Router
         ]);
     }
 
+    /**
+     * Prepare crud implementations
+     *
+     * @param string $namespace
+     * @param string $controller
+     * @param string $moduleName
+     * @return RouteCrud
+     */
     public function crud(string $namespace, string $controller, string $moduleName = ''): RouteCrud
     {
         $path = '';
@@ -348,13 +395,13 @@ class Router
             $namespace = end($namespaces);
             foreach ($namespaces as $key => $name) {
                 if ($key < count($namespaces) - 1) {
-                    $path .= $name . '/{' . $name . '}/';
+                    $path .= $name . '/{' . Str::singularize($name) . '}/';
                 }
             }
             array_shift($namespaces);
             $action = ucfirst(join('', $namespaces));
         }
-        $id = "/{" . strtolower($namespace) . "}";
+        $id = "/{" . Str::singularize(strtolower($namespace)) . "}";
         $crudActions = [
             'index' => [
                 'request' => 'get',
@@ -411,8 +458,9 @@ class Router
     }
 
     /**
-     * Create all crud model routes
+     * Set crud implementation to routes
      *
+     * @param array $crudActions
      * @param string $namespace
      * @param string $action
      * @param string $moduleName
@@ -431,6 +479,14 @@ class Router
         return new RouteCrud($namespace, $routeCrud);
     }
 
+    /**
+     * Prepare crud implementation for api
+     *
+     * @param string $namespace
+     * @param string $controller
+     * @param string $moduleName
+     * @return RouteCrud
+     */
     public function crudApi(string $namespace, string $controller, string $moduleName = ''): RouteCrud
     {
         $path = '';
@@ -441,13 +497,13 @@ class Router
             $namespace = end($namespaces);
             foreach ($namespaces as $key => $name) {
                 if ($key < count($namespaces) - 1) {
-                    $path .= $name . '/{' . $name . '}/';
+                    $path .= $name . '/{' . Str::singularize($name) . '}/';
                 }
             }
             array_shift($namespaces);
             $action = ucfirst(join('', $namespaces));
         }
-        $id = "/{" . strtolower($namespace) . "}";
+        $id = "/{" . Str::singularize(strtolower($namespace)) . "}";
         $crudActions = [
             'index' => [
                 'request' => 'get',
@@ -490,6 +546,8 @@ class Router
     }
 
     /**
+     * Check if request path matches with a route
+     *
      * @throws ReflectionException
      * @throws Exception
      */
@@ -507,6 +565,12 @@ class Router
         return null;
     }
 
+    /**
+     * Sort routes urls by length and params
+     *
+     * @param array $routes
+     * @return void
+     */
     private function sortRoutes(array &$routes): void
     {
         usort($routes, function ($routeA, $routeB) {
@@ -517,6 +581,12 @@ class Router
         });
     }
 
+    /**
+     * Remove route
+     *
+     * @param Route $route
+     * @return void
+     */
     public function deleteRoute(Route $route): void
     {
         foreach ($route->getMethods() as $method) {
@@ -526,6 +596,8 @@ class Router
     }
 
     /**
+     * Generate url from name
+     *
      * @param string $name
      * @param array $params
      * @param bool $absolute
@@ -547,6 +619,9 @@ class Router
     }
 
     /**
+     * Get all routes, can be filtered
+     * by request method, controller, url (regex) and name (regex)
+     *
      * @param array $filters
      * @return Route[]
      */
@@ -554,8 +629,6 @@ class Router
     {
         $routes = [];
         $methods = self::METHODS;
-        $headIndex = array_search('HEAD', $methods);
-        unset($methods[$headIndex]);
         if (isset($filters['methods'])) {
             $methodsFilter = array_map(fn($m) => strtoupper($m), (array)$filters['methods']);
             $methods = array_filter($methods, function ($method) use ($methodsFilter) {
@@ -580,54 +653,12 @@ class Router
     }
 
     /**
+     * Get current route
+     *
      * @return Route
      */
     public function getCurrentRoute(): Route
     {
         return $this->currentRoute;
-    }
-
-    /**
-     * Affiche les routes sont forme de tableau
-     * pour cli
-     *
-     * @return array
-     * @throws Exception
-     */
-    public function toArray(): array
-    {
-        $routesArray = [];
-        $namespace = '/';
-        foreach ($this->routes as $method => $routes) {
-            foreach ($routes as $route) {
-                $paths = explode('/', trim($route->getUrl(), '/'));
-                if (in_array($namespace, $paths)) {
-                    unset($paths[0]);
-                    $currentPath = "\t/" . join('/', $paths);
-                } else {
-                    $namespace = $paths[0];
-                    $currentPath = $route->getUrl();
-                }
-                $routesArray[] = [
-                    $method,
-                    $currentPath,
-                    is_array($route->getAction()) ? str_replace(
-                        'ProductModule\\Http\\Controllers\\',
-                        '',
-                        $route->getAction()[0]
-                    ) : $this->getTypeName($route->getAction()),
-                    is_array($route->getAction()) ? $route->getAction()[1] : null,
-                    $route->getName(),
-                    $route->getMiddlewares(),
-                    $route->getModule()
-                ];
-            }
-        }
-        return $routesArray;
-    }
-
-    private function getTypeName($var): string
-    {
-        return is_object($var) ? get_class($var) : gettype($var);
     }
 }

@@ -5,9 +5,8 @@ namespace MkyCore\Abstracts;
 use Exception;
 use JsonSerializable;
 use MkyCore\Annotation\Annotation;
-use MkyCore\Annotation\ParamAnnotation;
 use MkyCore\Annotation\ParamsAnnotation;
-use MkyCore\Annotation\PropertyAnnotation;
+use MkyCore\Str;
 use MkyCore\Traits\RelationShip;
 use ReflectionClass;
 use ReflectionException;
@@ -18,9 +17,6 @@ abstract class Entity implements JsonSerializable
 
     const DEFAULT_PRIMARY_KEY = 'id';
     use RelationShip;
-
-    protected array $casts = [];
-    protected array $hiddens = [];
 
     /**
      * @throws ReflectionException
@@ -33,16 +29,18 @@ abstract class Entity implements JsonSerializable
     }
 
     /**
+     * Fill the entity properties with database row value
+     *
      * @throws ReflectionException
      */
     public function hydrate(array $data): void
     {
         $this->attributes = [];
         foreach ($data as $key => $value) {
-            $key = $this->camelize($key);
+            $key = Str::camelize($key);
             $method = 'set' . ucfirst($key);
             if (method_exists($this, $method)) {
-                $value = $this->transformCast($key, $value);
+                $value = $this->transformCast($value, $key);
                 $this->$method($value);
             } else {
                 $this->attributes[$key] = $value;
@@ -54,65 +52,74 @@ abstract class Entity implements JsonSerializable
     }
 
     /**
-     * @param string $input
-     * @return string
+     * Transform property value with default type
+     * of method, method must be implemented
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return mixed
+     * @example dateTime => Entity::toDateTime()
+     *
      */
-    public function camelize(string $input): string
+    private function transformCast(mixed $value, string $key): mixed
     {
-        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
-    }
-
-    private function isHidden($property): bool
-    {
-        $annotation = new Annotation($this);
-        /** @var ParamsAnnotation[] $propertiesAnnotation */
-        $propertiesAnnotation = $annotation->getPropertiesAnnotations();
-        foreach ($propertiesAnnotation as $name => $propertyAnnotation){
-            if($name == $property && $propertyAnnotation->hasParam('Hidden')){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private function transformCast(string $key, mixed $value): mixed
-    {
-        $annotation = new Annotation($this);
-        /** @var ParamsAnnotation[] $propertiesAnnotation */
-        $propertiesAnnotation = $annotation->getPropertiesAnnotations();
-        foreach ($propertiesAnnotation as $name => $propertyAnnotation){
-            if($name == $key && $propertyAnnotation->hasParam('Cast')){
-                $type = $propertyAnnotation->getParam('Cast')->getProperty();
-                if ($this->isDefaultTypes($type)) {
-                    $value = settype($value, $type);
-                } elseif (method_exists($this, $type)) {
-                    $value = $this->$type($value, $key);
+        try {
+            $annotation = new Annotation($this);
+            $propertiesAnnotation = $annotation->getPropertiesAnnotations();
+            foreach ($propertiesAnnotation as $name => $propertyAnnotation) {
+                if ($name == $key && $propertyAnnotation->hasParam('Cast')) {
+                    $type = $propertyAnnotation->getParam('Cast')->getProperty();
+                    if ($this->isDefaultTypes($type)) {
+                        $value = settype($value, $type);
+                    } elseif (method_exists($this, 'to' . ucfirst($type))) {
+                        $value = $this->{'to' . ucfirst($type)}($value, $key);
+                    }
+                    break;
                 }
-                break;
             }
+            return $value;
+        } catch (Exception $exception) {
+            return $value;
         }
-        return $value;
     }
 
+    /**
+     * Check if type is built-in type
+     *
+     * @param string $type
+     * @return bool
+     */
     private function isDefaultTypes(string $type): bool
     {
         return in_array($type, $this->getDefaultTypes());
     }
 
+    /**
+     * Get the built-in types
+     *
+     * @return string[]
+     */
     private function getDefaultTypes(): array
     {
         return ['string', 'int', 'integer', 'float', 'boolean', 'bool', 'array', 'object'];
     }
 
     /**
+     * Delete row in database
+     *
      * @throws ReflectionException
      * @throws Exception
      */
-    public function delete(): array
+    public function delete(): Entity
     {
         return $this->getManager()->delete($this);
     }
 
+    /**
+     * Get the entity manager
+     *
+     * @return Manager|null
+     */
     public function getManager(): ?Manager
     {
         try {
@@ -144,6 +151,8 @@ abstract class Entity implements JsonSerializable
     }
 
     /**
+     * Get the table primary key
+     *
      * @return string|null
      * @throws ReflectionException
      */
@@ -159,6 +168,8 @@ abstract class Entity implements JsonSerializable
     }
 
     /**
+     * Update row in database
+     *
      * @throws ReflectionException
      */
     public function update(): Entity|bool
@@ -166,11 +177,21 @@ abstract class Entity implements JsonSerializable
         return $this->getManager()->update($this);
     }
 
+    /**
+     * Cast entity in json format
+     *
+     * @return array
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();
     }
 
+    /**
+     * Cast entity in array format
+     *
+     * @return array
+     */
     public function toArray(): array
     {
         $reflectionEntity = new ReflectionClass($this);
@@ -179,54 +200,55 @@ abstract class Entity implements JsonSerializable
         for ($i = 0; $i < count($properties); $i++) {
             $property = $properties[$i];
             $name = $property->getName();
-            if(!$this->isHidden($name)){
+            if (!$this->isHidden($name)) {
                 $array[$name] = $this->$name();
             }
         }
         return $array;
     }
 
-    public function __get(string $name)
+    /**
+     * Check if property is hidden
+     * for JSON format
+     *
+     * @param $property
+     * @return bool
+     */
+    private function isHidden($property): bool
     {
         try {
-
-            if (method_exists($this, $name)) {
-                $this->$name();
-                if (array_key_exists($name, $this->relations)) {
-                    return $this->getRelations($name)->get();
+            $annotation = new Annotation($this);
+            $propertiesAnnotation = $annotation->getPropertiesAnnotations();
+            foreach ($propertiesAnnotation as $name => $propertyAnnotation) {
+                if ($name == $property && $propertyAnnotation->hasParam('Hidden')) {
+                    return true;
                 }
             }
+            return false;
         } catch (Exception $exception) {
-            return null;
+            return false;
         }
     }
 
     /**
-     * @throws ReflectionException
+     * Get the entity relationship values
+     *
+     * @param string $name
+     * @return array|false|Entity|null
      */
-    private function querySet()
+    public function __get(string $name): Entity|bool|array|null
     {
-        $annotations = (new Annotation($this))->getPropertiesAnnotations();
-        foreach ($annotations as $name => $annotation) {
-            $getTypes = $annotation->getParams();
-            $name = $this->camelize($name);
-            foreach ($getTypes as $type => $param) {
-                $value = $this->handleType($type, $param);
-                if (method_exists($this, 'set' . ucfirst($name)) && $value) {
-                    $this->{'set' . ucfirst($name)}($value);
+        try {
+            if (method_exists($this, $name)) {
+                $this->$name();
+                if (array_key_exists($name, $this->relations)) {
+                    $relation = $this->getRelations($name);
+                    return $relation->get();
                 }
             }
+            return null;
+        } catch (Exception $exception) {
+            return null;
         }
-    }
-
-    private function handleType(int|string $type, mixed $param)
-    {
-        $value = $this->handleColumn($param);
-        return $value;
-    }
-
-    private function handleColumn(ParamAnnotation $param)
-    {
-
     }
 }

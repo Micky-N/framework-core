@@ -4,47 +4,83 @@ namespace MkyCore;
 
 use GuzzleHttp\Psr7\UploadedFile;
 use League\Flysystem\FilesystemException;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use ReflectionException;
 
 class File extends UploadedFile
 {
 
-    public static function makePath(array $path, bool $withCheck = false): string|bool
+    /**
+     * Make path from array, can check if exists
+     * return path if true
+     *
+     * @param array $path
+     * @param bool $withCheck
+     * @return string|false
+     */
+    public static function makePath(array $path, bool $withCheck = false): string|false
     {
         $path = array_filter($path, fn($p) => $p);
         $path = array_map(fn($p) => trim($p, '\/'), $path);
         $res = join(DIRECTORY_SEPARATOR, $path);
         if ($withCheck) {
-            if(!file_exists($res) && !is_dir($res)){
+            if (!file_exists($res) && !is_dir($res)) {
                 return false;
             }
         }
         return $res;
     }
 
-    public static function makeNamespace(string $file, bool $withCheck = false): string|bool
+    /**
+     * Make namespace from array, can check if exists
+     * return path if true
+     *
+     * @param string $file
+     * @param bool $withCheck
+     * @return string|false
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    public static function makeNamespace(string $file, bool $withCheck = false): string|false
     {
         $file = str_replace([app()->get('path:app'), '.php', '/'], ['App', '', '\\'], $file);
         $file = trim($file, '\/');
         if ($withCheck) {
-            if(!class_exists($file)){
+            if (!class_exists($file)) {
                 return false;
             }
         }
         return $file;
     }
 
-    public function extension(): bool|string
+    /**
+     * Get file extension
+     *
+     * @return bool|string
+     */
+    public function extension(): false|string
     {
-        $mediatype = explode('/', $this->getClientMediaType());
-        return end($mediatype);
+        $mediaType = explode('/', $this->getClientMediaType());
+        return end($mediaType);
     }
 
-    public function filename(): array|string|null
+    /**
+     * Get file name
+     *
+     * @return string|null
+     */
+    public function filename(): string|null
     {
-        return str_replace('.' . $this->realExtension(), '', $this->getClientFilename());
+        return $this->getClientFilename() ? str_replace('.' . $this->realExtension(), '', $this->getClientFilename()) : null;
     }
 
-    public function realExtension(): bool|string
+    /**
+     * Get real extension
+     * @return false|string
+     */
+    public function realExtension(): false|string
     {
         $clientFilename = explode('.', $this->getClientFilename(), 2);
         return end($clientFilename);
@@ -52,6 +88,8 @@ class File extends UploadedFile
 
     /**
      * Return true if there is no upload error
+     *
+     * @return bool
      */
     public function isOk(): bool
     {
@@ -59,6 +97,11 @@ class File extends UploadedFile
     }
 
     /**
+     * Store file to file system
+     *
+     * @param string|array $path
+     * @param string|null $rename
+     * @return bool
      * @throws FilesystemException
      */
     public function store(string|array $path, string $rename = null): bool
@@ -68,7 +111,7 @@ class File extends UploadedFile
             $space = $path['space'] ?? null;
             $path = $path['path'];
         }
-        $name = $newFileName ?? $this->getClientFilename();
+        $name = $rename ?? $this->getClientFilename();
         $location = trim($path, '\/') . DIRECTORY_SEPARATOR . $name;
         if ($space) {
             \MkyCore\Facades\FileManager::use($space)->write($location, $this->getStream());

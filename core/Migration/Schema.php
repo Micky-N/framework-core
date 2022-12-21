@@ -21,6 +21,8 @@ class Schema
 
 
     /**
+     * Create table
+     *
      * @param string $table
      * @param callable $callback
      * @return bool
@@ -33,6 +35,8 @@ class Schema
     }
 
     /**
+     * Create query statement
+     *
      * @param string $table
      * @param MigrationTable $migrationTable
      * @return bool
@@ -50,6 +54,8 @@ class Schema
     }
 
     /**
+     * Run query to create or update
+     *
      * @param string $table
      * @param string $query
      * @return bool
@@ -73,6 +79,8 @@ class Schema
     }
 
     /**
+     * Run statement to database
+     *
      * @param string $query
      * @return bool
      * @throws PDOException
@@ -89,6 +97,8 @@ class Schema
     }
 
     /**
+     * Update table
+     *
      * @param string $table
      * @param callable $callback
      * @return bool
@@ -102,6 +112,8 @@ class Schema
 
 
     /**
+     * Alter query statement
+     *
      * @param string $table
      * @param MigrationTable $migrationTable
      * @return bool
@@ -123,6 +135,8 @@ class Schema
     }
 
     /**
+     * Drop table
+     *
      * @param string $table
      * @return bool
      */
@@ -132,6 +146,8 @@ class Schema
     }
 
     /**
+     * Drop if exists
+     *
      * @param string $table
      * @return bool
      */

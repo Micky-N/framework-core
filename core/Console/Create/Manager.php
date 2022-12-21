@@ -4,6 +4,7 @@ namespace MkyCore\Console\Create;
 
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Str;
 use ReflectionException;
 
 class Manager extends Create
@@ -22,7 +23,12 @@ class Manager extends Create
     {
         $table = $this->moduleOptions['table'] ?? false;
         if (!$table) {
-            $table = $this->sendQuestion('Enter the table name', 'n/ to skip');
+            $name = '';
+            if(isset($this->params['arg0'])){
+                $name = $this->params['arg0'];
+                $name = Str::pluralize($name);
+            }
+            $table = $this->sendQuestion('Enter the table name', $name ?? 'n/ to skip') ?: $name;
         }
 
         $entity = $this->moduleOptions['entity'] ?? false;

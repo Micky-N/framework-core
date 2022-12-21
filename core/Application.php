@@ -2,6 +2,7 @@
 
 namespace MkyCore;
 
+use App\Providers\AppServiceProvider;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\ModuleKernel;
@@ -9,6 +10,7 @@ use MkyCore\Exceptions\Config\ConfigNotFoundException;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Router\Route;
+use ReflectionClass;
 use ReflectionException;
 
 class Application extends Container
@@ -52,6 +54,12 @@ class Application extends Container
         $this->loadEnvironment($basePath . DIRECTORY_SEPARATOR . '.env');
     }
 
+    /**
+     * Set application paths
+     *
+     * @param string $basePath
+     * @return void
+     */
     private function setBasePath(string $basePath): void
     {
         $this->basePath = rtrim($basePath, '\/');
@@ -59,7 +67,12 @@ class Application extends Container
         $this->setPathsInContainer();
     }
 
-    private function setPathsInContainer()
+    /**
+     * Set paths in container
+     *
+     * @return void
+     */
+    private function setPathsInContainer(): void
     {
         $this->setInstance('path:base', $this->basePath);
         $this->setInstance('path:app', $this->basePath . DIRECTORY_SEPARATOR . 'app');
@@ -69,6 +82,8 @@ class Application extends Container
     }
 
     /**
+     * Set Application class to Container instances
+     *
      * @throws ConfigNotFoundException
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
@@ -84,6 +99,8 @@ class Application extends Container
     }
 
     /**
+     * Set Module from root AppServiceProvider
+     *
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
      * @throws FailedToResolveContainerException
@@ -91,12 +108,14 @@ class Application extends Container
     private function setInitModules()
     {
         if (class_exists('App\Providers\AppServiceProvider')) {
-            $appProvider = $this->get(\App\Providers\AppServiceProvider::class);
+            $appProvider = $this->get(AppServiceProvider::class);
             $appProvider->registerModule();
         }
     }
 
     /**
+     * Call register from all ServiceProvider
+     *
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
@@ -128,7 +147,7 @@ class Application extends Container
                     if (in_array($path, ['.', '..'])) {
                         continue;
                     }
-                    $reflectionModule = new \ReflectionClass($module);
+                    $reflectionModule = new ReflectionClass($module);
                     $provider = str_replace('.php', '', $path);
                     $namespace = str_replace($reflectionModule->getShortName(), 'Providers', get_class($module));
                     $provider = "$namespace\\$provider";
@@ -142,6 +161,8 @@ class Application extends Container
     }
 
     /**
+     * Load environment file
+     *
      * @param string $envFile
      * @return void
      */
@@ -154,12 +175,20 @@ class Application extends Container
         }
     }
 
+    /**
+     * Replace modules
+     *
+     * @param array $modules
+     * @return void
+     */
     public function addModules(array $modules): void
     {
         $this->modules = $modules;
     }
 
     /**
+     * Add module
+     *
      * @param string $alias
      * @param string $moduleKernel
      * @return void
@@ -173,12 +202,20 @@ class Application extends Container
         $this->modules[$alias] = $moduleKernel;
     }
 
+    /**
+     * Check if module exists
+     *
+     * @param string $module
+     * @return bool
+     */
     public function hasModule(string $module): bool
     {
         return isset($this->modules[$module]);
     }
 
     /**
+     * Get all modules
+     *
      * @return ModuleKernel[]
      */
     public function getModules(): array
@@ -187,6 +224,8 @@ class Application extends Container
     }
 
     /**
+     * Get module kernel if exists
+     *
      * @throws ReflectionException
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
@@ -196,15 +235,23 @@ class Application extends Container
         return $this->get($this->getModule($module)) ?? null;
     }
 
+    /**
+     * Get module kernel class name
+     *
+     * @param string $module
+     * @return string|null
+     */
     public function getModule(string $module): ?string
     {
         return $this->modules[$module] ?? null;
     }
 
     /**
+     * Get entity hydrated by primary key
+     *
      * @throws ReflectionException
      */
-    public function getInstanceEntity(Entity|string $entity, mixed $primaryKey): \MkyCore\Abstracts\Entity
+    public function getInstanceEntity(Entity|string $entity, mixed $primaryKey): Entity
     {
         if (is_string($entity)) {
             $entity = new $entity();
@@ -213,37 +260,81 @@ class Application extends Container
         return $manager->find($primaryKey);
     }
 
-    public function addEvent(string $event, array|string $listeners)
+    /**
+     * Add event
+     *
+     * @param string $event
+     * @param array|string $listeners
+     * @return void
+     */
+    public function addEvent(string $event, array|string $listeners): void
     {
         $listeners = (array)$listeners;
         $this->events[$event] = $listeners;
     }
 
+    /**
+     * Get events
+     *
+     * @return array[]
+     */
     public function getEvents(): array
     {
         return $this->events;
     }
 
+    /**
+     * Get listeners
+     *
+     * @param string $event
+     * @return array|null
+     */
     public function getListeners(string $event): ?array
     {
         return $this->events[$event] ?? null;
     }
 
+    /**
+     * Get listener by action
+     *
+     * @param string $event
+     * @param mixed $action
+     * @return string|null
+     */
     public function getListenerActions(string $event, mixed $action): ?string
     {
         return $this->events[$event][$action] ?? null;
     }
 
+    /**
+     * Get notifications
+     *
+     * @param string $alias
+     * @return string|null
+     */
     public function getNotification(string $alias): ?string
     {
         return $this->notifications[$alias] ?? null;
     }
 
-    public function addNotificationSystem(string $alias, string $notificationSystem)
+    /**
+     * Add notification system
+     *
+     * @param string $alias
+     * @param string $notificationSystem
+     * @return void
+     */
+    public function addNotificationSystem(string $alias, string $notificationSystem): void
     {
         $this->notificationSystems[$alias] = $notificationSystem;
     }
 
+    /**
+     * Get notification system
+     *
+     * @param string $alias
+     * @return string|null
+     */
     public function getNotificationSystem(string $alias): ?string
     {
         return $this->notificationSystems[$alias] ?? null;

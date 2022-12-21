@@ -16,6 +16,8 @@ class RelationEntity
     }
 
     /**
+     * Insert a many-to-one database row
+     *
      * @throws ReflectionException
      * @throws Exception
      */
@@ -37,6 +39,8 @@ class RelationEntity
     }
 
     /**
+     * Insert a one-to-many database row
+     *
      * @throws ReflectionException
      * @throws Exception
      */
@@ -53,7 +57,15 @@ class RelationEntity
     }
 
     /**
-     * @throws ReflectionException
+     * Insert a many-to-many database row in pivot
+     *
+     * @param Populator $populator
+     * @param string $relation
+     * @param array $data
+     * @param string $pivot
+     * @param string $foreignKeyOne
+     * @param string $foreignKeyTwo
+     * @throws Exception
      */
     public function addOnPivot(Populator $populator, string $relation, array $data = [], string $pivot = '', string $foreignKeyOne = '', string $foreignKeyTwo = ''): void
     {
@@ -76,16 +88,5 @@ class RelationEntity
                 }
             }
         }
-
-    }
-
-    private function toSnake(string $name): string
-    {
-        return preg_replace_callback('/[A-Z+]/', function ($exp) {
-            if (isset($exp[0])) {
-                return '_' . lcfirst($exp[0]);
-            }
-            return $exp[0];
-        }, lcfirst($name));
     }
 }

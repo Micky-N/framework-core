@@ -12,6 +12,8 @@ abstract class Facade
     private static array $_instance = [];
 
     /**
+     * Call statically class method
+     *
      * @throws ReflectionException
      * @throws Exception
      */
@@ -24,6 +26,8 @@ abstract class Facade
     }
 
     /**
+     * Get class accessor
+     *
      * @return string
      */
     protected static function getAccessor(): string

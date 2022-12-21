@@ -29,6 +29,9 @@ class GlobalHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
+     * Set global middleware from alias file
+     * app/Middlewares/aliases.php
+     *
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
@@ -43,6 +46,11 @@ class GlobalHandlerMiddleware implements MiddlewareInterface
         }
     }
 
+    /**
+     * Set global middleware into the instance
+     * @param string $middleware
+     * @return $this
+     */
     public function setGlobalMiddleware(string $middleware): static
     {
         $this->globalMiddlewares[] = $middleware;
@@ -50,6 +58,7 @@ class GlobalHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
+     * @inheritDoc
      * @param Request $request
      * @param callable $next
      * @return mixed

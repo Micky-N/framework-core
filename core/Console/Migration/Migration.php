@@ -17,7 +17,7 @@ abstract class Migration extends AbstractCreate
         $migrationRunner = new MigrationFile($this->app);
         self::$query = in_array('--query', $this->params);
         $params = $this->parseParams();
-        $file = $params['--file'] ?? null;
+        $file = $params['-f'] ?? null;
         try {
             $migrationRunner->actionMigration($this->direction, $file);
             if ($success = Schema::$SUCCESS) {

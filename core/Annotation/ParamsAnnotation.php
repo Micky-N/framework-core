@@ -17,6 +17,8 @@ class ParamsAnnotation
     }
 
     /**
+     * Get annotation params
+     *
      * @return ParamAnnotation[]
      */
     public function getParams(): array
@@ -25,8 +27,10 @@ class ParamsAnnotation
     }
 
     /**
+     * Get annotation param
+     *
      * @param string $key
-     * @return ParamAnnotation
+     * @return ParamAnnotation|null
      */
     public function getParam(string $key): ?ParamAnnotation
     {
@@ -34,6 +38,8 @@ class ParamsAnnotation
     }
 
     /**
+     * Check if param exists
+     *
      * @param string $key
      * @return bool
      */
@@ -42,6 +48,12 @@ class ParamsAnnotation
         return isset($this->params[$key]);
     }
 
+    /**
+     * Get param magically
+     *
+     * @param string $key
+     * @return ParamAnnotation|null
+     */
     public function __get(string $key)
     {
         return $this->getParam($key);

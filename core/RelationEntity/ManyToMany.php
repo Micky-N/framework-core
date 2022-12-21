@@ -2,11 +2,13 @@
 
 namespace MkyCore\RelationEntity;
 
+use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Manager;
 use MkyCore\Facades\DB;
 use MkyCore\Interfaces\RelationEntityInterface;
 use MkyCore\QueryBuilderMysql;
+use ReflectionException;
 
 class ManyToMany implements RelationEntityInterface
 {
@@ -14,11 +16,20 @@ class ManyToMany implements RelationEntityInterface
     private Manager $managerRelation;
     private QueryBuilderMysql $query;
 
-    public function __construct(private string $name, private Entity $entity, private Entity $entityRelation, private string $foreignKeyOne, private string $foreignKeyTwo, private string $pivot)
+    /**
+     * @throws ReflectionException
+     * @throws Exception
+     */
+    public function __construct(
+        private readonly Entity $entity,
+        private readonly Entity $entityRelation,
+        private readonly string $foreignKeyOne,
+        private readonly string $foreignKeyTwo,
+        private readonly string $pivot
+    )
     {
         $this->managerRelation = $this->entityRelation->getManager();
         $tableRelate = $this->managerRelation->getTable();
-        $primaryKeyOne = $this->entity->getPrimaryKey();
         $primaryKeyTwo = $this->entityRelation->getPrimaryKey();
         $this->query = $this->managerRelation->select("$tableRelate.*", "$this->pivot.*")
             ->from($tableRelate)
@@ -27,14 +38,26 @@ class ManyToMany implements RelationEntityInterface
 
     }
 
-    public function get()
+    /**
+     * @inheritDoc
+     * @return array|false
+     */
+    public function get(): array|false
     {
-        return $this->query->get();
+        try {
+            return $this->query->get();
+        }catch(Exception $exception){
+            return false;
+        }
     }
 
     /**
+     * Insert row in pivot database table many-to-many relation
+     *
+     * @param Entity $entity
+     * @param array $options
+     * @return bool|Entity
      * @throws ReflectionException
-     * @throws Exception
      */
     public function attachOnPivot(Entity $entity, array $options = []): bool|Entity
     {
@@ -58,6 +81,8 @@ class ManyToMany implements RelationEntityInterface
     }
 
     /**
+     * Get entity
+     *
      * @return Entity
      */
     public function getEntity(): Entity
@@ -66,6 +91,8 @@ class ManyToMany implements RelationEntityInterface
     }
 
     /**
+     * Get relation entity
+     *
      * @return Entity
      */
     public function getEntityRelation(): Entity
@@ -74,6 +101,8 @@ class ManyToMany implements RelationEntityInterface
     }
 
     /**
+     * Get the first foreign key
+     *
      * @return string
      */
     public function getForeignKeyOne(): string
@@ -82,6 +111,8 @@ class ManyToMany implements RelationEntityInterface
     }
 
     /**
+     * Get the second foreign key
+     *
      * @return string
      */
     public function getForeignKeyTwo(): string
@@ -90,6 +121,8 @@ class ManyToMany implements RelationEntityInterface
     }
 
     /**
+     * Get pivot table name
+     *
      * @return string
      */
     public function getPivot(): string
