@@ -222,7 +222,7 @@ class Router
         $explode = array_reverse($explode);
         for ($i = 0; $i < count($explode) - 1; $i++) {
             $exp = $explode[$i];
-            if (!str_ends_with($exp, 'Module')) {
+            if (!str_ends_with($exp, 'Module') && $exp !== 'app') {
                 unset($explode[$i]);
             } else {
                 break;
@@ -231,6 +231,9 @@ class Router
         $explode = join(DIRECTORY_SEPARATOR, array_reverse($explode));
         $nameKernel = '';
         foreach (scandir($explode) as $path) {
+            if (in_array($path, ['.', '..'])) {
+                continue;
+            }
             if (str_ends_with($path, 'Kernel.php')) {
                 $nameKernel = str_replace('.php', '', $path);
                 break;
