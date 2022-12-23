@@ -4,6 +4,7 @@ namespace MkyCore\Console\Create;
 
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Str;
 use ReflectionException;
 
 class Entity extends Create
@@ -34,15 +35,18 @@ class Entity extends Create
         do {
             $property = $this->sendQuestion('Set column', 'n/ to skip') ?: false;
             if ($property) {
-                $properties[] = $property;
+                $properties[] = Str::camelize($property);
             }
         } while ($property);
 
         do {
             $confirm = true;
             $primaryKey = $this->sendQuestion('Set primary column', 'n/ to skip') ?: false;
-            if ($primaryKey && !in_array($primaryKey, $properties)) {
-                $confirm = false;
+            if ($primaryKey) {
+                $primaryKey = Str::camelize($primaryKey);
+                if(!in_array($primaryKey, $properties)){
+                    $confirm = false;
+                }
             }
         } while (!$confirm);
 

@@ -2,6 +2,8 @@
 
 namespace MkyCore\Router;
 
+use MkyCore\Str;
+
 class RouteCrud
 {
     public function __construct(private readonly string $namespace, private readonly array $routes)
@@ -9,8 +11,12 @@ class RouteCrud
     }
 
     /**
+     * Set route name by method
+     *
      * @param array $methods
      * @return $this
+     * @example 'index' => 'foo' means route name with index method will be 'foo.index'
+     * '*' => 'foo' means all routes names will start with 'foo'
      */
     public function as(array $methods): RouteCrud
     {
@@ -32,6 +38,8 @@ class RouteCrud
     }
 
     /**
+     * Keep routes matching methods
+     *
      * @param array $methods
      * @return $this
      */
@@ -51,6 +59,8 @@ class RouteCrud
     }
 
     /**
+     * Remove routes matching methods
+     *
      * @param array $methods
      * @return $this
      */
@@ -69,6 +79,14 @@ class RouteCrud
         return $this;
     }
 
+    /**
+     * Set route middlewares by method
+     *
+     * @param array $methods
+     * @return $this
+     * @example 'index' => ['foo'] means route with index method will have a foo middleware
+     * '*' => ['foo'] means all routes will have a foo middleware
+     */
     public function middlewares(array $methods): RouteCrud
     {
         if (isset($methods['*'])) {
@@ -87,6 +105,14 @@ class RouteCrud
         return $this;
     }
 
+    /**
+     * Set route permission by method
+     *
+     * @param array $methods
+     * @return $this
+     * @example 'index' => ['foo'] means route with index method will have a foo permission
+     * '*' => ['foo'] means all routes will have a foo permission
+     */
     public function allows(array $methods): RouteCrud
     {
         if (isset($methods['*'])) {
@@ -106,6 +132,18 @@ class RouteCrud
         return $this;
     }
 
+    /**
+     * Set route param name by method
+     *
+     * @param array $params
+     * @return $this
+     * @example url => 'users/{user}', method => 'index'
+     * 'index' => 'foo' means url of route with index method will be 'users/{foo}'
+     * '*' => 'foo' means all routes
+     *
+     * @example url => 'users/{user}/blogs/{blog} method => 'index'
+     * 'index' => 'foo.bar' means url of route with index method will be 'users/{foo}/blogs/{bar}'
+     */
     public function params(array $params): RouteCrud
     {
         $newNamespaces = [];
@@ -117,8 +155,8 @@ class RouteCrud
                 $paramExplode = explode('.', $param);
                 for ($i = 0; $i < count($namespaces); $i++) {
                     $namespace = $namespaces[$i];
-                    $currentParam = $paramExplode[$i] ?? $namespace;
-                    $oldUrl = str_replace('{' . $namespace . '}', '{' . $currentParam . '}', $oldUrl);
+                    $currentParam = $paramExplode[$i] ?? Str::singularize($namespace);
+                    $oldUrl = str_replace('{' . Str::singularize($namespace) . '}', '{' . $currentParam . '}', $oldUrl);
                     $newNamespaces[] = $currentParam;
                 }
                 $this->routes[$method]->setUrl($oldUrl);
@@ -135,8 +173,8 @@ class RouteCrud
                 $paramExplode = explode('.', $param);
                 for ($i = 0; $i < count($namespaces); $i++) {
                     $namespace = $namespaces[$i];
-                    $currentParam = $paramExplode[$i] ?? $namespace;
-                    $oldUrl = str_replace('{' . $namespace . '}', '{' . $currentParam . '}', $oldUrl);
+                    $currentParam = $paramExplode[$i] ?? Str::singularize($namespace);
+                    $oldUrl = str_replace('{' . Str::singularize($namespace) . '}', '{' . $currentParam . '}', $oldUrl);
                 }
                 $this->routes[$method]->setUrl($oldUrl);
             }

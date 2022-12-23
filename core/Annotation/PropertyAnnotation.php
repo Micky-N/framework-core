@@ -18,6 +18,8 @@ class PropertyAnnotation
     }
 
     /**
+     * Get property annotation
+     *
      * @return ParamsAnnotation|null
      */
     public function getAnnotation(): ?ParamsAnnotation

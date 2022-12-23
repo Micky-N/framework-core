@@ -16,9 +16,13 @@ trait RelationShip
     protected array $relations = [];
 
     /**
-     * @throws ReflectionException
+     * Create a many-to-one (and one-to-one) relation
+     *
+     * @param Entity|string $entityRelation
+     * @param string $foreignKey
+     * @return HasOne|false
      */
-    public function hasOne(Entity|string $entityRelation, string $foreignKey = ''): HasOne
+    public function hasOne(Entity|string $entityRelation, string $foreignKey = ''): HasOne|false
     {
         try {
             $entityRelation = $this->getEntity($entityRelation);
@@ -33,7 +37,12 @@ trait RelationShip
         }
     }
 
-    private function getEntity(string|Entity $entity): Entity
+    /**
+     * Get entity
+     *
+     * @throws Exception
+     */
+    protected function getEntity(string|Entity $entity): Entity
     {
         if (is_string($entity)) {
             $entity = new $entity();
@@ -45,15 +54,13 @@ trait RelationShip
     }
 
     /**
-     * Get record from the foreign table
+     * Create a one-to-many relation
      *
      * @param Entity|string $entityRelation
      * @param string $foreignKey
-     * @return HasMany
-     * @throws ReflectionException
-     * @example One to Many
+     * @return HasMany|false
      */
-    public function hasMany(Entity|string $entityRelation, string $foreignKey = ''): HasMany
+    public function hasMany(Entity|string $entityRelation, string $foreignKey = ''): HasMany|false
     {
         try {
             $entityRelation = $this->getEntity($entityRelation);
@@ -69,17 +76,15 @@ trait RelationShip
     }
 
     /**
-     * Get all records from the foreign table
+     * Create a many-to-many relation
      *
      * @param Entity|string $entityRelation
      * @param string $pivot
      * @param string $foreignKeyOne
      * @param string $foreignKeyTwo
-     * @return array|bool|mixed
-     * @throws ReflectionException
-     * @example Many to Many
+     * @return ManyToMany|false
      */
-    public function manyToMany(Entity|string $entityRelation, string $pivot = '', string $foreignKeyOne = '', string $foreignKeyTwo = ''): mixed
+    public function manyToMany(Entity|string $entityRelation, string $pivot = '', string $foreignKeyOne = '', string $foreignKeyTwo = ''): ManyToMany|false
     {
         try {
             $primaryKeyOne = $this->getPrimaryKey();
@@ -103,7 +108,7 @@ trait RelationShip
                 }
             }
             $name = debug_backtrace()[1]['function'] ?? $preForeignKeyOne . '_' . $preForeignKeyTwo;
-            $relation = new ManyToMany($name, $this, $entityRelation, $foreignKeyOne, $foreignKeyTwo, $pivot);
+            $relation = new ManyToMany($this, $entityRelation, $foreignKeyOne, $foreignKeyTwo, $pivot);
             return $this->relations[$name] = $relation;
         } catch (Exception $ex) {
             return false;
@@ -111,9 +116,28 @@ trait RelationShip
     }
 
     /**
-     * @return array
+     * Retrieve relation name from relation class
+     *
+     * @param RelationEntityInterface $relationEntity
+     * @return string|false
      */
-    public function getRelations(string $relation = null): array|RelationEntityInterface
+    public function retrieveRelation(RelationEntityInterface $relationEntity): string|false
+    {
+        foreach ($this->getRelations() as $name => $relation) {
+            if ($relation === $relationEntity) {
+                return $name;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get all relations or a relation if it exists
+     *
+     * @param string|null $relation
+     * @return array|RelationEntityInterface
+     */
+    public function getRelations(?string $relation = null): array|RelationEntityInterface
     {
         return $relation ? ($this->relations[$relation] ?? []) : $this->relations;
     }

@@ -19,6 +19,7 @@ class ColumnType
     }
 
     /**
+     * Get database table
      * @return string
      */
     public function getTable(): string
@@ -26,59 +27,106 @@ class ColumnType
         return $this->table;
     }
 
-    public function createRow(): string
-    {
-        return preg_replace('/\s+/', ' ', trim($this->query));
-    }
-
+    /**
+     * Set column as a primary key column
+     *
+     * @return $this
+     */
     public function primaryKey(): static
     {
         $this->query .= "PRIMARY KEY";
         return $this;
     }
 
+    /**
+     * Set column as a not null column
+     *
+     * @return $this
+     */
     public function notNull(): static
     {
         $this->query .= " NOT NULL ";
         return $this;
     }
 
+    /**
+     * Set column as an unsigned column
+     *
+     * @return $this
+     */
     public function unsigned(): static
     {
         $this->query .= ' unsigned ';
         return $this;
     }
 
+    /**
+     * Make an integer type column
+     *
+     * @param string $name
+     * @return $this
+     */
     public function integer(string $name): static
     {
         $this->query = "`$name` INT";
         return $this;
     }
 
+    /**
+     * Make a big integer type column
+     *
+     * @param string $name
+     * @return $this
+     */
     public function bigInt(string $name): static
     {
         $this->query = "`$name` BIGINT";
         return $this;
     }
 
+    /**
+     * Make a small integer type column
+     *
+     * @param string $name
+     * @return $this
+     */
     public function smallInt(string $name): static
     {
         $this->query = "`$name` SMALLINT";
         return $this;
     }
 
+    /**
+     * Make a tiny integer type column
+     *
+     * @param string $name
+     * @return $this
+     */
     public function tinyInt(string $name): static
     {
         $this->query = "`$name` TINYINT";
         return $this;
     }
 
+    /**
+     * Make a varchar type column
+     *
+     * @param string $name
+     * @param int $limit
+     * @return $this
+     */
     public function string(string $name, int $limit = 255): static
     {
         $this->query = "`$name` varchar(" . $limit . ")";
         return $this;
     }
 
+    /**
+     * Make a datetime type column
+     *
+     * @param string $name
+     * @return $this
+     */
     public function datetime(string $name): static
     {
         $this->query = "`$name` datetime";
@@ -86,6 +134,8 @@ class ColumnType
     }
 
     /**
+     * Set default value
+     *
      * @param mixed|null $value
      * @return $this
      */
@@ -95,24 +145,47 @@ class ColumnType
         return $this;
     }
 
+    /**
+     * Make a timestamp type column
+     *
+     * @param string $name
+     * @return $this
+     */
     public function timestamp(string $name): static
     {
         $this->query = "`$name` timestamp";
         return $this;
     }
 
+    /**
+     * Set column as unique
+     *
+     * @return $this
+     */
     public function unique(): static
     {
         $this->query .= ' UNIQUE ';
         return $this;
     }
 
+    /**
+     * Set reference foreign key
+     *
+     * @param string $name
+     * @param string $row
+     * @return $this
+     */
     public function references(string $name, string $row = 'id'): static
     {
         $this->query .= " REFERENCES `$name` (`$row`)";
         return $this;
     }
 
+    /**
+     * Set cascade on delete and on update
+     *
+     * @return $this
+     */
     public function cascade(): static
     {
         $this->cascadeDelete();
@@ -120,18 +193,32 @@ class ColumnType
         return $this;
     }
 
+    /**
+     * Set cascade on delete
+     *
+     * @return $this
+     */
     public function cascadeDelete(): static
     {
         $this->query .= " ON DELETE CASCADE ";
         return $this;
     }
 
+    /**
+     * Set cascade on update
+     * @return $this
+     */
     public function cascadeUpdate(): static
     {
         $this->query .= " ON UPDATE CASCADE ";
         return $this;
     }
 
+    /**
+     * Set no action on delete and on update
+     *
+     * @return $this
+     */
     public function noAction(): static
     {
         $this->noActionDelete();
@@ -139,6 +226,11 @@ class ColumnType
         return $this;
     }
 
+    /**
+     * Set no action on delete
+     *
+     * @return $this
+     */
     public function noActionDelete(): static
     {
         $this->query .= " ON DELETE NO ACTION ";
@@ -146,6 +238,8 @@ class ColumnType
     }
 
     /**
+     * Set no action on update
+     *
      * @return $this
      */
     public function noActionUpdate(): static
@@ -155,7 +249,10 @@ class ColumnType
     }
 
     /**
+     * Make a float type column
+     *
      * @param string $name
+     * @param array $precision
      * @return $this
      */
     public function float(string $name, array $precision = []): static
@@ -167,18 +264,35 @@ class ColumnType
         return $this;
     }
 
+    /**
+     * Make a text type column
+     *
+     * @param string $name
+     * @return $this
+     */
     public function text(string $name): static
     {
         $this->query = "`$name` TEXT";
         return $this;
     }
 
+    /**
+     * Set column as auto increment
+     *
+     * @return $this
+     */
     public function autoIncrement(): static
     {
         $this->query .= " AUTO_INCREMENT ";
         return $this;
     }
 
+    /**
+     * Drop column and all foreign keys linked
+     *
+     * @param string $foreignKey
+     * @return $this
+     */
     public function dropColumnAndForeignKey(string $foreignKey): static
     {
         $foreignKeysDb = $this->getForeignKeysDb($foreignKey);
@@ -194,6 +308,12 @@ class ColumnType
         return $this;
     }
 
+    /**
+     * Get all foreign keys linked with column name
+     *
+     * @param string $foreignKey
+     * @return array
+     */
     private function getForeignKeysDb(string $foreignKey): array
     {
         $FKs = DB::prepare("SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS 
@@ -207,18 +327,35 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
         }, $FKs);
     }
 
+    /**
+     * Drop foreign key
+     *
+     * @param string $foreignKey
+     * @return $this
+     */
     public function dropForeignKey(string $foreignKey): static
     {
         $this->query = "DROP FOREIGN KEY $foreignKey";
         return $this;
     }
 
+    /**
+     * Drop column
+     *
+     * @param string $column
+     * @return $this
+     */
     public function dropColumn(string $column): static
     {
         $this->query = "DROP COLUMN `$column`";
         return $this;
     }
 
+    /**
+     * Drop table
+     *
+     * @return $this
+     */
     public function dropTable(): static
     {
         $this->query = "DROP TABLE IF EXISTS `$this->table`";
@@ -226,6 +363,8 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
     }
 
     /**
+     * Modify column type
+     *
      * @throws MethodTypeException
      */
     public function modify(string $column, string $type, array $options = []): static
@@ -237,6 +376,8 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
     }
 
     /**
+     * Call a method dynamically
+     *
      * @param string $method
      * @param string $column
      * @param array $options
@@ -254,11 +395,13 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
     }
 
     /**
+     * Rename column
+     * parameter new type to change the type
+     *
      * @throws MethodTypeException
      */
     public function rename(string $column, string $name, string $newType = null, array $options = []): static
     {
-        $type = '';
         if (!$newType) {
             $res = $this->getColumnType($column);
             $res = $res ?: 'varchar(255)';
@@ -273,6 +416,12 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
         return $this;
     }
 
+    /**
+     * Get column type
+     *
+     * @param string $column
+     * @return string|bool
+     */
     private function getColumnType(string $column): string|bool
     {
         $res = DB::prepare("
@@ -284,6 +433,12 @@ AND COLUMN_NAME = :column", ['table' => $this->table, 'column' => $column, 'sche
         return $res ? array_shift($res) : $res;
     }
 
+    /**
+     * Set a column as foreign key
+     *
+     * @param string $name
+     * @return $this
+     */
     public function foreignKey(string $name): static
     {
         $fk = "FK_{$name}_" . rand();
@@ -295,6 +450,8 @@ AND COLUMN_NAME = :column", ['table' => $this->table, 'column' => $column, 'sche
     }
 
     /**
+     * get Query statement
+     *
      * @return string
      */
     public function getQuery(): string

@@ -15,6 +15,13 @@ class Permission
 {
     private array $callbacks = [];
 
+    /**
+     * Define permission callback
+     *
+     * @param string $name
+     * @param Closure $callback
+     * @return $this
+     */
     public function define(string $name, Closure $callback): static
     {
         $this->callbacks[$name] = $callback;
@@ -22,9 +29,11 @@ class Permission
     }
 
     /**
+     * Run permission in route
+     *
      * @throws Exception
      */
-    public function routeAuthorize(string $name, Entity|string $entity, array $options = []): \MkyCore\RedirectResponse|bool
+    public function routeAuthorize(string $name, Entity|string $entity, array $options = []): RedirectResponse|bool
     {
         $user = Auth::user();
         if (!$user) {
@@ -34,6 +43,8 @@ class Permission
     }
 
     /**
+     * Run permission globally
+     *
      * @throws PermissionAliasNotFoundException
      */
     public function authorize(string $name, Entity $user, Entity|string $entity, array $options = []): bool
@@ -46,6 +57,8 @@ class Permission
     }
 
     /**
+     * Get callback
+     *
      * @param string $name
      * @return ?Closure
      */
@@ -55,6 +68,8 @@ class Permission
     }
 
     /**
+     * Get callbacks
+     *
      * @return array
      */
     public function getCallbacks(): array

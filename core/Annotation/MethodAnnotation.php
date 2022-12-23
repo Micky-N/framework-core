@@ -18,6 +18,8 @@ class MethodAnnotation
     }
 
     /**
+     * Get method params annotation
+     *
      * @return ParamsAnnotation
      */
     public function getAnnotation(): ParamsAnnotation

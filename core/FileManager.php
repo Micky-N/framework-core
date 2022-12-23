@@ -55,12 +55,14 @@ class FileManager implements FilesystemOperator
         $this->mountFilesystems($filesystems);
     }
 
+    /**
+     * @param array<string, FilesystemOperator> $filesystems
+     * @return void
+     */
     private function mountFilesystems(array $filesystems): void
     {
         foreach ($filesystems as $key => $filesystem) {
             $this->guardAgainstInvalidMount($key, $filesystem);
-            /* @var string $key */
-            /* @var FilesystemOperator $filesystem */
             $this->mountFilesystem($key, $filesystem);
         }
     }
@@ -85,6 +87,12 @@ class FileManager implements FilesystemOperator
         $this->filesystems[$key] = $filesystem;
     }
 
+    /**
+     * Change file system
+     *
+     * @param string $space
+     * @return $this
+     */
     public function use(string $space): static
     {
         $config = \MkyCore\Facades\Config::get('filesystems.spaces.' . $space);
@@ -93,13 +101,14 @@ class FileManager implements FilesystemOperator
     }
 
     /**
+     * Get file system
+     *
      * @param string $space
      * @return FilesystemOperator
      * @throws Exception
      */
     public function get(string $space): FilesystemOperator
     {
-        $fileSystem = null;
         if ($this->hasSpace($space)) {
             $fileSystem = $this->filesystems[$space];
         } else {
@@ -108,12 +117,19 @@ class FileManager implements FilesystemOperator
         return $fileSystem;
     }
 
+    /**
+     * Check if space exists
+     *
+     * @param string $space
+     * @return bool
+     */
     private function hasSpace(string $space): bool
     {
         return isset($this->filesystems[$space]);
     }
 
     /**
+     * Resolve and set file system
      * @param string $space
      * @return FilesystemOperator
      * @throws Exception
@@ -145,11 +161,23 @@ class FileManager implements FilesystemOperator
 
     }
 
+    /**
+     * Check if driver exists
+     *
+     * @param string $driver
+     * @return bool
+     */
     private function driverExists(string $driver): bool
     {
         return isset($this->drivers[$driver]);
     }
 
+    /**
+     * Check if location exists in file system
+     *
+     * @param string $location
+     * @return bool
+     */
     public function has(string $location): bool
     {
         if (!str_contains($location, '://')) {
@@ -168,8 +196,7 @@ class FileManager implements FilesystemOperator
 
     /**
      * @param string $path
-     *
-     * @return array{0:FilesystemOperator, 1:string}
+     * @return array{0:FilesystemOperator, 1:string, 2:string}
      */
     private function determineFilesystemAndPath(string $path): array
     {
@@ -186,6 +213,12 @@ class FileManager implements FilesystemOperator
         return [$this->filesystems[$mountIdentifier], $mountPath, $mountIdentifier];
     }
 
+    /**
+     * Check if file exists in file system
+     *
+     * @param string $location
+     * @return bool
+     */
     public function fileExists(string $location): bool
     {
         if (!str_contains($location, '://')) {
@@ -202,6 +235,12 @@ class FileManager implements FilesystemOperator
         }
     }
 
+    /**
+     * Check if directory exists in file system
+     *
+     * @param string $location
+     * @return bool
+     */
     public function directoryExists(string $location): bool
     {
         if (!str_contains($location, '://')) {
@@ -218,6 +257,13 @@ class FileManager implements FilesystemOperator
         }
     }
 
+    /**
+     * Read file
+     *
+     * @param string $location
+     * @return string
+     * @throws FilesystemException
+     */
     public function read(string $location): string
     {
         if (!str_contains($location, '://')) {
@@ -234,6 +280,14 @@ class FileManager implements FilesystemOperator
         }
     }
 
+    /**
+     * Get list of directory
+     *
+     * @param string $location
+     * @param bool $deep
+     * @return DirectoryListing
+     * @throws FilesystemException
+     */
     public function listContents(string $location, bool $deep = self::LIST_SHALLOW): DirectoryListing
     {
         if (!str_contains($location, '://')) {
@@ -253,6 +307,13 @@ class FileManager implements FilesystemOperator
                 );
     }
 
+    /**
+     * Get last modified file
+     *
+     * @param string $location
+     * @return int
+     * @throws FilesystemException
+     */
     public function lastModified(string $location): int
     {
         if (!str_contains($location, '://')) {
@@ -269,6 +330,13 @@ class FileManager implements FilesystemOperator
         }
     }
 
+    /**
+     * Get file size
+     *
+     * @param string $location
+     * @return int
+     * @throws FilesystemException
+     */
     public function fileSize(string $location): int
     {
         if (!str_contains($location, '://')) {
@@ -285,6 +353,13 @@ class FileManager implements FilesystemOperator
         }
     }
 
+    /**
+     * Get extension
+     *
+     * @param string $location
+     * @return string
+     * @throws FilesystemException
+     */
     public function mimeType(string $location): string
     {
         if (!str_contains($location, '://')) {
@@ -301,6 +376,15 @@ class FileManager implements FilesystemOperator
         }
     }
 
+    /**
+     * Write content to file system location
+     *
+     * @param string $location
+     * @param string $contents
+     * @param array $config
+     * @return void
+     * @throws FilesystemException
+     */
     public function write(string $location, string $contents, array $config = []): void
     {
         if (!str_contains($location, '://')) {
@@ -317,6 +401,14 @@ class FileManager implements FilesystemOperator
         }
     }
 
+    /**
+     * Set visibility
+     *
+     * @param string $path
+     * @param string $visibility
+     * @return void
+     * @throws FilesystemException
+     */
     public function setVisibility(string $path, string $visibility): void
     {
         if (!str_contains($path, '://')) {
@@ -328,6 +420,13 @@ class FileManager implements FilesystemOperator
         $filesystem->setVisibility($path, $visibility);
     }
 
+    /**
+     * Delete directory
+     *
+     * @param string $location
+     * @return void
+     * @throws FilesystemException
+     */
     public function deleteDirectory(string $location): void
     {
         if (!str_contains($location, '://')) {
@@ -344,6 +443,14 @@ class FileManager implements FilesystemOperator
         }
     }
 
+    /**
+     * Create a directory
+     *
+     * @param string $location
+     * @param array $config
+     * @return void
+     * @throws FilesystemException
+     */
     public function createDirectory(string $location, array $config = []): void
     {
         if (!str_contains($location, '://')) {
@@ -361,11 +468,13 @@ class FileManager implements FilesystemOperator
     }
 
     /**
+     * Move file to another directory
+     *
      * @param string $source
      * @param string $destination
      * @param array $config
      * @return void
-     * @throws Exception
+     * @throws FilesystemException
      */
     public function move(string $source, string $destination, array $config = []): void
     {
@@ -440,11 +549,12 @@ class FileManager implements FilesystemOperator
     }
 
     /**
+     * Copy file ap another destination
      * @param string $source
      * @param string $destination
      * @param array $config
      * @return void
-     * @throws Exception
+     * @throws FilesystemException
      */
     public function copy(string $source, string $destination, array $config = []): void
     {

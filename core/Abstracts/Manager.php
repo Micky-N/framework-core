@@ -5,6 +5,9 @@ namespace MkyCore\Abstracts;
 use Exception;
 use MkyCore\Annotation\Annotation;
 use MkyCore\Database;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Str;
 use MkyCore\Traits\QueryMysql;
 use ReflectionClass;
 use ReflectionException;
@@ -45,6 +48,8 @@ abstract class Manager
      *
      * @return string|null
      * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      */
     public function getPrimaryKey(): ?string
     {
@@ -55,9 +60,18 @@ abstract class Manager
         return null;
     }
 
+    /**
+     * Get entity class name
+     *
+     * @return string|null
+     */
     public function getEntity(): ?string
     {
-        $annotation = (new Annotation($this))->getClassAnnotation('Entity');
+        try{
+            $annotation = (new Annotation($this))->getClassAnnotation('Entity');
+        }catch(Exception $exception){
+            $annotation = false;
+        }
         if ($annotation) {
             $entity = $annotation->getProperty();
         } else {
@@ -79,7 +93,15 @@ abstract class Manager
         return $entity;
     }
 
-    public function create(array $data, string $table = '')
+    /**
+     * Save a new array in database table
+     *
+     * @param array $data
+     * @param string $table
+     * @return Entity|bool|Manager
+     * @throws Exception
+     */
+    public function create(array $data, string $table = ''): Entity|bool|static
     {
         $entity = $this->getEntity();
         $entity = new $entity($data);
@@ -87,15 +109,14 @@ abstract class Manager
     }
 
     /**
-     * Records a new data in table
+     * Save a new entity in database table
      *
      * @param Entity $entity
      * @param string $table
-     * @return $this|bool
-     * @throws ReflectionException
+     * @return $this|false
      * @throws Exception
      */
-    public function save(Entity $entity, string $table = ''): bool|Entity
+    public function save(Entity $entity, string $table = ''): Entity|false
     {
         $data = $this->filterColumns($entity);
         unset($data[$this->getPrimaryKey()]);
@@ -120,7 +141,7 @@ abstract class Manager
     }
 
     /**
-     * Filter needed column
+     * Filter the required columns
      *
      * @param Entity $entity
      * @return array
@@ -131,7 +152,7 @@ abstract class Manager
         $columns = $this->getColumns();
         $filteredData = [];
         foreach ($columns as $key => $column) {
-            if (!is_null($value = $entity->{$this->camelize($column)}())) {
+            if (!is_null($value = $entity->{Str::camelize($column)}())) {
                 $filteredData[$column] = $value;
             }
         }
@@ -153,10 +174,10 @@ abstract class Manager
     }
 
     /**
-     * Get the model table name
+     * Get the manager table name
      *
      * @return string
-     * @throws \Exception
+     * @throws ReflectionException
      */
     public function getTable(): string
     {
@@ -165,23 +186,14 @@ abstract class Manager
     }
 
     /**
-     * @param string $input
-     * @return string
-     */
-    private function camelize(string $input): string
-    {
-        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
-    }
-
-    /**
      * Update a record
      *
      * @param Entity $entity
-     * @return bool|Entity
+     * @return false|Entity
      * @throws ReflectionException
      * @throws Exception
      */
-    public function update(Entity $entity): bool|Entity
+    public function update(Entity $entity): false|Entity
     {
         $keys = [];
         $values = [];
@@ -209,10 +221,10 @@ abstract class Manager
      * Get a record
      *
      * @param mixed $id
-     * @return Entity|bool
+     * @return Entity|false
      * @throws Exception|ReflectionException
      */
-    public function find(mixed $id): bool|Entity
+    public function find(mixed $id): false|Entity
     {
         return $this->where(
             $this->getPrimaryKey(),
@@ -262,49 +274,5 @@ abstract class Manager
         $pk = $this->getPrimaryKey();
         $ids = $this->select($pk)->get();
         return $ids[array_rand($ids, 1)]->{$pk};
-    }
-
-    /**
-     * Get selected field from the relation table
-     *
-     * @param string $relation
-     * @param array $properties
-     * @return $this
-     */
-    public function with(string $relation, array $properties = []): static
-    {
-        $instance = $this->{$relation};
-        if (!is_array($instance)) {
-            if (!$properties) {
-                foreach ($instance as $key => $value) {
-                    if ($key != $instance->getPrimaryKey()) {
-                        if (property_exists($this, $key)) {
-                            $this->{"{$relation}_{$key}"} = $value;
-                        } else {
-                            $this->{$key} = $value;
-                        }
-                    }
-                }
-            } else {
-                foreach ($properties as $property) {
-                    if (property_exists($this, $property)) {
-                        $this->{"{$relation}_{$property}"} = $instance->{$property};
-                    } else {
-                        $this->{$property} = $instance->{$property};
-                    }
-                }
-            }
-        } else {
-            if ($properties) {
-                foreach ($instance as $key => $model) {
-                    $instance[$key] = new stdClass();
-                    foreach ($properties as $property) {
-                        $instance[$key]->{$property} = $model->{$property};
-                    }
-                }
-            }
-            $this->{$relation} = $instance;
-        }
-        return $this;
     }
 }

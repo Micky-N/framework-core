@@ -11,28 +11,46 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
     public function __construct(private readonly Request $request)
     {
         $headers = [];
-        $headers = $this->getContentType($headers);
-        $headers = $this->getCacheControl($headers);
-        $headers = $this->getAllowOrigin($headers);
-        $headers = $this->getAllowMethods($headers);
-        $headers = $this->getAllowHeaders($headers);
-        $headers = $this->getAllowCredentials($headers);
+        $headers = $this->setContentType($headers);
+        $headers = $this->setCacheControl($headers);
+        $headers = $this->setAllowOrigin($headers);
+        $headers = $this->setAllowMethods($headers);
+        $headers = $this->setAllowHeaders($headers);
+        $headers = $this->setAllowCredentials($headers);
         $this->headers = $headers;
     }
 
-    private function getContentType(array $headers = []): array
+    /**
+     * Set content-type
+     *
+     * @param array $headers
+     * @return array
+     */
+    private function setContentType(array $headers = []): array
     {
         $headers['Content-Type'] = 'application/json; charset=' . config('jwt.charset');
         return $headers;
     }
 
-    private function getCacheControl(array $headers = []): array
+    /**
+     * Set max_age
+     *
+     * @param array $headers
+     * @return array
+     */
+    private function setCacheControl(array $headers = []): array
     {
         $headers['Cache-Control'] = 'max-age=' . config('jwt.max_age');
         return $headers;
     }
 
-    private function getAllowOrigin(array $headers = []): array
+    /**
+     * Set allowed origin
+     *
+     * @param array $headers
+     * @return array
+     */
+    private function setAllowOrigin(array $headers = []): array
     {
         $allowedOrigins = config('jwt.allowed_origins');
         $origin = $this->request->header('Origin')[0] ?? '';
@@ -46,7 +64,13 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
         return $headers;
     }
 
-    private function getAllowMethods(array $headers = []): array
+    /**
+     * Set allowed methods
+     *
+     * @param array $headers
+     * @return array
+     */
+    private function setAllowMethods(array $headers = []): array
     {
         $allowedMethods = config('jwt.allowed_methods', ['GET']);
         $method = $this->request->method() ?? 'GET';
@@ -59,7 +83,13 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
         return $headers;
     }
 
-    private function getAllowHeaders(array $headers = []): array
+    /**
+     * Set allowed headers
+     *
+     * @param array $headers
+     * @return array
+     */
+    private function setAllowHeaders(array $headers = []): array
     {
         $allowedHeaders = config('jwt.allowed_headers');
         if (!in_array('*', $allowedHeaders)) {
@@ -68,12 +98,26 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
         return $headers;
     }
 
-    private function getAllowCredentials(array $headers = []): array
+    /**
+     * Set allowed credentials
+     *
+     * @param array $headers
+     * @return array
+     */
+    private function setAllowCredentials(array $headers = []): array
     {
         $headers['Access-Control-Allow-Credentials'] = config('jwt.allowed_credentials') ? 'true' : 'false';
         return $headers;
     }
 
+    /**
+     * Set response
+     *
+     * @param mixed $data
+     * @param int $status
+     * @param array $headers
+     * @return $this
+     */
     public function make(mixed $data, int $status = 200, array $headers = []): static
     {
         $headers = array_merge($this->headers, $headers);

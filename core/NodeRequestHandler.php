@@ -35,6 +35,11 @@ class NodeRequestHandler implements RequestHandlerInterface
         $this->setInitNodeMiddlewares();
     }
 
+    /**
+     * Set globals middlewares
+     *
+     * @return void
+     */
     private function setInitNodeMiddlewares(): void
     {
         $this
@@ -51,6 +56,12 @@ class NodeRequestHandler implements RequestHandlerInterface
             ->setMiddleware(NotFoundMiddleware::class);
     }
 
+    /**
+     * Set middleware
+     *
+     * @param string $middleware
+     * @return $this
+     */
     public function setMiddleware(string $middleware): NodeRequestHandler
     {
         $this->nodeMiddlewares[] = $middleware;
@@ -58,6 +69,8 @@ class NodeRequestHandler implements RequestHandlerInterface
     }
 
     /**
+     * Handle response
+     *
      * @param Request $request
      * @return ResponseInterface
      * @throws Exception
@@ -73,6 +86,8 @@ class NodeRequestHandler implements RequestHandlerInterface
     }
 
     /**
+     * Run process
+     *
      * @param Request $request
      * @return mixed
      * @throws Exception
@@ -91,6 +106,8 @@ class NodeRequestHandler implements RequestHandlerInterface
     }
 
     /**
+     * Get current middleware
+     *
      * @return ResponseInterface|MiddlewareInterface
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException

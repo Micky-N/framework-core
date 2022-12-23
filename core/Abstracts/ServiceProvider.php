@@ -12,6 +12,11 @@ abstract class ServiceProvider
         
     }
 
+    /**
+     * This method will be call to Application class
+     *
+     * @return void
+     */
     public function register(): void
     {
         //

@@ -28,6 +28,13 @@ class Route
     {
     }
 
+    /**
+     * Compare a property with value parameter
+     *
+     * @param string $compareTo
+     * @param array|string $value
+     * @return bool
+     */
     public function compare(string $compareTo, array|string $value): bool
     {
         if (!method_exists($this, 'match' . ucfirst($compareTo))) {
@@ -37,6 +44,8 @@ class Route
     }
 
     /**
+     * Get route url
+     *
      * @return string
      */
     public function getUrl(): string
@@ -45,7 +54,10 @@ class Route
     }
 
     /**
-     * @return string
+     * Set route url
+     *
+     * @param string $url
+     * @return Route
      */
     public function setUrl(string $url): static
     {
@@ -54,6 +66,8 @@ class Route
     }
 
     /**
+     * Check if the url matches the parameter
+     *
      * @param string $urlToCompare
      * @return bool
      */
@@ -66,6 +80,8 @@ class Route
     }
 
     /**
+     * Check if the name matches the parameter
+     *
      * @param string $nameToCompare
      * @return bool
      */
@@ -78,6 +94,8 @@ class Route
     }
 
     /**
+     * Get route action
+     *
      * @return Closure|array
      */
     public function getAction(): Closure|array
@@ -86,6 +104,8 @@ class Route
     }
 
     /**
+     * Check if the controller name matches the parameter
+     *
      * @param string $controllerToCompare
      * @return bool
      */
@@ -98,6 +118,8 @@ class Route
     }
 
     /**
+     * Get route middlewares
+     *
      * @return array
      */
     public function getMiddlewares(): array
@@ -106,7 +128,9 @@ class Route
     }
 
     /**
-     * @param array|string $middlewaresToCompare
+     * Check if the module name matches the parameter
+     *
+     * @param string $module
      * @return bool
      */
     public function matchModule(string $module): bool
@@ -118,6 +142,8 @@ class Route
     }
 
     /**
+     * Get route methods
+     *
      * @return array
      */
     public function getMethods(): array
@@ -126,6 +152,8 @@ class Route
     }
 
     /**
+     * Check if request path match with route url
+     *
      * @param Request $request
      * @return bool
      */
@@ -136,7 +164,12 @@ class Route
         return !empty($m) && str_starts_with($path, $m[0]);
     }
 
-    private function urlRegex(): array|string|null
+    /**
+     * Transform route url to regex
+     *
+     * @return string
+     */
+    private function urlRegex(): string
     {
         return preg_replace_callback('/\{(.*?)\}/', function ($e) {
             if (isset($e[1])) {
@@ -147,6 +180,8 @@ class Route
     }
 
     /**
+     * Prepare the route params
+     *
      * @throws Exception
      */
     public function process(Request $request): ?Route
@@ -170,35 +205,13 @@ class Route
                 return $e[0];
             }, $urlPart);
         }, $urlParts, $pathParts);
-        $routeParams = array_filter($routeParams, fn($param) => $param);
-        $this->params = $routeParams;
+        $this->params = array_filter($routeParams, fn($param) => $param);
         return $this;
     }
 
     /**
-     * @param array $routeParams
-     * @return mixed
-     * @throws ReflectionException
-     * @throws RouteNeedParamsException
-     */
-    public function resolveByController(array $routeParams): mixed
-    {
-        $controllerReflection = new \ReflectionClass($this->action[0]);
-        $methodReflection = $controllerReflection->getMethod($this->action[1]);
-        $params = array_map(function ($reflectionParameter) use ($routeParams) {
-            $name = $reflectionParameter->getName();
-            if (array_key_exists($name, $routeParams)) {
-                return $routeParams[$name];
-            }
-            if ($reflectionParameter->isDefaultValueAvailable()) {
-                return $reflectionParameter->getDefaultValue();
-            }
-            throw new RouteNeedParamsException("Param \$$name required");
-        }, $methodReflection->getParameters());
-        return $methodReflection->invokeArgs($controllerReflection->newInstanceArgs(), $params);
-    }
-
-    /**
+     * Get name
+     *
      * @return string
      */
     public function getName(): string
@@ -207,6 +220,8 @@ class Route
     }
 
     /**
+     * Generate url from route name
+     *
      * @param array $params
      * @param bool $absolute
      * @return string
@@ -245,30 +260,29 @@ class Route
             }, $this->url), '/');
     }
 
+    /**
+     * Check if route need param
+     *
+     * @return bool
+     */
     public function hasParam(): bool
     {
         return preg_match('/\{(.*)\}/', $this->url);
     }
 
+    /**
+     * Get route params
+     *
+     * @return array
+     */
     public function getParams(): array
     {
         return $this->params;
     }
 
     /**
-     * @return array
-     */
-    public function getOptionalParams(): array
-    {
-        return $this->optionalParams;
-    }
-
-    public function isOptionalParam(string $param): bool
-    {
-        return isset($this->optionalParams[$param]) && $this->optionalParams[$param] === true;
-    }
-
-    /**
+     * Get route module name
+     *
      * @return string
      */
     public function getModule(): string
@@ -277,6 +291,8 @@ class Route
     }
 
     /**
+     * Get route permissions
+     *
      * @return array
      */
     public function getPermissions(): array
@@ -285,6 +301,8 @@ class Route
     }
 
     /**
+     * Set route name
+     *
      * @param string $name
      * @return Route
      */
@@ -295,6 +313,8 @@ class Route
     }
 
     /**
+     * Set route middlewares
+     *
      * @param array $middlewares
      * @return Route
      */
@@ -305,6 +325,8 @@ class Route
     }
 
     /**
+     * Set route permissions
+     *
      * @param array $permissions
      * @return Route
      */
@@ -312,5 +334,26 @@ class Route
     {
         $this->permissions = $permissions;
         return $this;
+    }
+
+    /**
+     * Get optional params
+     *
+     * @return array
+     */
+    public function getOptionalParams(): array
+    {
+        return $this->optionalParams;
+    }
+
+    /**
+     * Check if param is optional
+     *
+     * @param string $param
+     * @return bool
+     */
+    public function isOptionalParam(string $param): bool
+    {
+        return isset($this->optionalParams[$param]) && $this->optionalParams[$param] === true;
     }
 }

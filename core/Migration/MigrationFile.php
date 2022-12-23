@@ -8,6 +8,7 @@ use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Exceptions\Migration\MigrationException;
 use MkyCore\File;
+use MkyCore\Str;
 use ReflectionException;
 
 class MigrationFile
@@ -27,6 +28,8 @@ class MigrationFile
     }
 
     /**
+     * Check if database dir exists and run the migration
+     *
      * @param string $direction
      * @param string|null $file
      * @throws FailedToResolveContainerException
@@ -43,6 +46,8 @@ class MigrationFile
     }
 
     /**
+     * Instantiate migration class
+     *
      * @throws FailedToResolveContainerException
      * @throws MigrationException
      * @throws NotInstantiableContainerException
@@ -60,7 +65,6 @@ class MigrationFile
         } else {
             $dir = glob(File::makePath([$this->databaseDir, "*"]));
             $dir = $this->sortMigrationFile($dir);
-            $migrationFiles = [];
             for ($i = 0; $i < count($dir); $i++) {
                 $migrationFile = $dir[$i];
                 $this->instantiateMigration($direction, $migrationFile);
@@ -69,11 +73,16 @@ class MigrationFile
     }
 
     /**
+     * Call migration class method
+     *
      * @param string $direction
-     * @param Migration $migration
+     * @param string $migrationFile
      * @return void
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
-    private function instantiateMigration(string $direction, string $migrationFile)
+    private function instantiateMigration(string $direction, string $migrationFile): void
     {
         if (in_array($direction, ['up', 'down'])) {
             require $migrationFile;
@@ -84,7 +93,16 @@ class MigrationFile
             }
         }
     }
-    
+
+    /**
+     * Get migration file by time
+     *
+     * @param string $fileTime
+     * @return string
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
     private function getMigrationFile(string $fileTime): string
     {
         $files = glob(File::makePath([$this->app->get('path:database'), 'migrations', "*.php"]));
@@ -94,6 +112,15 @@ class MigrationFile
         return $fileReg ? $fileReg[0] : $fileTime;
     }
 
+    /**
+     * Sort migration file by time
+     *
+     * @param array $dir
+     * @return array
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
     private function sortMigrationFile(array $dir): array
     {
         usort($dir, function ($file1, $file2) {
@@ -102,6 +129,16 @@ class MigrationFile
         return $dir;
     }
 
+    /**
+     * Compare file time
+     *
+     * @param string $file1
+     * @param string $file2
+     * @return bool
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
     private function compareFileTime(string $file1, string $file2): bool
     {
         $file1 = str_replace([$this->app->get('path:database') . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR, '.php'], '', $file1);
@@ -111,19 +148,17 @@ class MigrationFile
         return (int) $file2 > (int) $file1;
     }
 
+    /**
+     * Get migration class name
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     */
     private function getClassFromFile(string $file): string
     {
         $text = preg_replace('/[0-9+]/', '', $file);
         $text = str_replace([$this->app->get('path:database') . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR, '.php'], '', $text);
-        return $this->toPascal($text);
-    }
-
-    private function toPascal(string $text): string
-    {
-        return preg_replace_callback('/_[a-z]/', function ($exp) {
-            if (isset($exp[0])) {
-                return str_replace('_', '', strtoupper($exp[0]));
-            }
-        }, $text);
+        $text = str_starts_with($text, '_') ? ltrim($text, '_') : $text;
+        return Str::classify($text);
     }
 }

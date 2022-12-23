@@ -13,8 +13,8 @@ use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
 use MkyCore\Router\Route;
 use ReflectionException;
-use ReflectionUnionType;
 use ReflectionNamedType;
+use ReflectionUnionType;
 
 class DispatcherMiddleware implements MiddlewareInterface
 {
@@ -24,6 +24,11 @@ class DispatcherMiddleware implements MiddlewareInterface
     }
 
     /**
+     * Run middleware
+     * Find controller and method and call them
+     * with passed params
+     *
+     * @inheritDoc
      * @param Request $request
      * @param callable $next
      * @return ResponseHandlerInterface
@@ -34,19 +39,16 @@ class DispatcherMiddleware implements MiddlewareInterface
     public function process(Request $request, callable $next): mixed
     {
         $this->app->forceSingleton(Request::class, $request);
-        $routeParams = $request->getAttributes();
-        if (isset($routeParams[Route::class])) {
-            $route = $routeParams[Route::class];
-            unset($routeParams[Route::class]);
+        $requestAttributes = $request->getAttributes();
+        if (isset($requestAttributes[Route::class])) {
+            $route = $requestAttributes[Route::class];
+            unset($requestAttributes[Route::class]);
             $actionRoute = $route->getAction();
             $methodReflection = null;
             if (is_array($actionRoute)) {
                 $controller = $actionRoute[0];
                 $method = $actionRoute[1];
-                if (is_string($controller)) {
-                    $controller = $this->app->get($controller);
-                }
-
+                $controller = $this->app->get($controller);
                 $controllerReflection = new \ReflectionClass($controller);
                 $methodReflection = $controllerReflection->getMethod($method);
             } elseif ($actionRoute instanceof Closure) {
@@ -58,25 +60,40 @@ class DispatcherMiddleware implements MiddlewareInterface
                 $reflectionParameter = $reflectionParameters[$i];
                 $name = $reflectionParameter->getName();
                 $paramType = $reflectionParameter->getType();
-                if($paramType instanceof ReflectionUnionType){
-                    $paramType = $paramType->getTypes()[0];
-                }
-                if ($paramType && !$paramType->isBuiltin()) {
-                    $param = isset($routeParams[$name]) ? [$name => $routeParams[$name]] : [];
-                    $class = $paramType->getName();
-                    if (class_exists($class) && is_string($class)) {
-                        $class = $this->app->get($class);
-                        if ($class instanceof Entity) {
-                            $param[$name] = $this->app->getInstanceEntity($class, $param[$name]);
+                if ($paramType instanceof ReflectionUnionType) {
+                    $index = 0;
+                    $paramTypes = $paramType->getTypes();
+                    if (isset($requestAttributes[$name])) {
+                        $type = gettype($requestAttributes[$name]);
+                        for ($t = 0; $t < count($paramTypes); $t++) {
+                            $paramT = $paramTypes[$t];
+                            if ($paramT->getName() == $type) {
+                                $index = $t;
+                                break;
+                            }
                         }
-                    } elseif (interface_exists($class) && is_string($class)) {
-                        $param[$name] = $this->app->get($class, $param[$name] ?? []);
+                    }
+                    $paramType = $paramTypes[$index];
+                }
+
+                if ($paramType && !$paramType->isBuiltin()) {
+                    $param = isset($requestAttributes[$name]) ? [$name => $requestAttributes[$name]] : [];
+                    $class = $paramType->getName();
+                    if (is_string($class)) {
+                        if (class_exists($class)) {
+                            $class = $this->app->get($class);
+                            if ($class instanceof Entity) {
+                                $param[$name] = $this->app->getInstanceEntity($class, $param[$name]);
+                            }
+                        } elseif (interface_exists($class)) {
+                            $param[$name] = $this->app->get($class, $param[$name] ?? []);
+                        }
                     }
                     $params[$name] = $param[$name] ?? $this->app->get($paramType->getName(), $param);
-                } elseif ($paramType && $paramType->isBuiltin() && !empty($routeParams[$name])) {
-                    $params[$name] = $routeParams[$name];
-                } elseif (!$paramType && !empty($routeParams[$name])) {
-                    $params[$name] = (string)$routeParams[$name];
+                } elseif ($paramType && $paramType->isBuiltin() && !empty($requestAttributes[$name])) {
+                    $params[$name] = $requestAttributes[$name];
+                } elseif (!$paramType && !empty($requestAttributes[$name])) {
+                    $params[$name] = (string)$requestAttributes[$name];
                 } elseif ($route->isOptionalParam($name)) {
                     $params[$name] = $reflectionParameter->isDefaultValueAvailable() ? $reflectionParameter->getDefaultValue() : null;
                 } elseif ($reflectionParameter->isDefaultValueAvailable()) {

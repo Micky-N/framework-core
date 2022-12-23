@@ -29,6 +29,8 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
+     * Run module middleware
+     *
      * @inheritDoc
      * @throws Exception
      */

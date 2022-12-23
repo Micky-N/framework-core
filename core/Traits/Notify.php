@@ -29,30 +29,35 @@ trait Notify
      */
     public function notify(NotificationInterface $notification): bool
     {
-        if (!is_array($notification->via($this)) || count($notification->via($this)) < 1) {
+        $systems = $notification->via($this);
+        if (!is_array($systems) || count($systems) < 1) {
             throw new NotificationSystemNotFoundAliasException(sprintf('Notification system is required in the method %s::via()', get_class($notification)));
         }
-        foreach ($notification->via($this) as $via) {
-            $alias = app()->getNotificationSystem($via);
+        foreach ($systems as $system) {
+            $alias = app()->getNotificationSystem($system);
             if (is_null($alias)) {
-                throw new NotificationSystemNotFoundAliasException("$via alias is not defined in the EventServiceProvider");
+                throw new NotificationSystemNotFoundAliasException("$system alias is not defined in the EventServiceProvider");
             }
 
-            $class = new ReflectionClass($alias);
-            if (!method_exists($notification, 'to' . ucfirst($via))) {
-                throw new NotificationSystemNotFoundAliasException(sprintf("%s must implement the '%s' method", get_class($notification), 'to' . ucfirst($via)));
+            $class = app()->get($alias);
+            $notificationMethod = 'to' . ucfirst($system);
+            if (!method_exists($notification, $notificationMethod)) {
+                $notificationMethod = 'toArray';
+                if(!method_exists($notification, $notificationMethod)){
+                    throw new NotificationSystemNotFoundAliasException(sprintf("%s must implement the '%s' method", get_class($notification), 'to' . ucfirst($system)));
+                }
             }
 
-            $message = $notification->{'to' . ucfirst($via)}($this);
+            $message = $notification->$notificationMethod($this);
             if (empty($message)) {
-                throw new NotificationNotMessageException(sprintf('%s::%s() message is required', get_class($notification), 'to' . ucfirst($via)));
+                throw new NotificationNotMessageException(sprintf('%s::%s() message is required', get_class($notification), 'to' . ucfirst($system)));
             }
 
-            if (!($class->newInstance() instanceof NotificationSystemInterface)) {
-                throw new NotificationSystemException(sprintf("%s must implement %s interface", $class->getName(), NotificationSystemInterface::class));
+            if (!($class instanceof NotificationSystemInterface)) {
+                throw new NotificationSystemException(sprintf("%s must implement %s interface", get_class($class), NotificationSystemInterface::class));
             }
 
-            call_user_func_array([$class->newInstance(), 'send'], [$this, $message]);
+            call_user_func_array([$class, 'send'], [$this, $message]);
         }
         return true;
     }

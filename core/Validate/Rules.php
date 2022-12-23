@@ -2,6 +2,7 @@
 
 namespace MkyCore\Validate;
 
+use Carbon\Carbon;
 use Exception;
 use MkyCore\Exceptions\Validator\RuleNotFoundException;
 use MkyCore\Exceptions\Validator\RuleParamNotDeclareException;
@@ -10,6 +11,7 @@ use MkyCore\File;
 use MkyCore\Interfaces\RuleInterface;
 use ReflectionException;
 use ReflectionFunction;
+use UnitEnum;
 
 class Rules
 {
@@ -129,10 +131,10 @@ class Rules
         if ($param == 'now') {
             $param = "Y-m-d H:i:s";
         } elseif ($param == 'tomorrow') {
-            $param = \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", date("Y-m-d H:i:s"));
+            $param = Carbon::createFromFormat("Y-m-d H:i:s", date("Y-m-d H:i:s"));
             $param = $param->addDay()->format('Y-m-d H:i:s');
         } elseif ($param == 'yesterday') {
-            $param = \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", date("Y-m-d H:i:s"));
+            $param = Carbon::createFromFormat("Y-m-d H:i:s", date("Y-m-d H:i:s"));
             $param = $param->subDay()->format('Y-m-d H:i:s');
         }
         return $param;

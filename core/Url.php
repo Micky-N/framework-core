@@ -15,6 +15,7 @@ class Url
     }
 
     /**
+     * Generate url with params, query is optional
      * @param string|array $url
      * @param array $params
      * @param array $query
@@ -34,6 +35,12 @@ class Url
         }, $this->make($url, $query));
     }
 
+    /**
+     * Generate url, query is optional
+     * @param string|array $url
+     * @param array $query
+     * @return string
+     */
     public function make(string|array $url, array $query = []): string
     {
         if (is_string($url)) {

@@ -21,6 +21,8 @@ class Schema
 
 
     /**
+     * Create table
+     *
      * @param string $table
      * @param callable $callback
      * @return bool
@@ -33,6 +35,8 @@ class Schema
     }
 
     /**
+     * Create query statement
+     *
      * @param string $table
      * @param MigrationTable $migrationTable
      * @return bool
@@ -40,7 +44,7 @@ class Schema
     private static function createQuery(string $table, MigrationTable $migrationTable): bool
     {
         $values = array_map(function ($value) {
-            return $value->createRow();
+            return $value->getQuery();
         }, $migrationTable->getColumns());
         $queryCreate = "CREATE TABLE `$table`\n";
         $queryCreate .= "(\n    ";
@@ -50,6 +54,8 @@ class Schema
     }
 
     /**
+     * Run query to create or update
+     *
      * @param string $table
      * @param string $query
      * @return bool
@@ -73,6 +79,8 @@ class Schema
     }
 
     /**
+     * Run statement to database
+     *
      * @param string $query
      * @return bool
      * @throws PDOException
@@ -89,6 +97,8 @@ class Schema
     }
 
     /**
+     * Update table
+     *
      * @param string $table
      * @param callable $callback
      * @return bool
@@ -102,6 +112,8 @@ class Schema
 
 
     /**
+     * Alter query statement
+     *
      * @param string $table
      * @param MigrationTable $migrationTable
      * @return bool
@@ -110,7 +122,7 @@ class Schema
     {
         $queryCreate = "ALTER TABLE `$table`\n";
         $queryCreate .= implode(",\n", array_map(function ($value) {
-            $value = $value->createRow();
+            $value = $value->getQuery();
             $test = explode(' ', $value);
             $test = $test[0];
             if (!in_array($test, self::ALTERS)) {
@@ -123,6 +135,8 @@ class Schema
     }
 
     /**
+     * Drop table
+     *
      * @param string $table
      * @return bool
      */
@@ -132,6 +146,8 @@ class Schema
     }
 
     /**
+     * Drop if exists
+     *
      * @param string $table
      * @return bool
      */

@@ -24,7 +24,8 @@
         "ext-readline": "*",
         "twig/twig": "^3.4",
         "league/flysystem": "^3.11",
-        "fakerphp/faker": "^1.21"
+        "fakerphp/faker": "^1.21",
+        "doctrine/inflector": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

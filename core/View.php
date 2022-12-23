@@ -44,6 +44,8 @@ class View implements ResponseHandlerInterface
             switch ($viewsModuleConfig) {
                 case 'both':
                     $this->getModuleViewsDirectory($module);
+                    $this->getParentViewsDirectory($module);
+                    break;
                 case 'parent':
                     $this->getParentViewsDirectory($module);
                     break;
@@ -67,6 +69,9 @@ class View implements ResponseHandlerInterface
         $this->compile->addPath($path, $namespace);
     }
 
+    /**
+     * @throws LoaderError
+     */
     private function getParentViewsDirectory(ModuleKernel $moduleKernel): void
     {
         /** @var ModuleKernel[] $ancestors */

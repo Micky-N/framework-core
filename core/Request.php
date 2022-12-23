@@ -21,6 +21,9 @@ class Request extends ServerRequest implements ServerRequestInterface
 
     const METHOD_GET = 'get';
     const METHOD_POST = 'post';
+    const METHOD_HEAD = 'head';
+    const METHOD_PATCH = 'patch';
+    const METHOD_OPTIONS = 'options';
     const METHOD_PUT = 'put';
     const METHOD_DELETE = 'delete';
     const METHOD_KEY_FORM = '_method';

@@ -11,9 +11,6 @@ abstract class Event implements \MkyCore\Interfaces\EventInterface
 
     use Dispatcher;
 
-    /**
-     * @var mixed
-     */
     protected bool $propagationStopped = false;
     protected array $actions = [];
     protected array $params = [];
@@ -21,14 +18,18 @@ abstract class Event implements \MkyCore\Interfaces\EventInterface
 
 
     /**
-     * @param $flag
+     * Stop or continue propagation of event
+     *
+     * @param bool $flag
      */
-    public function stopPropagation($flag)
+    public function stopPropagation(bool $flag)
     {
         $this->propagationStopped = $flag;
     }
 
     /**
+     * Check if event propagation is stopped
+     *
      * @return bool
      */
     public function isPropagationStopped(): bool
@@ -37,6 +38,8 @@ abstract class Event implements \MkyCore\Interfaces\EventInterface
     }
 
     /**
+     * Get all event actions
+     *
      * @return array
      */
     public function getActions(): array
@@ -45,6 +48,8 @@ abstract class Event implements \MkyCore\Interfaces\EventInterface
     }
 
     /**
+     * Get all event params
+     *
      * @return array
      */
     public function getParams(): array
@@ -53,6 +58,8 @@ abstract class Event implements \MkyCore\Interfaces\EventInterface
     }
 
     /**
+     * Get a event param
+     *
      * @param string $key
      * @return mixed
      */
@@ -62,6 +69,8 @@ abstract class Event implements \MkyCore\Interfaces\EventInterface
     }
 
     /**
+     * Get event target
+     *
      * @return mixed
      */
     public function getTarget(): mixed

@@ -24,7 +24,7 @@ class Route extends Show
     {
         $print = in_array('--print', $this->params);
         $table = new ConsoleTable();
-        $table->setHeaders(array_keys(self::HEADERS));
+        $table->setHeaders(array_map(fn($header) => substr($header, 3), array_keys(self::HEADERS)));
         $filters = $this->getFilters($this->parseParams());
         $routes = Router::getRoutes($filters);
         if(!$routes){

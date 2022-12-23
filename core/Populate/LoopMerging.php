@@ -23,6 +23,13 @@ class LoopMerging
         }
     }
 
+    /**
+     * Set the current loop index
+     * and run the handler method
+     *
+     * @param int $index
+     * @return array
+     */
     public function __invoke(int $index): array
     {
         $this->index = $index;
@@ -30,6 +37,8 @@ class LoopMerging
     }
 
     /**
+     * Set count
+     *
      * @param int $count
      * @return LoopMerging
      */
@@ -39,32 +48,60 @@ class LoopMerging
         return $this;
     }
 
-    public function getByModulo(): array
+    /**
+     * Get data by modulo calcul
+     *
+     * @return array
+     */
+    public function getDataByModulo(): array
     {
         $modulo = $this->index % count($this->data);
         return $this->data[$modulo] ?? [];
     }
 
     /**
+     * Get index
+     *
      * @return int
      */
     public function index(): int
     {
         return $this->index;
     }
-    
-    private function handleMode()
+
+    /**
+     * Get data if merge with array
+     * or resolve callback if merge with callback
+     *
+     * @return mixed
+     */
+    private function handleMode(): mixed
     {
         if(!$this->modeCallable){
-            return $this->getByModulo();
+            return $this->getDataByModulo();
         }
         return $this->resolve();
     }
-    
-    public function resolve()
+
+    /**
+     * Resolve callback
+     *
+     * @return mixed
+     */
+    public function resolve(): mixed
     {
         $resolve = $this->callback;
         return $resolve($this);
+    }
+
+    /**
+     * Get count
+     *
+     * @return int
+     */
+    public function getCount(): int
+    {
+        return $this->count;
     }
 
 

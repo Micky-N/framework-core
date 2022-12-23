@@ -107,6 +107,18 @@ class QueryBuilderMysql
         return $this;
     }
 
+    public function whereNull($column): static
+    {
+        $this->conditions[] = sprintf('%s IS NULL', $column);
+        return $this;
+    }
+
+    public function whereNotNull($column): static
+    {
+        $this->conditions[] = sprintf('%s IS NOT NULL', $column);
+        return $this;
+    }
+
     /**
      * @return $this
      */
@@ -293,12 +305,13 @@ class QueryBuilderMysql
     /**
      * Get all records
      *
-     * @return array|false
+     * @param bool $one
+     * @return false|Entity|array
      * @throws Exception
      */
-    public function get(): false|array
+    public function get(bool $one = false): false|Entity|array
     {
-        return $this->db->query($this->stringify(), $this->instance->getEntity());
+        return $this->db->query($this->stringify(), $this->instance->getEntity(), $one);
     }
 
     /**

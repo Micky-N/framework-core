@@ -16,8 +16,9 @@ class Run extends Populate
     public function process(): bool|string
     {
         $params = $this->params;
+        $params = $this->parseParams();
         try {
-            $file = isset($params['arg0']) && !str_starts_with($params['arg0'], '--') ? $params['arg0'] : 'runner';
+            $file = isset($params['-f']) ? $params['-f'] : 'runner';
             $file = $this->handlerRules('file', $file);
             $populator = "Database\Populators\\$file";
             if(!class_exists($populator)){

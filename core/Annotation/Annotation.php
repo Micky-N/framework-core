@@ -24,13 +24,20 @@ class Annotation
         'boolean' => '/([a-zA-Z_]+?) *: *(true?|false?)/'
     ];
 
+    /**
+     * @var ParamsAnnotation
+     */
     private ParamsAnnotation $classAnnotations;
     /**
      * @var ParamsAnnotation[]
      */
     private array $methodsAnnotations;
 
+    /**
+     * @var ParamsAnnotation[]
+     */
     private array $propertiesAnnotations;
+
     private readonly string $name;
 
     /**
@@ -40,12 +47,28 @@ class Annotation
     public function __construct(object|string $class)
     {
         $reflectionClass = new ReflectionClass($class);
-        $this->name = $reflectionClass->name;
+        $this->name = $reflectionClass->getName();
         $this->setClassAnnotations($reflectionClass);
         $this->setMethodsAnnotations($reflectionClass);
         $this->setPropertiesAnnotations($reflectionClass);
     }
 
+    /**
+     * Get class name
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Set class annotations
+     *
+     * @param ReflectionClass $reflectionClass
+     * @return void
+     */
     private function setClassAnnotations(ReflectionClass $reflectionClass): void
     {
         $docs = $reflectionClass->getDocComment();
@@ -54,6 +77,8 @@ class Annotation
     }
 
     /**
+     * Parse doc comment to get annotation params
+     *
      * @param bool|string $docs
      * @return array
      */
@@ -89,6 +114,8 @@ class Annotation
     }
 
     /**
+     * Parse annotation params type
+     *
      * @param string $type
      * @param mixed $match
      * @return bool|float|int|mixed|string[]
@@ -106,6 +133,8 @@ class Annotation
     }
 
     /**
+     * Parse annotation to get param name and value
+     *
      * @param string $paramsAnnotation
      * @param null $default
      * @return array
@@ -133,6 +162,8 @@ class Annotation
     }
 
     /**
+     * Set class methods annotations
+     *
      * @param ReflectionClass $reflectionClass
      * @return void
      */
@@ -151,6 +182,8 @@ class Annotation
     }
 
     /**
+     * Set class properties annotations
+     *
      * @param ReflectionClass $reflectionClass
      * @return void
      */
@@ -169,6 +202,8 @@ class Annotation
     }
 
     /**
+     * Get class annotations
+     *
      * @return ParamsAnnotation
      */
     public function getClassAnnotations(): ParamsAnnotation
@@ -177,6 +212,8 @@ class Annotation
     }
 
     /**
+     * Get a class annotation
+     *
      * @param string $key
      * @return ?ParamAnnotation
      */
@@ -186,6 +223,8 @@ class Annotation
     }
 
     /**
+     * Get class methods annotations
+     *
      * @return ParamsAnnotation[]
      */
     public function getMethodsAnnotations(): array
@@ -194,6 +233,8 @@ class Annotation
     }
 
     /**
+     * Get a class method annotations
+     *
      * @param $key
      * @return ParamsAnnotation
      */
@@ -203,14 +244,8 @@ class Annotation
     }
 
     /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
+     * Get class properties annotations
+     *
      * @return array
      */
     public function getPropertiesAnnotations(): array
@@ -219,6 +254,8 @@ class Annotation
     }
 
     /**
+     * Get a class property annotation
+     *
      * @param $key
      * @return ParamsAnnotation|null
      */
@@ -228,6 +265,8 @@ class Annotation
     }
 
     /**
+     * Get new instance of this current class
+     *
      * @return object
      * @throws ReflectionException
      * @throws FailedToResolveContainerException

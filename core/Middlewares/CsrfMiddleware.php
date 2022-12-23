@@ -77,6 +77,8 @@ class CsrfMiddleware implements MiddlewareInterface
     }
 
     /**
+     * Generate csrf token
+     *
      * @throws Exception
      */
     public function generateToken(): string

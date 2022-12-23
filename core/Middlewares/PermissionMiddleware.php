@@ -38,7 +38,7 @@ class PermissionMiddleware implements MiddlewareInterface
         if ($route) {
             $module = $route->getModule();
             $appServiceProvider = $this->getAuthServiceProvider($module);
-            if (is_object($appServiceProvider) && $appServiceProvider instanceof ServiceProvider) {
+            if ($appServiceProvider && $appServiceProvider instanceof ServiceProvider) {
                 $appServiceProvider->register();
                 $this->permissions = $route->getPermissions();
                 if (!$this->processPermission($route)) {
@@ -51,12 +51,12 @@ class PermissionMiddleware implements MiddlewareInterface
 
     /**
      * @param mixed $module
-     * @return mixed
-     * @throws ReflectionException
+     * @return ServiceProvider|null
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
-    private function getAuthServiceProvider(mixed $module): mixed
+    private function getAuthServiceProvider(mixed $module): ?ServiceProvider
     {
         $module = $this->app->getModule($module);
         $reflection = new \ReflectionClass($module);

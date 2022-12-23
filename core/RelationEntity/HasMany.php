@@ -2,18 +2,20 @@
 
 namespace MkyCore\RelationEntity;
 
+use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Manager;
 use MkyCore\Interfaces\RelationEntityInterface;
 use MkyCore\QueryBuilderMysql;
+use MkyCore\Str;
 
 class HasMany implements RelationEntityInterface
 {
 
-    private QueryBuilderMysql $query;
+    protected QueryBuilderMysql $query;
     private Manager $managerRelation;
 
-    public function __construct(private Entity $entity, private Entity $entityRelation, private string $foreignKey)
+    public function __construct(private readonly Entity $entity, private readonly Entity $entityRelation, private string $foreignKey)
     {
         $manager = $this->entity->getManager();
         $this->managerRelation = $this->entityRelation->getManager();
@@ -25,12 +27,9 @@ class HasMany implements RelationEntityInterface
             ->where($table . '.' . $this->entity->getPrimaryKey(), $this->entity->{$this->entity->getPrimaryKey()}());
     }
 
-    public function get(): array|false
-    {
-        return $this->query->get();
-    }
-
     /**
+     * Get entity
+     *
      * @return Entity
      */
     public function getEntity(): Entity
@@ -39,6 +38,8 @@ class HasMany implements RelationEntityInterface
     }
 
     /**
+     * Get entity relation
+     *
      * @return Entity
      */
     public function getEntityRelation(): Entity
@@ -47,6 +48,8 @@ class HasMany implements RelationEntityInterface
     }
 
     /**
+     * Get foreign key
+     *
      * @return string
      */
     public function getForeignKey(): string
@@ -54,33 +57,72 @@ class HasMany implements RelationEntityInterface
         return $this->foreignKey;
     }
 
+    /**
+     * Query builder callback to specify some relation requirements
+     *
+     * @param callable $callback
+     * @return $this
+     */
     public function queryBuilder(callable $callback): HasMany
     {
         $this->query = $callback($this->query);
         return $this;
     }
 
+    /**
+     * Delete all records in hasMany relation
+     * @throws Exception
+     */
     public function clear(): void
     {
         $entities = $this->get();
-        for ($i = 0; $i < count($entities); $i++){
+        for ($i = 0; $i < count($entities); $i++) {
             $entity = $entities[$i];
             $this->managerRelation->delete($entity);
         }
     }
 
     /**
-     * Create new record in the relation table
+     * @inheritDoc
+     * @return array|false
+     */
+    public function get(): array|false
+    {
+        try {
+            return $this->query->get();
+        } catch (Exception $exception) {
+            return false;
+        }
+    }
+
+    /**
+     * Insert row in database with one-to-many relation
      *
      * @param Entity $entity
-     * @param string $foreignKey
-     * @return bool|$this
-     * @throws ReflectionException
+     * @return false|$this
      */
-    public function add(Entity $entity): bool|Entity
+    public function add(Entity $entity): false|Entity
     {
-        $primaryKey = $this->entity->getPrimaryKey();
-        $entity->{'set' . ucfirst($entity->camelize($this->foreignKey))}($this->entity->{$primaryKey}());
-        return $this->managerRelation->save($entity);
+        try {
+            $primaryKey = $this->entity->getPrimaryKey();
+            $entity->{'set' . ucfirst(Str::camelize($this->foreignKey))}($this->entity->{$primaryKey}());
+            return $this->managerRelation->save($entity);
+        } catch (Exception $exception) {
+            return false;
+        }
+    }
+
+    public function update(array $data)
+    {
+        $entities = $this->get();
+        for ($i = 0; $i < count($entities); $i++) {
+            $entity = $entities[$i];
+            foreach ($data as $key => $value) {
+                if (method_exists($entity, 'set' . Str::classify($key))) {
+                    $entity->{'set' . Str::classify($key)}($value);
+                }
+            }
+            $this->managerRelation->update($entity);
+        }
     }
 }
