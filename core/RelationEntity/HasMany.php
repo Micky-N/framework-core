@@ -8,12 +8,11 @@ use MkyCore\Abstracts\Manager;
 use MkyCore\Interfaces\RelationEntityInterface;
 use MkyCore\QueryBuilderMysql;
 use MkyCore\Str;
-use ReflectionException;
 
 class HasMany implements RelationEntityInterface
 {
 
-    private QueryBuilderMysql $query;
+    protected QueryBuilderMysql $query;
     private Manager $managerRelation;
 
     public function __construct(private readonly Entity $entity, private readonly Entity $entityRelation, private string $foreignKey)
@@ -26,19 +25,6 @@ class HasMany implements RelationEntityInterface
             ->from($tableRelate)
             ->join($table, $this->foreignKey, '=', $this->entity->getPrimaryKey())
             ->where($table . '.' . $this->entity->getPrimaryKey(), $this->entity->{$this->entity->getPrimaryKey()}());
-    }
-
-    /**
-     * @inheritDoc
-     * @return array|false
-     */
-    public function get(): array|false
-    {
-        try {
-            return $this->query->get();
-        }catch(Exception $exception){
-            return false;
-        }
     }
 
     /**
@@ -90,9 +76,22 @@ class HasMany implements RelationEntityInterface
     public function clear(): void
     {
         $entities = $this->get();
-        for ($i = 0; $i < count($entities); $i++){
+        for ($i = 0; $i < count($entities); $i++) {
             $entity = $entities[$i];
             $this->managerRelation->delete($entity);
+        }
+    }
+
+    /**
+     * @inheritDoc
+     * @return array|false
+     */
+    public function get(): array|false
+    {
+        try {
+            return $this->query->get();
+        } catch (Exception $exception) {
+            return false;
         }
     }
 
@@ -104,12 +103,26 @@ class HasMany implements RelationEntityInterface
      */
     public function add(Entity $entity): false|Entity
     {
-        try{
+        try {
             $primaryKey = $this->entity->getPrimaryKey();
             $entity->{'set' . ucfirst(Str::camelize($this->foreignKey))}($this->entity->{$primaryKey}());
             return $this->managerRelation->save($entity);
-        }catch (Exception $exception){
+        } catch (Exception $exception) {
             return false;
+        }
+    }
+
+    public function update(array $data)
+    {
+        $entities = $this->get();
+        for ($i = 0; $i < count($entities); $i++) {
+            $entity = $entities[$i];
+            foreach ($data as $key => $value) {
+                if (method_exists($entity, 'set' . Str::classify($key))) {
+                    $entity->{'set' . Str::classify($key)}($value);
+                }
+            }
+            $this->managerRelation->update($entity);
         }
     }
 }

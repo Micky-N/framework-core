@@ -5,7 +5,6 @@ namespace MkyCore\Abstracts;
 use Exception;
 use JsonSerializable;
 use MkyCore\Annotation\Annotation;
-use MkyCore\Annotation\ParamsAnnotation;
 use MkyCore\Str;
 use MkyCore\Traits\RelationShip;
 use ReflectionClass;
@@ -37,8 +36,7 @@ abstract class Entity implements JsonSerializable
     {
         $this->attributes = [];
         foreach ($data as $key => $value) {
-            $key = Str::camelize($key);
-            $method = 'set' . ucfirst($key);
+            $method = 'set' . Str::classify($key);
             if (method_exists($this, $method)) {
                 $value = $this->transformCast($value, $key);
                 $this->$method($value);
@@ -71,6 +69,10 @@ abstract class Entity implements JsonSerializable
                     $type = $propertyAnnotation->getParam('Cast')->getProperty();
                     if ($this->isDefaultTypes($type)) {
                         $value = settype($value, $type);
+                    } elseif ($type == 'array') {
+                        $value = json_decode($value, true);
+                    }elseif ($type == 'object') {
+                        $value = json_decode($value);
                     } elseif (method_exists($this, 'to' . ucfirst($type))) {
                         $value = $this->{'to' . ucfirst($type)}($value, $key);
                     }
@@ -101,7 +103,7 @@ abstract class Entity implements JsonSerializable
      */
     private function getDefaultTypes(): array
     {
-        return ['string', 'int', 'integer', 'float', 'boolean', 'bool', 'array', 'object'];
+        return ['string', 'int', 'integer', 'float', 'boolean', 'bool'];
     }
 
     /**

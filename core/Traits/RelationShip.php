@@ -42,7 +42,7 @@ trait RelationShip
      *
      * @throws Exception
      */
-    private function getEntity(string|Entity $entity): Entity
+    protected function getEntity(string|Entity $entity): Entity
     {
         if (is_string($entity)) {
             $entity = new $entity();

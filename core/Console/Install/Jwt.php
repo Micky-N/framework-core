@@ -35,7 +35,7 @@ class Jwt extends \MkyCore\Console\Create\Create
             echo $this->getColoredString('run php mky migration:run to migrate the Jwt table', 'green', 'bold');
         } else {
             echo $this->getColoredString('jwt config file and migration file created successfully', 'green', 'bold')."\n";
-            echo $this->getColoredString('run php mky migration:run to migrate the Jwt table', 'green', 'bold');
+            echo '> run ' . $this->getColoredString('php mky migration:run', 'yellow') . ' to migrate the Jwt table';
         }
         return true;
     }

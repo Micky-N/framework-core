@@ -9,6 +9,7 @@ use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Exceptions\Config\ConfigNotFoundException;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Notification\Database\DatabaseNotificationSystem;
 use MkyCore\Router\Route;
 use ReflectionClass;
 use ReflectionException;
@@ -35,7 +36,9 @@ class Application extends Container
     /**
      * @var array<string, string>
      */
-    private array $notificationSystems = [];
+    private array $notificationSystems = [
+        'database' => DatabaseNotificationSystem::class
+    ];
     private string $environmentFile;
 
     /**

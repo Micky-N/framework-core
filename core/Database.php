@@ -3,6 +3,7 @@
 namespace MkyCore;
 
 use Exception;
+use MkyCore\Abstracts\Entity;
 use PDO;
 use PDOException;
 
@@ -142,5 +143,16 @@ class Database
                 throw new PDOException('Unknown connection server');
         }
         return $pdo;
+    }
+
+    /**
+     * Transform anti-slash to dot
+     *
+     * @param Entity $entity
+     * @return string
+     */
+    public static function stringifyEntity(Entity $entity): string
+    {
+        return str_replace('\\', '.', get_class($entity));
     }
 }

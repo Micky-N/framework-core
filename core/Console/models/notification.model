@@ -20,4 +20,15 @@ class !name implements NotificationInterface
     {
         return [''];
     }
+
+    /**
+     * Called by default if no method is implemented
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [];
+    }
+
 }

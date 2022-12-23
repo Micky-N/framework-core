@@ -39,21 +39,25 @@ trait Notify
                 throw new NotificationSystemNotFoundAliasException("$system alias is not defined in the EventServiceProvider");
             }
 
-            $class = new ReflectionClass($alias);
-            if (!method_exists($notification, 'to' . ucfirst($system))) {
-                throw new NotificationSystemNotFoundAliasException(sprintf("%s must implement the '%s' method", get_class($notification), 'to' . ucfirst($system)));
+            $class = app()->get($alias);
+            $notificationMethod = 'to' . ucfirst($system);
+            if (!method_exists($notification, $notificationMethod)) {
+                $notificationMethod = 'toArray';
+                if(!method_exists($notification, $notificationMethod)){
+                    throw new NotificationSystemNotFoundAliasException(sprintf("%s must implement the '%s' method", get_class($notification), 'to' . ucfirst($system)));
+                }
             }
 
-            $message = $notification->{'to' . ucfirst($system)}($this);
+            $message = $notification->$notificationMethod($this);
             if (empty($message)) {
                 throw new NotificationNotMessageException(sprintf('%s::%s() message is required', get_class($notification), 'to' . ucfirst($system)));
             }
 
-            if (!($class->newInstance() instanceof NotificationSystemInterface)) {
-                throw new NotificationSystemException(sprintf("%s must implement %s interface", $class->getName(), NotificationSystemInterface::class));
+            if (!($class instanceof NotificationSystemInterface)) {
+                throw new NotificationSystemException(sprintf("%s must implement %s interface", get_class($class), NotificationSystemInterface::class));
             }
 
-            call_user_func_array([$class->newInstance(), 'send'], [$this, $message]);
+            call_user_func_array([$class, 'send'], [$this, $message]);
         }
         return true;
     }

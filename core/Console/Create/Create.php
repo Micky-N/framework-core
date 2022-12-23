@@ -7,6 +7,7 @@ use MkyCore\Console\Color;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\File;
+use MkyCore\Str;
 use ReflectionClass;
 use ReflectionException;
 

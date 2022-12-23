@@ -107,6 +107,18 @@ class QueryBuilderMysql
         return $this;
     }
 
+    public function whereNull($column): static
+    {
+        $this->conditions[] = sprintf('%s IS NULL', $column);
+        return $this;
+    }
+
+    public function whereNotNull($column): static
+    {
+        $this->conditions[] = sprintf('%s IS NOT NULL', $column);
+        return $this;
+    }
+
     /**
      * @return $this
      */

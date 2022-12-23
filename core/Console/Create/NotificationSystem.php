@@ -2,6 +2,8 @@
 
 namespace MkyCore\Console\Create;
 
+use MkyCore\Application;
+
 class NotificationSystem extends Create
 {
     protected string $outputDirectory = 'NotificationSystems';
@@ -9,7 +11,7 @@ class NotificationSystem extends Create
         'name' => ['ucfirst', 'ends:NotificationSystem'],
     ];
 
-    public function __construct(array $params = [], array $moduleOptions = [])
+    public function __construct(protected Application $app, array $params = [], array $moduleOptions = [])
     {
         $name = array_shift($params);
         $moduleOptions = array_merge($moduleOptions, ['name' => $name, 'module' => 'root']);

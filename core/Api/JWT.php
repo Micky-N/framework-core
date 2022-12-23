@@ -4,8 +4,10 @@ namespace MkyCore\Api;
 
 use Exception;
 use MkyCore\Abstracts\Entity;
+use MkyCore\Database;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Facades\DB;
 use ReflectionException;
 
 class Jwt
@@ -31,7 +33,7 @@ class Jwt
         $base64UrlSecurity = self::toBase64Url($signature);
 
         $jsonWebToken = $entity->tokens()->add(new JsonWebToken([
-            'entity' => self::stringifyEntity($entity),
+            'entity' => Database::stringifyEntity($entity),
             'name' => $name,
             'token' => $base64UrlSecurity,
             'expireAt' => $expireTime,
@@ -54,7 +56,7 @@ class Jwt
         $primaryKey = $entity->getPrimaryKey();
         $defaultPayload = [
             'iat' => time(),
-            'entity' => self::stringifyEntity($entity),
+            'entity' => Database::stringifyEntity($entity),
             'id' => $entity->{$primaryKey}(),
             'expireAt' => $expireTime,
         ];
@@ -65,17 +67,6 @@ class Jwt
         }
 
         return array_replace_recursive($defaultPayload, $customPayload);
-    }
-
-    /**
-     * Transform anti-slash to dot
-     *
-     * @param Entity $entity
-     * @return string
-     */
-    public static function stringifyEntity(Entity $entity): string
-    {
-        return str_replace('\\', '.', get_class($entity));
     }
 
     /**

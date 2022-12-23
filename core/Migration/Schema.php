@@ -44,7 +44,7 @@ class Schema
     private static function createQuery(string $table, MigrationTable $migrationTable): bool
     {
         $values = array_map(function ($value) {
-            return $value->createRow();
+            return $value->getQuery();
         }, $migrationTable->getColumns());
         $queryCreate = "CREATE TABLE `$table`\n";
         $queryCreate .= "(\n    ";
@@ -122,7 +122,7 @@ class Schema
     {
         $queryCreate = "ALTER TABLE `$table`\n";
         $queryCreate .= implode(",\n", array_map(function ($value) {
-            $value = $value->createRow();
+            $value = $value->getQuery();
             $test = explode(' ', $value);
             $test = $test[0];
             if (!in_array($test, self::ALTERS)) {
