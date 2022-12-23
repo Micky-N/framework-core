@@ -10,7 +10,7 @@ use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Facades\DB;
 use ReflectionException;
 
-class Jwt
+class JWT
 {
 
     private const HEADER = ['typ' => 'Jwt', 'alg' => 'HS256'];
