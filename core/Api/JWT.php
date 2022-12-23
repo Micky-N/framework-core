@@ -7,8 +7,9 @@ use MkyCore\Abstracts\Entity;
 use MkyCore\Database;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
-use MkyCore\Facades\DB;
+use MkyCore\Traits\HasJwToken;
 use ReflectionException;
+use RuntimeException;
 
 class JWT
 {
@@ -20,8 +21,11 @@ class JWT
      *
      * @throws ReflectionException
      */
-    public static function createJwt(Entity $entity, string $name): NewJWT
+    public static function createJwt(Entity $entity, string $name): NewJsonWebToken
     {
+        if (!in_array(HasJwToken::class, class_uses($entity))) {
+            throw new RuntimeException(sprintf('The class %s must use HasJwt trait', get_class($entity)));
+        }
         $expireTime = time() + (60 * (float)config('jwt.lifetime', 1));
         $payload = self::makePayload($entity, $expireTime);
 
@@ -40,7 +44,7 @@ class JWT
             'createdAt' => now()->format('Y-m-d H:i:s')
         ]));
 
-        return new NewJWT($jsonWebToken, $base64UrlPayload);
+        return new NewJsonWebToken($jsonWebToken, $base64UrlPayload);
     }
 
     /**

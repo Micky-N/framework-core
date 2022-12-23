@@ -6,23 +6,23 @@ use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Api\JsonWebToken;
 use MkyCore\Api\JWT;
-use MkyCore\Api\NewJWT;
+use MkyCore\Api\NewJsonWebToken;
+use MkyCore\Database;
 use MkyCore\QueryBuilderMysql;
 use MkyCore\RelationEntity\HasMany;
 use ReflectionException;
 
 /**
  * @see JWT
- *
  */
-trait ApiToken
+trait HasJwToken
 {
     /**
      * Create token and save to database
      *
      * @throws ReflectionException
      */
-    public function createJwt(string $name): NewJWT
+    public function createJwt(string $name): NewJsonWebToken
     {
         /** @var Entity $this */
         return JWT::createJwt($this, $name);
@@ -39,7 +39,7 @@ trait ApiToken
         /** @var Entity $this */
         return $this->hasMany(JsonWebToken::class, 'entity_id')->queryBuilder(function (QueryBuilderMysql $queryBuilderMysql) use ($name) {
             /** @var Entity $this */
-            $queryBuilderMysql->where('entity', JWT::stringifyEntity($this));
+            $queryBuilderMysql->where('entity', Database::stringifyEntity($this));
             if ($name) {
                 $queryBuilderMysql = $queryBuilderMysql->where('json_web_tokens.name', $name);
             }

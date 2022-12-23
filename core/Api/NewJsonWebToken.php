@@ -2,7 +2,7 @@
 
 namespace MkyCore\Api;
 
-class NewJWT
+class NewJsonWebToken
 {
     public function __construct(public readonly JsonWebToken $jsonWebToken, public readonly string $plainTextToken)
     {
