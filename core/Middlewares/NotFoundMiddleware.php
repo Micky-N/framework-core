@@ -6,7 +6,6 @@ use Exception;
 use MkyCore\Exceptions\Router\RouteNotFoundException;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
-use MkyCore\JsonResponse;
 use MkyCore\Request;
 
 class NotFoundMiddleware implements MiddlewareInterface

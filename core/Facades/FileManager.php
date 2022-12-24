@@ -3,7 +3,9 @@
 namespace MkyCore\Facades;
 
 
+use DateTimeInterface;
 use League\Flysystem\DirectoryListing;
+use League\Flysystem\FilesystemReader;
 use MkyCore\Abstracts\Facade;
 
 /**
@@ -13,7 +15,7 @@ use MkyCore\Abstracts\Facade;
  * @method static bool directoryExists(string $location)
  * @method static string read(string $location)
  * @method static resource readStream(string $location)
- * @method static DirectoryListing listContents(string $location, bool $deep = self::LIST_SHALLOW)
+ * @method static DirectoryListing listContents(string $location, bool $deep = FilesystemReader::LIST_SHALLOW)
  * @method static int lastModified(string $location)
  * @method static int fileSize(string $location)
  * @method static string mimeType(string $location)

@@ -3,7 +3,6 @@
 namespace MkyCore\Migration;
 
 use MkyCore\Exceptions\Migration\MethodTypeException;
-use MkyCore\Exceptions\Migration\MigrationException;
 use MkyCore\Facades\DB;
 use ReflectionClass;
 use ReflectionMethod;
@@ -444,7 +443,6 @@ AND COLUMN_NAME = :column", ['table' => $this->table, 'column' => $column, 'sche
         $fk = "FK_{$name}_" . rand();
         $constrain = "CONSTRAINT `$fk`";
         $foreignKey = "FOREIGN KEY (`$name`)";
-        $query = $this->query;
         $this->query = "$constrain $foreignKey";
         return $this;
     }

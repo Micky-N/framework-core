@@ -9,7 +9,6 @@ use Faker\Generator;
 use MkyCore\Console\Populator\Run;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
-use MkyCore\Populate\ArrayMerging;
 use MkyCore\Populate\LoopMerging;
 use MkyCore\Populate\RelationEntity;
 use ReflectionException;

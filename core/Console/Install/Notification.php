@@ -2,7 +2,9 @@
 
 namespace MkyCore\Console\Install;
 
-class Notification extends \MkyCore\Console\Create\Create
+use MkyCore\Console\Create\Create;
+
+class Notification extends Create
 {
     public function process(): bool|string
     {

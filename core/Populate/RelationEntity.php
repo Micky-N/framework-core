@@ -48,7 +48,6 @@ class RelationEntity
     {
         if (method_exists($this->entity, $relation)) {
             $relation = $this->entity->$relation();
-            $table = $populator->getManager()->getTable();
             $foreignKey = $relation->getForeignKey();
             $populator->merge(new LoopMerging([
                 $foreignKey => $this->entity->{$this->entity->getPrimaryKey()}()
@@ -74,9 +73,6 @@ class RelationEntity
         }
         if (method_exists($this->entity, $relation)) {
             $relation = $this->entity->$relation();
-            $foreignKeyOne = $relation->getForeignKeyOne();
-            $foreignKeyTwo = $relation->getForeignKeyTwo();
-            $pivot = $relation->getPivot();
             $populator->populate();
             $lastSaves = $populator->getLastSaves();
             $arrLast = array_slice($lastSaves, -$populator->getCount(), $populator->getCount());

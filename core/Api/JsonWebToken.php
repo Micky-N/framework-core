@@ -2,7 +2,6 @@
 
 namespace MkyCore\Api;
 
-
 use MkyCore\Abstracts\Entity;
 
 /**
@@ -11,7 +10,7 @@ use MkyCore\Abstracts\Entity;
 class JsonWebToken extends Entity
 {
 
-    private int $id;
+    private ?int $id = null;
     private string $entity;
     private int|string $entityId;
     private string $token;
@@ -20,9 +19,9 @@ class JsonWebToken extends Entity
     private string $createdAt;
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function id(): int
+    public function id(): ?int
     {
         return $this->id;
     }

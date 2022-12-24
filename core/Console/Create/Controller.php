@@ -121,6 +121,7 @@ CRUD;
     private function implementCrudApi(string $name): string
     {
         $name = Str::singularize(strtolower(str_replace('Controller', '', $name)));
+        $param = '{'.$name.'}';
         return <<<CRUD
 /**
      * @Router('/', name:'index', methods:['GET'])

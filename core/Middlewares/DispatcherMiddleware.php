@@ -13,7 +13,6 @@ use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
 use MkyCore\Router\Route;
 use ReflectionException;
-use ReflectionNamedType;
 use ReflectionUnionType;
 
 class DispatcherMiddleware implements MiddlewareInterface

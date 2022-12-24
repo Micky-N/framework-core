@@ -2,7 +2,9 @@
 
 namespace MkyCore\Console\Install;
 
-class Jwt extends \MkyCore\Console\Create\Create
+use MkyCore\Console\Create\Create;
+
+class Jwt extends Create
 {
     public function process(): bool|string
     {

@@ -35,7 +35,6 @@ class Manager extends Create
         if (!$entity) {
             do {
                 $confirm = true;
-                $name = lcfirst(str_replace('Manager', '', $replaceParams['name']));
                 $entity = trim($this->sendQuestion('Enter the name of entity', 'n/ to skip'));
                 if ($entity) {
                     $confirm = $this->getModuleAndClass($entity, 'entities', '', $replaceParams['module'] ?? '');

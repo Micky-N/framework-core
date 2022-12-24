@@ -106,7 +106,7 @@ class JWT
      */
     public static function verifyJwt(string $jwt): bool
     {
-        if (!($jwtEntity = $jwtEntity = self::retrieveJwt($jwt))) {
+        if (!($jwtEntity = self::retrieveJwt($jwt))) {
             return false;
         }
         return ($jwtEntity->expireAt() - time()) > 0;

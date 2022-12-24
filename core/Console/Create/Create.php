@@ -7,8 +7,6 @@ use MkyCore\Console\Color;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\File;
-use MkyCore\Str;
-use ReflectionClass;
 use ReflectionException;
 
 abstract class Create
@@ -51,8 +49,7 @@ abstract class Create
                 $type = strtolower($this->createType);
                 do {
                     $confirm = true;
-                    $module = $this->sendQuestion("In which module do you want to create the $type", 'root');
-                    $module = $module ?: 'root';
+                    $module = $this->sendQuestion("In which module do you want to create the $type", 'root') ?: 'root';
                     if (!$this->app->hasModule($module)) {
                         $this->sendError("Module not found", $module);
                         $confirm = false;
@@ -69,8 +66,6 @@ abstract class Create
             return $this->sendError("$this->createType file already exists", $outputDir . $name . '.php');
         }
         $replaceParams = $this->handleQuestions($replaceParams, $params);
-        $module = $this->app->getModuleKernel($replaceParams['module']);
-        $module = new ReflectionClass($module);
         foreach ($replaceParams as $key => $value) {
             if (preg_match("/!$key/", $fileModel)) {
                 if ($key == 'module') {

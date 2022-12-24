@@ -2,6 +2,7 @@
 
 namespace MkyCore\Traits;
 
+use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Database;
 use MkyCore\Notification\Database\HasManyNotification;

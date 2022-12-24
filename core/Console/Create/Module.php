@@ -6,9 +6,7 @@ use Exception;
 use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
-use MkyCore\Facades\DB;
 use MkyCore\File;
-use PhpParser\Node\Expr\AssignOp\Mod;
 use ReflectionException;
 
 class Module extends Create

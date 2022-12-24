@@ -111,9 +111,30 @@ class Application extends Container
     private function setInitModules()
     {
         if (class_exists('App\Providers\AppServiceProvider')) {
-            $appProvider = $this->get(AppServiceProvider::class);
-            $appProvider->registerModule();
+            $appProvider = $this->get('App\Providers\AppServiceProvider');
+            $this->addModules($appProvider->getModules());
         }
+    }
+
+    /**
+     * Replace modules
+     *
+     * @param array $modules
+     * @return void
+     */
+    public function addModules(array $modules): void
+    {
+        $this->modules = $modules;
+    }
+
+    /**
+     * Get all modules
+     *
+     * @return ModuleKernel[]
+     */
+    public function getModules(): array
+    {
+        return $this->modules;
     }
 
     /**
@@ -179,17 +200,6 @@ class Application extends Container
     }
 
     /**
-     * Replace modules
-     *
-     * @param array $modules
-     * @return void
-     */
-    public function addModules(array $modules): void
-    {
-        $this->modules = $modules;
-    }
-
-    /**
      * Add module
      *
      * @param string $alias
@@ -214,16 +224,6 @@ class Application extends Container
     public function hasModule(string $module): bool
     {
         return isset($this->modules[$module]);
-    }
-
-    /**
-     * Get all modules
-     *
-     * @return ModuleKernel[]
-     */
-    public function getModules(): array
-    {
-        return $this->modules;
     }
 
     /**

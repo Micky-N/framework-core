@@ -11,7 +11,6 @@ use MkyCore\Str;
 use MkyCore\Traits\QueryMysql;
 use ReflectionClass;
 use ReflectionException;
-use stdClass;
 
 abstract class Manager
 {

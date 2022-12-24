@@ -2,7 +2,6 @@
 
 namespace MkyCore\Migration;
 
-use MkyCore\Abstracts\Migration;
 use MkyCore\Application;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;

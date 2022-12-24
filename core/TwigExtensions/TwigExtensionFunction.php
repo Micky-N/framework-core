@@ -2,9 +2,6 @@
 
 namespace MkyCore\TwigExtensions;
 
-use MkyCore\Exceptions\Container\FailedToResolveContainerException;
-use MkyCore\Exceptions\Container\NotInstantiableContainerException;
-use ReflectionException;
 use Twig\TwigFunction;
 
 class TwigExtensionFunction extends \Twig\Extension\AbstractExtension

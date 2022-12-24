@@ -46,7 +46,6 @@ abstract class ModuleKernel
     {
         $reflection = new \ReflectionClass($this);
         $shortName = $reflection->getShortName();
-        $res = '';
         if ($namespaced) {
             $res = str_replace("\\$shortName", '', $reflection->getNamespaceName());
         } else {

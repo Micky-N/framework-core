@@ -2,7 +2,6 @@
 
 namespace MkyCore\Notification\Database;
 
-use Carbon\Carbon;
 use DateTime;
 use MkyCore\Abstracts\Entity;
 
