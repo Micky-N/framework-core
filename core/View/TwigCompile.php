@@ -14,6 +14,7 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Twig\Extension\AbstractExtension;
+use Twig\Extension\CoreExtension;
 use Twig\Loader\FilesystemLoader;
 
 class TwigCompile implements ViewCompileInterface
@@ -43,26 +44,25 @@ class TwigCompile implements ViewCompileInterface
     public function compile(string $view, array $params = []): string
     {
         $this->twig->addGlobal('request', app()->get(TwigRequest::class));
-        $extensions = ['TwigExtensionFunction', 'TwigExtensionFilter'];
         $this->twig->addExtension(new TwigExtensionFunction());
         $this->twig->addExtension(new TwigExtensionFilter());
-        for ($i = 0; $i < count($extensions); $i++) {
-            $extension = $extensions[$i];
-            if (class_exists($extensionClass = 'App\TwigExtensions\\' . $extension)) {
-                $extensionClass = new $extensionClass();
-                if (!($extensionClass instanceof AbstractExtension)) {
-                    continue;
+        $rootKernel = app()->getModuleKernel('root');
+        $methods = ['getFunctions', 'getFilters'];
+        for ($i = 0; $i < count($methods); $i++){
+            $method = $methods[$i];
+            $extensions = $rootKernel->$method();
+            if(!$extensions){
+                continue;
+            }
+            for ($j = 0; $j < count($extensions); $j++) {
+                $extension = $extensions[$j];
+                if (!($extension instanceof AbstractExtension)) {
+                    throw new RuntimeError(sprintf('Class %s must extends %s class', get_class($extension), AbstractExtension::class));
                 }
-                if ($extension == 'TwigFunction' && !method_exists($extensionClass, 'getFunctions')) {
-                    continue;
-                } elseif ($extension == 'TwigFilter' && !method_exists($extensionClass, 'getFilters')) {
-                    continue;
-                }
-
-                $this->twig->addExtension(new $extensionClass());
+                $this->twig->addExtension($extension);
             }
         }
-        $this->twig->getExtension(\Twig\Extension\CoreExtension::class)->setTimezone(Config::get('app.timezone'));
+        $this->twig->getExtension(CoreExtension::class)->setTimezone(Config::get('app.timezone'));
 
         return $this->twig->render($view, $params);
     }
