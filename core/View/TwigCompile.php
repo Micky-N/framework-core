@@ -47,11 +47,14 @@ class TwigCompile implements ViewCompileInterface
         $this->twig->addExtension(new TwigExtensionFunction());
         $this->twig->addExtension(new TwigExtensionFilter());
         $rootKernel = app()->getModuleKernel('root');
-        $methods = ['getFunctions', 'getFilters'];
-        for ($i = 0; $i < count($methods); $i++){
+        $methods = ['getTwigFunctions', 'getTwigFilters'];
+        for ($i = 0; $i < count($methods); $i++) {
             $method = $methods[$i];
+            if (!method_exists($rootKernel, $method)) {
+                continue;
+            }
             $extensions = $rootKernel->$method();
-            if(!$extensions){
+            if (!$extensions) {
                 continue;
             }
             for ($j = 0; $j < count($extensions); $j++) {
