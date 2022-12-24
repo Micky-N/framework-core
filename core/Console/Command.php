@@ -42,6 +42,9 @@ class Command
             'route' => ['Show list of routes, can be filtered by controller, request methods, name (regex) or/and url (regex)', '--filter'],
             'module' => 'Show list of modules'
         ],
+        'tmp' => [
+            'link' => 'Create symlinks from filesystems config'
+        ]
     ];
     const STRUCTURE = [
         'create' => [
@@ -73,6 +76,9 @@ class Command
         'install' => [
             'jwt',
             'notification'
+        ],
+        'tmp' => [
+            'link'
         ]
     ];
     public static string $currentCommand = '';

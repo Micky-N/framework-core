@@ -81,6 +81,7 @@ class Application extends Container
         $this->setInstance('path:app', $this->basePath . DIRECTORY_SEPARATOR . 'app');
         $this->setInstance('path:config', $this->basePath . DIRECTORY_SEPARATOR . 'config');
         $this->setInstance('path:public', $this->basePath . DIRECTORY_SEPARATOR . 'public');
+        $this->setInstance('path:tmp', $this->basePath . DIRECTORY_SEPARATOR . 'tmp');
         $this->setInstance('path:database', $this->basePath . DIRECTORY_SEPARATOR . 'database');
     }
 

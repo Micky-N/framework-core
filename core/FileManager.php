@@ -44,13 +44,6 @@ class FileManager implements FilesystemOperator
     {
         $this->prefix = $space . '://';
         $filesystems[$space] = new LocalFileSystem($config);
-        $filesystems['base'] = new LocalFileSystem([
-            'driver' => 'local',
-            'root' => path(),
-            'url' => null,
-            'visibility' => 'public',
-        ]);
-
 
         $this->mountFilesystems($filesystems);
     }

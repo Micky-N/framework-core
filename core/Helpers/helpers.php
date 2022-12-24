@@ -198,7 +198,23 @@ if (!function_exists('public_path')) {
     function public_path(string $path): string
     {
         try {
-            $base = app()->get(Request::class)->baseUri();
+            $base = app()->get('path:public');
+            return $base . '/' . trim($path, '/');
+        } catch (Exception $ex) {
+            return '';
+        }
+    }
+}
+
+if (!function_exists('tmp_path')) {
+    /**
+     * @param string $path
+     * @return string
+     */
+    function tmp_path(string $path): string
+    {
+        try {
+            $base = app()->get('path:tmp');
             return $base . '/' . trim($path, '/');
         } catch (Exception $ex) {
             return '';

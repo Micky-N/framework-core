@@ -23,10 +23,6 @@ class LocalFileSystem extends Filesystem
     public function __construct(array $config)
     {
         // SETUP
-        $config = array_replace_recursive([
-            'public_url' => trim($config['url'] ?? Request::baseUri(), '/') . '/',
-            'temporary_url' => trim($config['url'] ?? Request::baseUri(), '/') . '/tmp/'
-        ], $config);
         $permissionMap = [
             'file' => [
                 'public' => 0640,
@@ -48,20 +44,40 @@ class LocalFileSystem extends Filesystem
             publicUrlGenerator: new class() implements PublicUrlGenerator {
                 public function publicUrl(string $path, Config $config): string
                 {
-                    return $config->get('public_url') . $path;
+                    $default = Request::baseUri() . '/tmp';
+                    $base = trim($config->get('url', $default), '/') . '/';
+                    return $base . trim($path, '/');
                 }
             },
             temporaryUrlGenerator: new class() implements TemporaryUrlGenerator {
                 public function temporaryUrl(
-                    string             $path,
+                    string            $path,
                     DateTimeInterface $expiresAt,
-                    Config             $config
+                    Config            $config
                 ): string
                 {
-                    return $config->get('temporary_url') . $path . '?expires_at=' . $expiresAt->format('U');
+                    $default = Request::baseUri() . '/tmp';
+                    $base = trim($config->get('url', $default), '/') . '/';
+                    return $base . trim($path, '/') . '?expires_at=' . $expiresAt->format('U');
                 }
             }
         );
     }
 
+    /**
+     * Create symlink
+     *
+     * @param string $target
+     * @param string $link
+     * @return bool
+     */
+    public function link(string $target, string $link): bool
+    {
+        if (PHP_OS_FAMILY !== 'Windows') {
+            symlink($target, $link);
+        }
+
+        $mode = is_dir($target) ? 'J' : 'H';
+        return exec("mklink /{$mode} " . escapeshellarg($link) . ' ' . escapeshellarg($target)) !== false;
+    }
 }
