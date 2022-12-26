@@ -4,11 +4,11 @@ namespace MkyCore\Validate;
 
 use Carbon\Carbon;
 use Exception;
+use MkyCore\Abstracts\AbstractRule;
 use MkyCore\Exceptions\Validator\RuleNotFoundException;
 use MkyCore\Exceptions\Validator\RuleParamNotDeclareException;
 use MkyCore\Exceptions\Validator\RuleParamNotLogicException;
 use MkyCore\File;
-use MkyCore\Interfaces\RuleInterface;
 use ReflectionException;
 use ReflectionFunction;
 use UnitEnum;
@@ -41,6 +41,9 @@ class Rules
                 }
                 return strlen($value) > (int)$param ? false : $value;
             }, '{field} field must have at most {param} characters'),
+            'email' => new Rule(function (string $value) {
+                return !filter_var($value, FILTER_VALIDATE_EMAIL) ? false : $value;
+            }, '{field} field must be a valid email'),
             'min' => new Rule(function (string $param, string|int|float $value) {
                 if (!is_numeric($param)) {
                     throw new RuleParamNotLogicException("Param must be integer ot float");
@@ -172,12 +175,9 @@ class Rules
                     $param = $ruleArgs[0] ?? null;
                     $ruleClass = $this->callbacks[$function];
                 }
-                if ($rule instanceof RuleInterface) {
-                    $rule = $rule->make();
-                    if (method_exists($rule, 'getParam')) {
-                        $param = $rule->getParam();
-                    }
-                    $ruleClass = $rule;
+                if ($rule instanceof AbstractRule) {
+                    $param = $rule->getRuleParam();
+                    $ruleClass = $rule->make();
                 }
                 if ($param) {
                     $param = $this->testFieldParam($param);
