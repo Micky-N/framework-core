@@ -23,14 +23,14 @@ class Create extends \MkyCore\Console\Create\Create
     public function process(): bool|string
     {
         $getModel = $this->getModel();
-        $output = File::makePath([$this->app->get('path:database'), 'populators']);
+        $output = File::makePath([$this->app->get('path:database'), 'Populators']);
         $params = $this->params;
         $replaceParams = $this->moduleOptions;
         $namebase = array_shift($params);
         $name = $this->handlerRules('name', $namebase);
         $final = $output . DIRECTORY_SEPARATOR . $name . '.php';
         if (file_exists($final)) {
-            return $this->sendError('File already exists', 'populators' . DIRECTORY_SEPARATOR . "{$name}.php");
+            return $this->sendError('File already exists', 'Populators' . DIRECTORY_SEPARATOR . "{$name}.php");
         }
         $manager = $this->getManagerQuestion($namebase);
         $class = explode('\\', $manager);
