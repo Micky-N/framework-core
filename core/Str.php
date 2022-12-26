@@ -42,7 +42,7 @@ class Str
         return self::inflection()->singularize($string);
     }
 
-    public static function urlize(string $string): string
+    public static function slugify(string $string): string
     {
         return self::inflection()->urlize($string);
     }
@@ -50,5 +50,15 @@ class Str
     public static function unaccent(string $string): string
     {
         return self::inflection()->unaccent($string);
+    }
+
+    public static function toSnake(string $string): string
+    {
+        return preg_replace_callback('/[A-Z+]/', function ($exp) {
+            if (isset($exp[0])) {
+                return '_' . lcfirst($exp[0]);
+            }
+            return $exp[0];
+        }, lcfirst($string));
     }
 }
