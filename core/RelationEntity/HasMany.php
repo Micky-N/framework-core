@@ -8,6 +8,7 @@ use MkyCore\Abstracts\Manager;
 use MkyCore\Interfaces\RelationEntityInterface;
 use MkyCore\QueryBuilderMysql;
 use MkyCore\Str;
+use ReflectionException;
 
 class HasMany implements RelationEntityInterface
 {
@@ -15,7 +16,11 @@ class HasMany implements RelationEntityInterface
     protected QueryBuilderMysql $query;
     private Manager $managerRelation;
 
-    public function __construct(private readonly Entity $entity, private readonly Entity $entityRelation, private string $foreignKey)
+    /**
+     * @throws ReflectionException
+     * @throws Exception
+     */
+    public function __construct(private readonly Entity $entity, private readonly Entity $entityRelation, private readonly string $foreignKey)
     {
         $manager = $this->entity->getManager();
         $this->managerRelation = $this->entityRelation->getManager();
@@ -71,20 +76,25 @@ class HasMany implements RelationEntityInterface
 
     /**
      * Delete all records in hasMany relation
+     *
+     * @return Entity[]|false
      * @throws Exception
      */
-    public function clear(): void
+    public function clear(): array|false
     {
         $entities = $this->get();
         for ($i = 0; $i < count($entities); $i++) {
             $entity = $entities[$i];
-            $this->managerRelation->delete($entity);
+            if (!$this->managerRelation->delete($entity)) {
+                return false;
+            }
         }
+        return $entities;
     }
 
     /**
      * @inheritDoc
-     * @return array|false
+     * @return Entity[]|false
      */
     public function get(): array|false
     {
@@ -96,22 +106,39 @@ class HasMany implements RelationEntityInterface
     }
 
     /**
+     * @param string|int $id
+     * @return Entity|bool|null
+     * @throws ReflectionException
+     * @throws Exception
+     */
+    public function delete(string|int $id): Entity|bool|null
+    {
+        if ($toDelete = $this->managerRelation->find($id)) {
+            return $this->managerRelation->delete($toDelete);
+        }
+        return false;
+    }
+
+    /**
      * Insert row in database with one-to-many relation
      *
      * @param Entity $entity
-     * @return false|$this
+     * @return false|Entity
      */
     public function add(Entity $entity): false|Entity
     {
         try {
             $primaryKey = $this->entity->getPrimaryKey();
-            $entity->{'set' . ucfirst(Str::camelize($this->foreignKey))}($this->entity->{$primaryKey}());
+            $entity->{'set' . Str::classify($this->foreignKey)}($this->entity->{$primaryKey}());
             return $this->managerRelation->save($entity);
         } catch (Exception $exception) {
             return false;
         }
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function update(array $data)
     {
         $entities = $this->get();

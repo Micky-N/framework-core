@@ -36,7 +36,8 @@ class Command
         ],
         'install' => [
             'jwt' => 'Implement jwt migration and config file',
-            'notification' => 'Create migration file for notifications table'
+            'notification' => 'Create migration file for notifications table',
+            'remember' => ''
         ],
         'show' => [
             'route' => ['Show list of routes, can be filtered by controller, request methods, name (regex) or/and url (regex)', '--filter'],
@@ -75,7 +76,8 @@ class Command
         ],
         'install' => [
             'jwt',
-            'notification'
+            'notification',
+            'remember'
         ],
         'tmp' => [
             'link'

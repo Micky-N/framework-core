@@ -7,24 +7,49 @@ use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Manager;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Exceptions\RememberMeException;
+use MkyCore\Facades\Cookie;
 use MkyCore\Interfaces\AuthSystemInterface;
+use MkyCore\Remember\RememberMe;
+use MkyCore\Traits\HasRememberToken;
 use ReflectionException;
 
 class AuthManager
 {
 
+    private static ?string $BASE_PROVIDER = null;
     private array $provider;
     private string $providerName;
-
 
     /**
      * @throws Exception
      */
     public function __construct(private readonly Config $config, private readonly Session $session, private readonly Container $app)
     {
-        $defaultProvider = $config->get('auth.default.provider');
+        $defaultProvider = self::$BASE_PROVIDER ?? $config->get('auth.default.provider');
         $this->providerName = $defaultProvider;
         $this->provider = $config->get('auth.providers.' . $defaultProvider, []);
+    }
+
+    /**
+     * @return string|null
+     */
+    public static function getBaseProvider(): ?string
+    {
+        return self::$BASE_PROVIDER;
+    }
+
+    /**
+     * @param string|null $BaseProvider
+     * @return AuthManager
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    public static function setBaseProvider(?string $BaseProvider): AuthManager
+    {
+        self::$BASE_PROVIDER = $BaseProvider ?: null;
+        return app()->get(static::class);
     }
 
     /**
@@ -33,7 +58,7 @@ class AuthManager
      * @throws ReflectionException
      * @throws Exception
      */
-    public function attempt(array $credentials): bool|Entity
+    public function attempt(array $credentials, bool $rememberMe = false): bool|Entity
     {
         if (empty($this->provider['manager'])) {
             throw new Exception("No config set for \"$this->providerName\" provider");
@@ -45,11 +70,30 @@ class AuthManager
         }
         $credentials = array_filter($credentials, fn($key) => in_array($key, $this->provider['properties']), ARRAY_FILTER_USE_KEY);
         if ($entity = $manager->passwordCheck($credentials)) {
-            $primaryKey = $entity->getPrimaryKey();
-            $this->session->set('auth', $entity->{$primaryKey}());
-            return $entity;
+            return $this->login($entity, $rememberMe);
         }
         return false;
+    }
+
+    /**
+     * @param Entity $entity
+     * @param bool $rememberMe
+     * @return Entity
+     * @throws ReflectionException
+     * @throws RememberMeException
+     */
+    public function login(Entity $entity, bool $rememberMe = false): Entity
+    {
+        $primaryKey = $entity->getPrimaryKey();
+        $this->session->set('auth', $entity->{$primaryKey}());
+        if ($rememberMe) {
+            if (in_array(HasRememberToken::class, class_uses($entity), true)) {
+                $entity->rememberMe($this->providerName);
+            } else {
+                throw new RememberMeException(sprintf('Entity %s must uses HasRememberToken trait', get_class($entity)));
+            }
+        }
+        return $entity;
     }
 
     /**
@@ -97,7 +141,9 @@ class AuthManager
 
     public function logout(): void
     {
+        Cookie::remove(RememberMe::PREFIX_ID);
         $this->session->remove('auth');
+        $this->session->destroy();
     }
 
     /**

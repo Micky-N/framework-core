@@ -16,25 +16,36 @@ class Middleware extends Create
 
     protected function handleQuestions(array $replaceParams, array $params = []): array
     {
+        $params = $this->params;
+        $name = reset($params);
         $alias = '';
-        do {
-            $confirm = true;
-            $type = $this->sendQuestion('Enter the type of middleware (' . join('/', $this->types) . ')', 'route') ?: 'route';
-            if (!in_array($type, $this->types)) {
-                $this->sendError("Wrong middleware type", $type);
-                $confirm = false;
-            }
-        } while (!$confirm);
 
-        if ($type === 'route') {
+        if (!isset($this->moduleOptions['type'])) {
             do {
                 $confirm = true;
-                $alias = $this->sendQuestion('Enter the middleware alias');
-                if (!$alias) {
-                    $this->sendError("No alias entered", 'NULL');
+                $type = $this->sendQuestion('Enter the type of middleware (' . join('/', $this->types) . ')', 'route') ?: 'route';
+                if (!in_array($type, $this->types)) {
+                    $this->sendError("Wrong middleware type", $type);
                     $confirm = false;
                 }
             } while (!$confirm);
+        } else {
+            $type = $this->moduleOptions['type'];
+        }
+
+        if (!isset($this->moduleOptions['alias'])) {
+            if ($type === 'route') {
+                do {
+                    $confirm = true;
+                    $alias = $this->sendQuestion('Enter the middleware alias', $name) ?: $name;
+                    if (!$alias) {
+                        $this->sendError("No alias entered", 'NULL');
+                        $confirm = false;
+                    }
+                } while (!$confirm);
+            }
+        } else {
+            $alias = $this->moduleOptions['alias'];
         }
 
         $this->writeInAliasesFile($type, $replaceParams, $alias);
@@ -57,7 +68,7 @@ class Middleware extends Create
         $name = $replaceParams['name'];
         $class = $module->getModulePath(true) . "\Middlewares\\$name";
         $file = match ($type) {
-            'global' => getcwd() . DIRECTORY_SEPARATOR . 'app'.DIRECTORY_SEPARATOR.'Middlewares'.DIRECTORY_SEPARATOR.'aliases.php',
+            'global' => getcwd() . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Middlewares' . DIRECTORY_SEPARATOR . 'aliases.php',
             default => $module->getModulePath() . DIRECTORY_SEPARATOR . 'Middlewares' . DIRECTORY_SEPARATOR . 'aliases.php',
         };
 

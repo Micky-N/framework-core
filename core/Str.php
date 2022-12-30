@@ -61,4 +61,13 @@ class Str
             return $exp[0];
         }, lcfirst($string));
     }
+
+    public static function random(int $length = 16): string
+    {
+        try {
+            return bin2hex(random_bytes($length));
+        } catch (\Exception $e) {
+            return '';
+        }
+    }
 }

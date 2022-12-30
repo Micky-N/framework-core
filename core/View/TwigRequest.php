@@ -54,4 +54,21 @@ class TwigRequest
     {
         return Config::get($key, $default);
     }
+
+    public function is(string $url): bool
+    {
+        $route = app()->getCurrentRoute();
+        return $route->getUrl() === $url;
+    }
+
+    public function isName(string $name): bool
+    {
+        $route = app()->getCurrentRoute();
+        return $route->getName() === $name;
+    }
+
+    public function query(string $name, mixed $default)
+    {
+        return $this->request->query($name, $default);
+    }
 }

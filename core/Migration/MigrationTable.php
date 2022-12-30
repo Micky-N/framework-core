@@ -124,8 +124,8 @@ class MigrationTable
      */
     public function dates(): ColumnType
     {
-        $this->createAt();
-        return $this->updateAt();
+        $this->createdAt();
+        return $this->updatedAt();
     }
 
     /**
@@ -134,7 +134,7 @@ class MigrationTable
      * @param string $column
      * @return ColumnType
      */
-    public function createAt(string $column = 'created_at'): ColumnType
+    public function createdAt(string $column = 'created_at'): ColumnType
     {
         return $this->timestamp($column)->notNull()->default('CURRENT_TIMESTAMP');
     }
@@ -156,7 +156,7 @@ class MigrationTable
      * @param string $column
      * @return ColumnType
      */
-    public function updateAt(string $column = 'updated_at'): ColumnType
+    public function updatedAt(string $column = 'updated_at'): ColumnType
     {
         return $this->timestamp($column)->notNull()->default('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
     }

@@ -95,7 +95,7 @@ class Request extends ServerRequest implements ServerRequestInterface
         if ($name) {
             return $queryParams[$name] ?? $default;
         }
-        return $queryParams;
+        return array_filter($queryParams, fn($param) => $param !== '', ARRAY_FILTER_USE_BOTH);
     }
 
     public function query(string $name = null, mixed $default = null): mixed
@@ -152,9 +152,9 @@ class Request extends ServerRequest implements ServerRequestInterface
     public function boolean(string $name): ?bool
     {
         $bool = null;
-        if ($this->post($name)) {
+        if ($this->has($name)) {
             $bool = $this->post($name);
-        } elseif ($this->query($name)) {
+        } elseif ($this->has($name, 'query')) {
             $bool = $this->query($name);
         }
         if (!is_null($bool)) {
@@ -312,7 +312,7 @@ class Request extends ServerRequest implements ServerRequestInterface
      */
     public function session(string $name = null, mixed $default = null): mixed
     {
-        return session($name, $default);
+        return session($name) ?? $default;
     }
 
     /**
@@ -326,6 +326,7 @@ class Request extends ServerRequest implements ServerRequestInterface
         if (Session::has('_flash:' . $name)) {
             $flash = Session::pull('_flash:' . $name);
         }
+
         return $flash;
     }
 
@@ -348,7 +349,7 @@ class Request extends ServerRequest implements ServerRequestInterface
 
     public function backUrl(): string|null
     {
-        return $this->server('HTTP_REFERER');
+        return $this->server('HTTP_REFERER') ?? 'javascript://history.go(-1)';
     }
 
     public function old(string $name, mixed $default = null): mixed

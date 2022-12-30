@@ -14,6 +14,7 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
             new TwigFunction('csrf', [$this, 'csrf'], ['is_safe' => ['html']]),
             new TwigFunction('method', [$this, 'method'], ['is_safe' => ['html']]),
             new TwigFunction('asset', [$this, 'asset']),
+            new TwigFunction('json', [$this, 'json']),
             new TwigFunction('public_path', [$this, 'public_path']),
             new TwigFunction('dump', [$this, 'dump']),
             new TwigFunction('dd', [$this, 'dd']),
@@ -78,6 +79,11 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
     public function dd(mixed $var, mixed ...$moreVars): void
     {
         dd($var, ...$moreVars);
+    }
+
+    public function json(mixed $value): string
+    {
+        return json_encode($value);
     }
 
 }
