@@ -42,7 +42,7 @@
         },
         "files": [
             "core/Helpers/helpers.php",
-            "swiftmailer/lib/swift_required.php"
+            "swift/lib/swift_required.php"
         ],
         "classmap": [
             "log4php/src/"
