@@ -7,7 +7,9 @@ use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
+use MkyCore\RedirectResponse;
 use MkyCore\Request;
+use MkyCore\Response;
 use ReflectionException;
 
 class GlobalHandlerMiddleware implements MiddlewareInterface
@@ -88,7 +90,11 @@ class GlobalHandlerMiddleware implements MiddlewareInterface
     public function processGlobal(Request $request, ?callable $next = null): ResponseHandlerInterface
     {
         if ($middleware = $this->getCurrentMiddleware()) {
-            return $middleware->process($request, $next);
+            $process = $middleware->process($request, $next ?? [$this, 'processGlobal']);
+            if($process instanceof RedirectResponse){
+                Response::getFromHandler($process);
+            }
+            return $process;
         }
         return $this->process($request, $this->next);
     }

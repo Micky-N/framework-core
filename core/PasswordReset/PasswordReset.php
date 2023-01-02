@@ -1,22 +1,21 @@
 <?php
 
-namespace MkyCore\Api;
+namespace MkyCore\PasswordReset;
 
 use MkyCore\Abstracts\Entity;
+use ReflectionException;
 
 /**
- * @Manager('MkyCore\Api\JsonWebTokenManager')
+ * @Manager('MkyCore\PasswordReset\PasswordResetManager')
  */
-class JsonWebToken extends Entity
+class PasswordReset extends Entity
 {
-
     private ?int $id = null;
     private string $entity;
-    private int|string $entityId;
+    private string|int $entityId;
     private string $token;
-    private string $name;
-    private int $expiresAt;
-    private string $createdAt;
+    private string $expiresAt;
+    private ?string $createdAt = null;
 
     /**
      * @return int|null
@@ -51,9 +50,9 @@ class JsonWebToken extends Entity
     }
 
     /**
-     * @return string|int
+     * @return int|string
      */
-    public function entityId(): string|int
+    public function entityId(): int|string
     {
         return $this->entityId;
     }
@@ -64,19 +63,6 @@ class JsonWebToken extends Entity
     public function setEntityId(int|string $entityId): void
     {
         $this->entityId = $entityId;
-    }
-
-    public function name(): string
-    {
-        return $this->name;
-    }
-
-    /**
-     * @param string $name
-     */
-    public function setName(string $name): void
-    {
-        $this->name = $name;
     }
 
     /**
@@ -96,34 +82,52 @@ class JsonWebToken extends Entity
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function expiresAt(): int
+    public function expiresAt(): string
     {
         return $this->expiresAt;
     }
 
     /**
-     * @param int $expiresAt
+     * @param string $expiresAt
      */
-    public function setExpiresAt(int $expiresAt): void
+    public function setExpiresAt(string $expiresAt): void
     {
         $this->expiresAt = $expiresAt;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function createdAt(): string
+    public function createdAt(): ?string
     {
         return $this->createdAt;
     }
 
     /**
-     * @param string $createdAt
+     * @param string|null $createdAt
      */
-    public function setCreatedAt(string $createdAt): void
+    public function setCreatedAt(?string $createdAt): void
     {
         $this->createdAt = $createdAt;
+    }
+
+    /**
+     * @return Entity|bool
+     * @throws ReflectionException
+     */
+    public function user(): Entity|bool
+    {
+        $entity = str_replace('.', '\\', $this->entity);
+        /** @var Entity $entityClass */
+        $entityClass = new $entity();
+        $manager = $entityClass->getManager();
+        return $manager->find($this->entityId);
+    }
+
+    public function isValid(): bool
+    {
+        return now()->isBefore($this->expiresAt);
     }
 }

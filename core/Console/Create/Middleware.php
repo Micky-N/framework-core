@@ -72,7 +72,7 @@ class Middleware extends Create
             default => $module->getModulePath() . DIRECTORY_SEPARATOR . 'Middlewares' . DIRECTORY_SEPARATOR . 'aliases.php',
         };
 
-        $prefix = '';
+        $prefix = '\\';
         if ($alias) {
             $prefix = "'$alias' => ";
         }

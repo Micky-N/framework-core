@@ -70,4 +70,14 @@ class Str
             return '';
         }
     }
+
+    public static function hashPassword(string $string, string $algo = PASSWORD_BCRYPT): string
+    {
+        return password_hash($string, $algo);
+    }
+
+    public static function passwordVerify(string $string, string $hash): bool
+    {
+        return password_verify($string, $hash);
+    }
 }

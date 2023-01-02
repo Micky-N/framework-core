@@ -269,12 +269,17 @@ class Application extends Container
      *
      * @param string $event
      * @param array|string $listeners
+     * @param bool $replace
      * @return void
      */
-    public function addEvent(string $event, array|string $listeners): void
+    public function addEvent(string $event, array|string $listeners, bool $replace = false): void
     {
         $listeners = (array)$listeners;
-        $this->events[$event] = $listeners;
+        if(!$replace){
+            $this->events[$event] = array_replace_recursive($this->events[$event] ?? [], $listeners);
+        }else{
+            $this->events[$event] = $listeners;
+        }
     }
 
     /**

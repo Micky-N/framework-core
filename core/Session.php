@@ -5,13 +5,6 @@ namespace MkyCore;
 class Session
 {
 
-    public function __construct(array $option = [])
-    {
-        if (empty($_SESSION) && session_status() === PHP_SESSION_NONE && empty(session_id())) {
-            session_start($option);
-        }
-    }
-
     /**
      * Get all session data
      *

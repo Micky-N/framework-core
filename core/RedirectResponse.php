@@ -90,6 +90,19 @@ class RedirectResponse implements ResponseHandlerInterface
         return $this;
     }
 
+    /**
+     * Add session value
+     *
+     * @param string $type
+     * @param mixed $data
+     * @return $this
+     */
+    public function oldInput(string $type, mixed $data): static
+    {
+        Session::set('_input:' . $type, $data);
+        return $this;
+    }
+
     public function queries(array $array): static
     {
         $queries = http_build_query($array);

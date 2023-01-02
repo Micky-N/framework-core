@@ -18,7 +18,7 @@ class AuthManager
 {
 
     private static ?string $BASE_PROVIDER = null;
-    private array $provider;
+    private array $providerConfig;
     private string $providerName;
 
     /**
@@ -28,7 +28,7 @@ class AuthManager
     {
         $defaultProvider = self::$BASE_PROVIDER ?? $config->get('auth.default.provider');
         $this->providerName = $defaultProvider;
-        $this->provider = $config->get('auth.providers.' . $defaultProvider, []);
+        $this->providerConfig = $config->get('auth.providers.' . $defaultProvider, []);
     }
 
     /**
@@ -40,19 +40,6 @@ class AuthManager
     }
 
     /**
-     * @param string|null $BaseProvider
-     * @return AuthManager
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     */
-    public static function setBaseProvider(?string $BaseProvider): AuthManager
-    {
-        self::$BASE_PROVIDER = $BaseProvider ?: null;
-        return app()->get(static::class);
-    }
-
-    /**
      * Test credentials for authentication
      *
      * @throws ReflectionException
@@ -60,19 +47,32 @@ class AuthManager
      */
     public function attempt(array $credentials, bool $rememberMe = false): bool|Entity
     {
-        if (empty($this->provider['manager'])) {
+        if (empty($this->providerConfig['manager'])) {
             throw new Exception("No config set for \"$this->providerName\" provider");
         }
-        $manager = $this->app->get($this->provider['manager']);
-        if (!($manager instanceof AuthSystemInterface)) {
-            $class = get_class($manager);
-            throw new Exception("The class $class must be an instance of MkyCore\Interface\AuthSystemInterface");
-        }
-        $credentials = array_filter($credentials, fn($key) => in_array($key, $this->provider['properties']), ARRAY_FILTER_USE_KEY);
+        $manager = $this->getManager();
+        $credentials = array_filter($credentials, fn($key) => in_array($key, $this->providerConfig['properties']), ARRAY_FILTER_USE_KEY);
         if ($entity = $manager->passwordCheck($credentials)) {
             return $this->login($entity, $rememberMe);
         }
         return false;
+    }
+
+    /**
+     * @return AuthSystemInterface
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     * @throws Exception
+     */
+    public function getManager(): AuthSystemInterface
+    {
+        $manager = $this->app->get($this->providerConfig['manager']);
+        if (!($manager instanceof AuthSystemInterface)) {
+            $class = get_class($manager);
+            throw new Exception("The class $class must be an instance of MkyCore\Interface\AuthSystemInterface");
+        }
+        return $manager;
     }
 
     /**
@@ -101,10 +101,13 @@ class AuthManager
      *
      * @throws Exception
      */
-    public function use(string $provider): static
+    public function use(string $provider, bool $replace = false): static
     {
         $this->providerName = $provider;
-        $this->provider = $this->config->get('auth.providers.' . $provider);
+        $this->providerConfig = $this->config->get('auth.providers.' . $provider);
+        if($replace){
+            self::$BASE_PROVIDER = $provider;
+        }
         return $this;
     }
 
@@ -118,10 +121,10 @@ class AuthManager
      */
     public function user(): false|Entity|null
     {
-        if (!empty($this->provider)) {
+        if (!empty($this->providerConfig)) {
             if ($this->isLogin()) {
                 /** @var Manager $manager */
-                $manager = $this->app->get($this->provider['manager']);
+                $manager = $this->app->get($this->providerConfig['manager']);
                 $id = $this->session->get('auth');
                 return $manager->find($id);
             }
@@ -147,13 +150,26 @@ class AuthManager
     }
 
     /**
-     * Get authenticate provider
+     * Get authenticate provider config
      *
-     * @return array
+     * @param string|null $key
+     * @return array|mixed
      */
-    public function getProvider(): array
+    public function getProviderConfig(?string $key = null): mixed
     {
-        return $this->provider;
+        if ($key && $this->hasProviderConfig($key)) {
+            return $this->providerConfig[$key] ?? null;
+        }
+        return $this->providerConfig;
+    }
+
+    /**
+     * @param string $key
+     * @return bool
+     */
+    private function hasProviderConfig(string $key): bool
+    {
+        return isset($this->providerConfig[$key]);
     }
 
     /**

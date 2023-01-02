@@ -8,7 +8,9 @@ use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
+use MkyCore\RedirectResponse;
 use MkyCore\Request;
+use MkyCore\Response;
 use MkyCore\Router\Route;
 use ReflectionException;
 
@@ -79,6 +81,7 @@ class RouteHandlerMiddleware implements MiddlewareInterface
             return $next($request);
         }
         $this->routeMiddlewares = $this->getRouteMiddlewaresByRoute();
+
         if (isset($this->routeMiddlewares[$this->index])) {
             return $this->processRoute($request, [$this, 'processRoute']);
         }
@@ -130,7 +133,11 @@ class RouteHandlerMiddleware implements MiddlewareInterface
     public function processRoute(Request $request, ?callable $next = null): ResponseHandlerInterface
     {
         if ($middleware = $this->getCurrentMiddleware()) {
-            return $middleware->process($request, $next);
+            $process = $middleware->process($request, $next ?? [$this, 'processRoute']);
+            if($process instanceof RedirectResponse){
+                Response::getFromHandler($process);
+            }
+            return $process;
         }
         return $this->process($request, $this->next);
     }

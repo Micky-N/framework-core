@@ -49,23 +49,31 @@ class Module extends Create
         if (is_dir($newPath)) {
             return $this->sendError("Module already exists", $module);
         }
-        do {
-            $confirm = true;
-            $alias = $this->sendQuestion('Enter the alias module', $name) ?: $name;
-            if ($this->app->hasModule($alias)) {
-                $this->sendError("Alias $alias already exists");
-                $confirm = false;
-            }
-        } while (!$confirm);
+        if(empty($this->moduleOptions['alias'])){
+            do {
+                $confirm = true;
+                $alias = $this->sendQuestion('Enter the alias module', $name) ?: $name;
+                if ($this->app->hasModule($alias)) {
+                    $this->sendError("Alias $alias already exists");
+                    $confirm = false;
+                }
+            } while (!$confirm);
+        }else{
+            $alias = $this->moduleOptions['alias'];
+        }
 
-        do {
-            $confirm = true;
-            $routeMode = $this->sendQuestion('Enter the route mode (file/controller/both)', 'controller') ?: 'controller';
-            if (!in_array($routeMode, ['file', 'controller', 'both'])) {
-                $confirm = $this->sendError("Route mode not given", $routeMode);
-            }
-        } while (!$confirm);
-        $table = $this->sendQuestion('Enter the table name for manager', 'n/ to skip');
+        if(empty($this->moduleOptions['routeMode'])){
+            do {
+                $confirm = true;
+                $routeMode = $this->sendQuestion('Enter the route mode (file/controller/both)', 'controller') ?: 'controller';
+                if (!in_array($routeMode, ['file', 'controller', 'both'])) {
+                    $confirm = $this->sendError("Route mode not given", $routeMode);
+                }
+            } while (!$confirm);
+        }else{
+            $routeMode = $this->moduleOptions['routeMode'];
+        }
+        $table = $this->moduleOptions['table'] ?? $this->sendQuestion('Enter the table name for manager', 'n/ to skip');
         $dirs = [];
         for ($i = 0; $i < count(self::DEFAULT_DIRS); $i++) {
             $dir = self::DEFAULT_DIRS[$i];

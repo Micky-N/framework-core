@@ -21,8 +21,6 @@ class Command
             'provider' => 'Create provider class, the name is suffixed by \'ServiceProvider\'',
             'listener' => 'Create listener class, the name is suffixed by \'Listener\'',
             'event' => 'Create event class, the name is suffixed by \'Event\'',
-            'notification' => 'Create notification class, the name is suffixed by \'Notification\'',
-            'notificationSystem' => 'Create notification system class, the name is suffixed by \'NotificationSystem\''
         ],
         'migration' => [
             'create' => 'Create migration file in format createUserTable => 123456_create_user_table.php',
@@ -35,9 +33,8 @@ class Command
             'run' => ['Populate database, -f to specify class', '-f']
         ],
         'install' => [
-            'jwt' => 'Implement jwt migration and config file',
-            'notification' => 'Create migration file for notifications table',
-            'remember' => ''
+            'jwt' => 'Implement json web token migration and config file',
+            'remember' => 'Implement the remember authenticate system',
         ],
         'show' => [
             'route' => ['Show list of routes, can be filtered by controller, request methods, name (regex) or/and url (regex)', '--filter'],
@@ -57,8 +54,6 @@ class Command
             'module',
             'listener',
             'event',
-            'notification',
-            'notificationSystem'
         ],
         'show' => [
             'route',
@@ -76,8 +71,7 @@ class Command
         ],
         'install' => [
             'jwt',
-            'notification',
-            'remember'
+            'remember',
         ],
         'tmp' => [
             'link'

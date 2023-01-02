@@ -4,9 +4,10 @@
 namespace MkyCore\Abstracts;
 
 
+use MkyCore\Interfaces\EventInterface;
 use MkyCore\Traits\Dispatcher;
 
-abstract class Event implements \MkyCore\Interfaces\EventInterface
+abstract class Event implements EventInterface
 {
 
     use Dispatcher;

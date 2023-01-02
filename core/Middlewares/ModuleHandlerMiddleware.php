@@ -9,11 +9,13 @@ use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
+use MkyCore\RedirectResponse;
 use MkyCore\Request;
 use MkyCore\Response;
 use MkyCore\Router\Route;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionException;
+use function Http\Response\send;
 
 class ModuleHandlerMiddleware implements MiddlewareInterface
 {
@@ -62,7 +64,11 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
     public function processModule(Request $request, ?callable $next = null): ResponseHandlerInterface
     {
         if ($middleware = $this->getCurrentMiddleware()) {
-            return $middleware->process($request, $next);
+            $process = $middleware->process($request, $next ?? [$this, 'processModule']);
+            if($process instanceof RedirectResponse){
+                Response::getFromHandler($process);
+            }
+            return $process;
         }
         return $this->process($request, $this->next);
     }
