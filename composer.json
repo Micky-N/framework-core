@@ -26,7 +26,10 @@
         "league/flysystem": "^3.11",
         "fakerphp/faker": "^1.21",
         "doctrine/inflector": "^2.0",
-        "swiftmailer/swiftmailer": "^6.3"
+        "egulias/email-validator": "^2.0|^3.1",
+        "symfony/polyfill-iconv": "^1.0",
+        "symfony/polyfill-mbstring": "^1.0",
+        "symfony/polyfill-intl-idn": "^1.10"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
@@ -38,7 +41,11 @@
             "MkyCore\\": "core/"
         },
         "files": [
-            "core/Helpers/helpers.php"
+            "core/Helpers/helpers.php",
+            "swiftmailer/lib/swift_required.php"
+        ],
+        "classmap": [
+            "log4php/src/"
         ]
     },
     "autoload-dev": {
