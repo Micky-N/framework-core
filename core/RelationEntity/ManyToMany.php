@@ -129,4 +129,26 @@ class ManyToMany implements RelationEntityInterface
     {
         return $this->pivot;
     }
+
+    /**
+     * Query builder callback to specify some relation requirements
+     *
+     * @param callable $callback
+     * @return ManyToMany
+     */
+    public function queryBuilder(callable $callback): ManyToMany
+    {
+        $this->query = $callback($this->query);
+        return $this;
+    }
+
+    public function delete(string|int $id)
+    {
+        //
+    }
+
+    public function clear()
+    {
+        //
+    }
 }

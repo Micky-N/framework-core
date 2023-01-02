@@ -14,7 +14,6 @@ class RouterMiddleware implements MiddlewareInterface
 
     public function __construct(private readonly Application $app, private readonly Router $router)
     {
-
     }
 
     /**

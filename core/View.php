@@ -12,6 +12,8 @@ use MkyCore\Interfaces\ViewCompileInterface;
 use MkyCore\View\TwigCompile;
 use ReflectionException;
 use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 class View implements ResponseHandlerInterface
 {
@@ -29,6 +31,21 @@ class View implements ResponseHandlerInterface
      * @throws Exception
      */
     public function render(string $view, array $params = []): View
+    {
+        $this->toHtml($view, $params);
+        return $this;
+    }
+
+    /**
+     * @throws RuntimeError
+     * @throws FailedToResolveContainerException
+     * @throws LoaderError
+     * @throws ViewSystemException
+     * @throws SyntaxError
+     * @throws ReflectionException
+     * @throws NotInstantiableContainerException
+     */
+    public function toHtml(string $view, array $params = []): string
     {
         $module = $this->app->getCurrentRoute()->getModule();
         if ($module) {
@@ -57,28 +74,16 @@ class View implements ResponseHandlerInterface
         if (str_starts_with($view, '@/')) {
             $view = str_replace('@', '@' . $module->getAlias(), $view);
         }
-        $this->renderedView = $this->compile->compile($view, $params);
-        return $this;
+        return $this->renderedView = $this->compile->compile($view, $params);
     }
 
     /**
      * @throws LoaderError
      */
-    public function addPath(string $path, string $namespace): void
+    public function addPath(string $path, string $namespace): static
     {
         $this->compile->addPath($path, $namespace);
-    }
-
-    /**
-     * @throws LoaderError
-     */
-    private function getParentViewsDirectory(ModuleKernel $moduleKernel): void
-    {
-        /** @var ModuleKernel[] $ancestors */
-        $ancestors = $moduleKernel->getAncestorsKernel();
-        foreach ($ancestors as $ancestor) {
-            $this->compile->addPath($ancestor->getModulePath() . DIRECTORY_SEPARATOR . 'views', $ancestor->getAlias());
-        }
+        return $this;
     }
 
     /**
@@ -108,6 +113,18 @@ class View implements ResponseHandlerInterface
             }
 
             $this->compile->addPath($viewPath, $module->getAlias());
+        }
+    }
+
+    /**
+     * @throws LoaderError
+     */
+    private function getParentViewsDirectory(ModuleKernel $moduleKernel): void
+    {
+        /** @var ModuleKernel[] $ancestors */
+        $ancestors = $moduleKernel->getAncestorsKernel();
+        foreach ($ancestors as $ancestor) {
+            $this->compile->addPath($ancestor->getModulePath() . DIRECTORY_SEPARATOR . 'views', $ancestor->getAlias());
         }
     }
 

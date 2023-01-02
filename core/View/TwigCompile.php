@@ -44,8 +44,12 @@ class TwigCompile implements ViewCompileInterface
     public function compile(string $view, array $params = []): string
     {
         $this->twig->addGlobal('request', app()->get(TwigRequest::class));
-        $this->twig->addExtension(new TwigExtensionFunction());
-        $this->twig->addExtension(new TwigExtensionFilter());
+        if(!$this->twig->hasExtension(TwigExtensionFunction::class)){
+            $this->twig->addExtension(new TwigExtensionFunction());
+        }
+        if(!$this->twig->hasExtension(TwigExtensionFilter::class)){
+            $this->twig->addExtension(new TwigExtensionFilter());
+        }
         $rootKernel = app()->getModuleKernel('root');
         $methods = ['getTwigFunctions', 'getTwigFilters'];
         for ($i = 0; $i < count($methods); $i++) {
@@ -62,7 +66,9 @@ class TwigCompile implements ViewCompileInterface
                 if (!($extension instanceof AbstractExtension)) {
                     throw new RuntimeError(sprintf('Class %s must extends %s class', get_class($extension), AbstractExtension::class));
                 }
-                $this->twig->addExtension($extension);
+                if(!$this->twig->hasExtension(get_class($extension))){
+                    $this->twig->addExtension($extension);
+                }
             }
         }
         $this->twig->getExtension(CoreExtension::class)->setTimezone(Config::get('app.timezone'));

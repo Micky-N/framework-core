@@ -50,10 +50,10 @@ class HasOne implements RelationEntityInterface
      * Insert row in database with many-to-one relation
      *
      * @param Entity $entity
-     * @return bool|Entity
+     * @return false|Entity
      * @throws ReflectionException
      */
-    public function attach(Entity $entity): bool|Entity
+    public function attach(Entity $entity): false|Entity
     {
         $primaryKey = $entity->getPrimaryKey();
         $foreignKey = $this->getForeignKey();
@@ -89,5 +89,29 @@ class HasOne implements RelationEntityInterface
     public function getEntityRelation(): Entity
     {
         return $this->entityRelation;
+    }
+
+    /**
+     * Query builder callback to specify some relation requirements
+     *
+     * @param callable $callback
+     * @return HasOne
+     */
+    public function queryBuilder(callable $callback): HasOne
+    {
+        $this->query = $callback($this->query);
+        return $this;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function delete(): Entity|bool|null
+    {
+        $toDelete = $this->get();
+        if($toDelete){
+            return $this->managerRelation->delete($toDelete);
+        }
+        return false;
     }
 }

@@ -46,7 +46,7 @@ class Event extends Create
         if($provider->process()){
             $message = 'Provider created';
             $module = $this->app->getModuleKernel($module)->getModulePath();
-            $res = $this->app->getModuleKernel($module)->getModulePath().DIRECTORY_SEPARATOR.'Providers'.DIRECTORY_SEPARATOR.'EventServiceProvider.php';
+            $res = $module.DIRECTORY_SEPARATOR.'Providers'.DIRECTORY_SEPARATOR.'EventServiceProvider.php';
             echo "\n" . $this->getColoredString($message, 'green', 'bold') . ": $res";
         }
     }

@@ -41,7 +41,7 @@ trait HasJwToken
             /** @var Entity $this */
             $queryBuilderMysql->where('entity', Database::stringifyEntity($this));
             if ($name) {
-                $queryBuilderMysql = $queryBuilderMysql->where('json_web_tokens.name', $name);
+                $queryBuilderMysql->where('json_web_tokens.name', $name);
             }
             return $queryBuilderMysql;
         });

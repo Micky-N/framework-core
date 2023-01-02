@@ -28,7 +28,7 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
      */
     private function setContentType(array $headers = []): array
     {
-        $headers['Content-Type'] = 'application/json; charset=' . config('jwt.charset');
+        $headers['Content-Type'] = 'application/json; charset=' . config('jwt.charset', 'utf-8');
         return $headers;
     }
 
@@ -40,7 +40,7 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
      */
     private function setCacheControl(array $headers = []): array
     {
-        $headers['Cache-Control'] = 'max-age=' . config('jwt.max_age');
+        $headers['Cache-Control'] = 'max-age=' . config('jwt.max_age', 43200);
         return $headers;
     }
 
@@ -52,7 +52,7 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
      */
     private function setAllowOrigin(array $headers = []): array
     {
-        $allowedOrigins = config('jwt.allowed_origins');
+        $allowedOrigins = (array)config('jwt.allowed_origins', ['*']);
         $origin = $this->request->header('Origin')[0] ?? '';
         for ($i = 0; $i < count($allowedOrigins); $i++) {
             $allowedOrigin = $allowedOrigins[$i];
@@ -91,7 +91,7 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
      */
     private function setAllowHeaders(array $headers = []): array
     {
-        $allowedHeaders = config('jwt.allowed_headers');
+        $allowedHeaders = config('jwt.allowed_headers', ['*']);
         if (!in_array('*', $allowedHeaders)) {
             $headers['Access-Control-Allow-Headers'] = join(', ', $allowedHeaders) == '*' ? '' : join(', ', $allowedHeaders);
         }
@@ -106,7 +106,7 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
      */
     private function setAllowCredentials(array $headers = []): array
     {
-        $headers['Access-Control-Allow-Credentials'] = config('jwt.allowed_credentials') ? 'true' : 'false';
+        $headers['Access-Control-Allow-Credentials'] = config('jwt.allowed_credentials', true) ? 'true' : 'false';
         return $headers;
     }
 
@@ -125,8 +125,10 @@ class JsonResponse implements Interfaces\ResponseHandlerInterface
             'data' => $data,
             'status' => $status,
             'statusText' => Response::getErrorMessage($status),
-            'url' => $this->request->backUrl()
         ];
+        if ($this->request->backUrl()) {
+            $res['url'] = $this->request->backUrl();
+        }
         $this->response = new Response($status, $headers, json_encode($res));
         return $this;
     }

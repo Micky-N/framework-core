@@ -14,7 +14,7 @@ class !name extends Event
      * @param array $actions
      * @param array $params
      */
-    public function __construct(mixed $target, array $actions, array $params)
+    public function __construct(protected mixed $target, protected array $actions, protected array $params)
     {
 
     }

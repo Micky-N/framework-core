@@ -15,7 +15,7 @@ class JsonWebToken extends Entity
     private int|string $entityId;
     private string $token;
     private string $name;
-    private int $expireAt;
+    private int $expiresAt;
     private string $createdAt;
 
     /**
@@ -98,17 +98,17 @@ class JsonWebToken extends Entity
     /**
      * @return int
      */
-    public function expireAt(): int
+    public function expiresAt(): int
     {
-        return $this->expireAt;
+        return $this->expiresAt;
     }
 
     /**
-     * @param int $expireAt
+     * @param int $expiresAt
      */
-    public function setExpireAt(int $expireAt): void
+    public function setExpiresAt(int $expiresAt): void
     {
-        $this->expireAt = $expireAt;
+        $this->expiresAt = $expiresAt;
     }
 
     /**

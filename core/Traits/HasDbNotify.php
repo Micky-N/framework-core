@@ -5,9 +5,9 @@ namespace MkyCore\Traits;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Database;
-use MkyCore\Notification\Database\HasManyNotification;
-use MkyCore\Notification\Database\HasManyUnReadNotification;
-use MkyCore\Notification\Database\Notification;
+use MkyCore\EventNotification\HasManyNotification;
+use MkyCore\EventNotification\HasManyUnReadNotification;
+use MkyCore\EventNotification\Notification;
 use MkyCore\QueryBuilderMysql;
 use MkyCore\RelationEntity\HasMany;
 
@@ -16,7 +16,6 @@ trait HasDbNotify
 
     public function notifications(): HasManyNotification|false
     {
-        /** @var Entity $this */
         return $this->hasManyNotification(Notification::class, 'entity_id')->queryBuilder(function (QueryBuilderMysql $queryBuilderMysql) {
             return $queryBuilderMysql->where('entity', Database::stringifyEntity($this));
         });
@@ -24,7 +23,6 @@ trait HasDbNotify
 
     public function unreadNotifications(): HasManyUnReadNotification|false
     {
-        /** @var Entity $this */
         return $this->hasManyUnReadNotification(Notification::class, 'entity_id')->queryBuilder(function (QueryBuilderMysql $queryBuilderMysql) {
             return $queryBuilderMysql->where('entity', Database::stringifyEntity($this))
                 ->whereNull('read_at', 'NULL');

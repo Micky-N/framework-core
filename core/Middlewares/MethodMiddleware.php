@@ -2,6 +2,7 @@
 
 namespace MkyCore\Middlewares;
 
+use MkyCore\Facades\Auth;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Request;
 use MkyCore\Router\Router;

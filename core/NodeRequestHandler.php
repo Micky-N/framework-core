@@ -43,10 +43,6 @@ class NodeRequestHandler implements RequestHandlerInterface
     private function setInitNodeMiddlewares(): void
     {
         $this
-            ->setMiddleware(WhoopsHandlerMiddleware::class)
-            ->setMiddleware(TrailingSlashMiddleware::class)
-            ->setMiddleware(MethodMiddleware::class)
-            ->setMiddleware(CsrfMiddleware::class)
             ->setMiddleware(GlobalHandlerMiddleware::class)
             ->setMiddleware(RouterMiddleware::class)
             ->setMiddleware(ModuleHandlerMiddleware::class)

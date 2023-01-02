@@ -20,7 +20,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-
         $this->app->singleton(Router::class, function (Container $container) {
             $router = new Router($container->getInstance(Application::class));
             $router->getRoutesFromAnnotation($container->get('path:app'));

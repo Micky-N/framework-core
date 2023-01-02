@@ -8,11 +8,14 @@ use MkyCore\Application;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\MiddlewareInterface;
+use MkyCore\Interfaces\ResponseHandlerInterface;
+use MkyCore\RedirectResponse;
 use MkyCore\Request;
 use MkyCore\Response;
 use MkyCore\Router\Route;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionException;
+use function Http\Response\send;
 
 class ModuleHandlerMiddleware implements MiddlewareInterface
 {
@@ -20,6 +23,10 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
     private array $moduleMiddlewares = [];
 
     private int $index = 0;
+    /**
+     * @var callable|null
+     */
+    private $next = null;
 
     /**
      * @param Application $app
@@ -36,14 +43,34 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, callable $next): mixed
     {
+        if (!$this->next) {
+            $this->next = $next;
+        }
         if (!$this->moduleMiddlewares) {
             $this->setMiddlewareFromModuleAliasFile($request);
         }
         if (!empty($this->moduleMiddlewares)) {
-            $middleware = $this->getCurrentMiddleware();
-            return $middleware->process($request, $next);
+            return $this->processModule($request, [$this, 'processModule']);
         }
         return $next($request);
+    }
+
+    /**
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws Exception
+     */
+    public function processModule(Request $request, ?callable $next = null): ResponseHandlerInterface
+    {
+        if ($middleware = $this->getCurrentMiddleware()) {
+            $process = $middleware->process($request, $next ?? [$this, 'processModule']);
+            if($process instanceof RedirectResponse){
+                Response::getFromHandler($process);
+            }
+            return $process;
+        }
+        return $this->process($request, $this->next);
     }
 
     /**
@@ -84,22 +111,19 @@ class ModuleHandlerMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @return ResponseInterface|MiddlewareInterface|array
-     * @throws ReflectionException
+     * @return MiddlewareInterface|false
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
-    private function getCurrentMiddleware(): ResponseInterface|MiddlewareInterface|array
+    private function getCurrentMiddleware(): MiddlewareInterface|false
     {
-        if (!$this->moduleMiddlewares) {
-            return [];
-        }
         if ($this->hasModuleMiddleware($this->index)) {
             $moduleMiddleware = $this->getModuleMiddleware($this->index);
             $this->index++;
             return $this->app->get($moduleMiddleware);
         } else {
-            return (new Response())->withStatus(404);
+            return false;
         }
     }
 

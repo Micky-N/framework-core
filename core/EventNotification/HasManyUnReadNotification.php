@@ -1,6 +1,6 @@
 <?php
 
-namespace MkyCore\Notification\Database;
+namespace MkyCore\EventNotification;
 
 class HasManyUnReadNotification extends \MkyCore\RelationEntity\HasMany
 {

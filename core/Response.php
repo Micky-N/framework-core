@@ -118,19 +118,18 @@ class Response extends \GuzzleHttp\Psr7\Response implements \Psr\Http\Message\Re
     {
         $code = $this->getStatusCode();
         if ($code < 400) {
-            send($this);
-            die;
+            $this->sendResponse($this);
         } else {
             http_response_code($code);
             if ($this->isJson()) {
-                send($this);
+                $this->sendResponse($this);
                 die;
             }
-            $message = $this->getReasonPhrase();
+            $message = $this->getReasonPhrase() ?: self::getErrorMessage($code);
             $homeUrl = \MkyCore\Facades\Url::make(\MkyCore\Facades\Config::get('app.home', '/'));
             $backUrl = \MkyCore\Facades\Request::backUrl() ?? $homeUrl;
             $view = view('error_page.twig', compact('code', 'message', 'homeUrl', 'backUrl'));
-            send($view->handle());
+            $this->sendResponse($view->handle());
         }
         die;
     }
@@ -145,5 +144,14 @@ class Response extends \GuzzleHttp\Psr7\Response implements \Psr\Http\Message\Re
     public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
     {
         return $this->withStatus($code, $reasonPhrase);
+    }
+
+    private function sendResponse(Response $response)
+    {
+        if(headers_sent()){
+            echo $response->getBody();
+        }else{
+            send($response);
+        }
     }
 }

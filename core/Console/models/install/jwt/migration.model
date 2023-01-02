@@ -16,7 +16,7 @@ class CreateJsonWebTokensTable extends Migration
             $table->integer('entity_id')->notNull();
             $table->string('name')->notNull();
             $table->string('token')->notNull();
-            $table->integer('expire_at')->notNull();
+            $table->integer('expires_at')->notNull();
             $table->createAt();
         });
     }

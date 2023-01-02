@@ -6,9 +6,10 @@ use MkyCore\Application;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\MiddlewareInterface;
+use MkyCore\Interfaces\ResponseHandlerInterface;
+use MkyCore\RedirectResponse;
 use MkyCore\Request;
 use MkyCore\Response;
-use Psr\Http\Message\ResponseInterface;
 use ReflectionException;
 
 class GlobalHandlerMiddleware implements MiddlewareInterface
@@ -16,6 +17,10 @@ class GlobalHandlerMiddleware implements MiddlewareInterface
 
     private array $globalMiddlewares = [];
     private int $index = 0;
+    /**
+     * @var callable|null
+     */
+    private $next = null;
 
     /**
      * @param Application $app
@@ -68,27 +73,47 @@ class GlobalHandlerMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, callable $next): mixed
     {
-        if (!empty($this->globalMiddlewares)) {
-            $middleware = $this->getCurrentMiddleware();
-            return $middleware->process($request, $next);
+        if (!$this->next) {
+            $this->next = $next;
+        }
+        if (isset($this->globalMiddlewares[$this->index])) {
+            return $this->processGlobal($request, [$this, 'processGlobal']);
         }
         return $next($request);
     }
 
     /**
-     * @return ResponseInterface|MiddlewareInterface
      * @throws ReflectionException
-     * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
+     * @throws FailedToResolveContainerException
      */
-    private function getCurrentMiddleware(): ResponseInterface|MiddlewareInterface
+    public function processGlobal(Request $request, ?callable $next = null): ResponseHandlerInterface
+    {
+        if ($middleware = $this->getCurrentMiddleware()) {
+            $process = $middleware->process($request, $next ?? [$this, 'processGlobal']);
+            if($process instanceof RedirectResponse){
+                Response::getFromHandler($process);
+            }
+            return $process;
+        }
+        return $this->process($request, $this->next);
+    }
+
+    /**
+     * @return false|MiddlewareInterface
+     */
+    private function getCurrentMiddleware(): false|MiddlewareInterface
     {
         if (isset($this->globalMiddlewares[$this->index])) {
             $middleware = $this->globalMiddlewares[$this->index];
             $this->index++;
-            return $this->app->get($middleware);
+            try {
+                return $this->app->get($middleware);
+            } catch (FailedToResolveContainerException|NotInstantiableContainerException|ReflectionException $e) {
+                return false;
+            }
         } else {
-            return (new Response())->withStatus(404);
+            return false;
         }
     }
 }

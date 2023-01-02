@@ -61,4 +61,23 @@ class Str
             return $exp[0];
         }, lcfirst($string));
     }
+
+    public static function random(int $length = 16): string
+    {
+        try {
+            return bin2hex(random_bytes($length));
+        } catch (\Exception $e) {
+            return '';
+        }
+    }
+
+    public static function hashPassword(string $string, string $algo = PASSWORD_BCRYPT): string
+    {
+        return password_hash($string, $algo);
+    }
+
+    public static function passwordVerify(string $string, string $hash): bool
+    {
+        return password_verify($string, $hash);
+    }
 }

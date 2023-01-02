@@ -8,18 +8,23 @@ use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
+use MkyCore\RedirectResponse;
 use MkyCore\Request;
 use MkyCore\Response;
 use MkyCore\Router\Route;
-use Psr\Http\Message\ResponseInterface;
 use ReflectionException;
 
 class RouteHandlerMiddleware implements MiddlewareInterface
 {
 
     private array $routeMiddlewares = [];
+    private array $routeNameMiddlewares = [];
     private Route $route;
     private int $index = 0;
+    /**
+     * @var callable|null
+     */
+    private $next = null;
 
     /**
      * @param Application $app
@@ -56,7 +61,7 @@ class RouteHandlerMiddleware implements MiddlewareInterface
 
     public function setRouteMiddleware(string $alias, string $middleware): static
     {
-        $this->routeMiddlewares[$alias] = $middleware;
+        $this->routeNameMiddlewares[$alias] = $middleware;
         return $this;
     }
 
@@ -66,12 +71,19 @@ class RouteHandlerMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, callable $next): mixed
     {
-        if ($request->getAttribute(Route::class)) {
-            $this->route = $request->getAttribute(Route::class);
-            if ($this->route && $this->routeHasMiddlewares()) {
-                $this->routeMiddlewares = $this->getRouteMiddlewaresByRoute();
-                return $this->processRoute($request, $next);
-            }
+        if (!$this->next) {
+            $this->next = $next;
+        }
+        if (!($this->route = $request->getAttribute(Route::class))) {
+            return $next($request);
+        }
+        if (!$this->routeHasMiddlewares()) {
+            return $next($request);
+        }
+        $this->routeMiddlewares = $this->getRouteMiddlewaresByRoute();
+
+        if (isset($this->routeMiddlewares[$this->index])) {
+            return $this->processRoute($request, [$this, 'processRoute']);
         }
         return $next($request);
     }
@@ -106,40 +118,44 @@ class RouteHandlerMiddleware implements MiddlewareInterface
         if (str_contains($key, '@:')) {
             $key = str_replace('@', $this->route->getModule(), $key);
         }
-        return $this->routeMiddlewares[$key] ?? null;
+        return $this->routeNameMiddlewares[$key] ?? null;
     }
 
     /**
      * @param Request $request
-     * @param callable $next
+     * @param callable|null $next
      * @return ResponseHandlerInterface
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
+     * @throws Exception
      */
-    public function processRoute(Request $request, callable $next): ResponseHandlerInterface
+    public function processRoute(Request $request, ?callable $next = null): ResponseHandlerInterface
     {
-        $middleware = $this->getCurrentMiddleware();
-        return $middleware->process($request, $next);
+        if ($middleware = $this->getCurrentMiddleware()) {
+            $process = $middleware->process($request, $next ?? [$this, 'processRoute']);
+            if($process instanceof RedirectResponse){
+                Response::getFromHandler($process);
+            }
+            return $process;
+        }
+        return $this->process($request, $this->next);
     }
 
     /**
-     * @return ResponseInterface|MiddlewareInterface|array
-     * @throws ReflectionException
+     * @return MiddlewareInterface|false
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
-    private function getCurrentMiddleware(): ResponseInterface|MiddlewareInterface|array
+    private function getCurrentMiddleware(): MiddlewareInterface|false
     {
-        if (!$this->routeMiddlewares) {
-            return [];
-        }
         if ($this->hasRouteMiddleware($this->index)) {
-            $routeMiddleware = $this->getRouteMiddleware($this->index);
+            $routeMiddleware = $this->routeMiddlewares[$this->index];
             $this->index++;
             return $this->app->get($routeMiddleware);
         } else {
-            return (new Response())->withStatus(404);
+            return false;
         }
     }
 

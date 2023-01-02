@@ -10,6 +10,9 @@ class RedirectResponse implements ResponseHandlerInterface
 {
 
     private Response|ResponseInterface|null $response = null;
+    private string $url = '';
+    private int $status = 300;
+    private string $reasonPhrase = '';
 
     /**
      * Send error response
@@ -20,21 +23,23 @@ class RedirectResponse implements ResponseHandlerInterface
      */
     public function error(int $code = 404, string $reasonPhrase = ''): static
     {
-        return $this->to('', $code, $reasonPhrase);
+        $this->to('', $code, $reasonPhrase);
+        return $this;
     }
 
     /**
      * Redirect to url
      *
-     * @param string $to
+     * @param string $url
      * @param int $status
      * @param string $reasonPhrase
      * @return $this
      */
-    public function to(string $to, int $status = 302, string $reasonPhrase = ''): static
+    public function to(string $url = '', int $status = 302, string $reasonPhrase = ''): static
     {
-        $response = new Response();
-        $this->response = $response->withStatus($status, $reasonPhrase)->withHeader('Location', $to);
+        $this->url = $url;
+        $this->status = $status;
+        $this->reasonPhrase = $reasonPhrase;
         return $this;
     }
 
@@ -64,7 +69,12 @@ class RedirectResponse implements ResponseHandlerInterface
 
     public function handle(): Response
     {
-        return $this->response;
+        $response = new Response();
+        $response = $response->withStatus($this->status, $this->reasonPhrase);
+        if($this->url){
+            $response = $response->withHeader('Location', $this->url);
+        }
+        return $this->response = $response;
     }
 
     /**
@@ -77,6 +87,26 @@ class RedirectResponse implements ResponseHandlerInterface
     public function session(string $type, string|array $message): static
     {
         Session::set('_flash:' . $type, $message);
+        return $this;
+    }
+
+    /**
+     * Add session value
+     *
+     * @param string $type
+     * @param mixed $data
+     * @return $this
+     */
+    public function oldInput(string $type, mixed $data): static
+    {
+        Session::set('_input:' . $type, $data);
+        return $this;
+    }
+
+    public function queries(array $array): static
+    {
+        $queries = http_build_query($array);
+        $this->url = rtrim($this->url, '/').'?'.$queries;
         return $this;
     }
 }

@@ -40,7 +40,7 @@ class JWT
             'entity' => Database::stringifyEntity($entity),
             'name' => $name,
             'token' => $base64UrlSecurity,
-            'expireAt' => $expireTime,
+            'expiresAt' => $expireTime,
             'createdAt' => now()->format('Y-m-d H:i:s')
         ]));
 
@@ -62,7 +62,7 @@ class JWT
             'iat' => time(),
             'entity' => Database::stringifyEntity($entity),
             'id' => $entity->{$primaryKey}(),
-            'expireAt' => $expireTime,
+            'expiresAt' => $expireTime,
         ];
         $customPayload = [];
 
@@ -109,7 +109,7 @@ class JWT
         if (!($jwtEntity = self::retrieveJwt($jwt))) {
             return false;
         }
-        return ($jwtEntity->expireAt() - time()) > 0;
+        return ($jwtEntity->expiresAt() - time()) > 0;
     }
 
     /**

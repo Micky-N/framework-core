@@ -62,9 +62,10 @@ abstract class Manager
     /**
      * Get entity class name
      *
-     * @return string|null
+     * @param array $data
+     * @return string|Entity|null
      */
-    public function getEntity(): ?string
+    public function getEntity(array $data = []): string|Entity|null
     {
         try{
             $annotation = (new Annotation($this))->getClassAnnotation('Entity');
@@ -88,6 +89,9 @@ abstract class Manager
             } catch (Exception $ex) {
                 return null;
             }
+        }
+        if($data){
+            $entity = new $entity($data);
         }
         return $entity;
     }
