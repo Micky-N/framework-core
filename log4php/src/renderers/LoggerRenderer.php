@@ -32,5 +32,5 @@ interface LoggerRenderer {
 	 * @param mixed $input The entity to render.
 	 * @return string The rendered string.
 	 */
-	public function render($input);
+	public function render($input): string|bool;
 }

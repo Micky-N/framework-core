@@ -194,6 +194,18 @@ class LoggerLevel {
 		return $this->level >= $other->level;
 	}
 
+    /**
+     * Returns <i>true</i> if this level has a higher or equal
+     * level than the level passed as argument, <i>false</i>
+     * otherwise.
+     *
+     * @param LoggerLevel $other
+     * @return boolean
+     */
+    public function isLess($other) {
+        return $this->level < $other->level;
+    }
+
 	/**
 	 * Returns the string representation of this level.
 	 * @return string

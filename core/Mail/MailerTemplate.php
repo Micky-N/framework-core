@@ -175,7 +175,7 @@ HTML;
         if (is_array($viewTemplates)) {
             $this->viewTwig = $viewTemplates['twig'] ?? '';
             $this->viewText = $viewTemplates['text'] ?? '';
-        } else {
+        } else if (is_string($viewTemplates)) {
             $this->viewTwig = $viewTemplates;
         }
         return $this;
@@ -214,14 +214,25 @@ HTML;
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
-    public function generate(bool $text = false): string
+    public function generate(): string
+    {
+        list($namespace, $twigRender) = $this->outPutTemplate();
+        return $twigRender->toHtml("@$namespace/" . $this->viewTwig, $this->blocks);
+    }
+
+    public function generateText(): string|false
+    {
+        list($namespace, $twigRender) = $this->outPutTemplate();
+        return $twigRender->toHtml("@$namespace/" . $this->viewText, $this->texts);
+    }
+
+    /**
+     * @return array
+     */
+    private function outPutTemplate(): array
     {
         $namespace = $this->viewNamespace;
         $twigRender = View::addPath($this->viewPath, $namespace);
-        if ($text) {
-            $this->texts['content'] = join("\n\n", $this->texts['contents']);
-            return $twigRender->toHtml("@$namespace/" . $this->viewText, $this->texts);
-        }
-        return $twigRender->toHtml("@$namespace/" . $this->viewTwig, $this->blocks);
+        return array($namespace, $twigRender);
     }
 }

@@ -91,10 +91,11 @@ class LoggerFilterLevelMatch extends LoggerFilter {
 			return LoggerFilter::NEUTRAL;
 		}
 		
-		if($this->levelToMatch->equals($event->getLevel())) {	
-			return $this->acceptOnMatch ? LoggerFilter::ACCEPT : LoggerFilter::DENY;
-		} else {
-			return LoggerFilter::NEUTRAL;
-		}
+        $test = $this->levelToMatch->equals($event->getLevel());
+        if($this->acceptOnMatch){
+            return $test ? LoggerFilter::ACCEPT : LoggerFilter::DENY;
+        }else{
+            return $test ? LoggerFilter::DENY : LoggerFilter::ACCEPT;
+        }
 	}
 }

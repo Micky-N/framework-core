@@ -93,7 +93,7 @@ abstract class LoggerConfigurable {
 	protected function setString($property, $value, $nullable = false) {
 		if ($value === null) {
 			if($nullable) {
-				$this->$property= null;
+				$this->$property = null;
 			} else {
 				$this->warn("Null value given for '$property' property. Expected a string. Property not changed.");
 			}

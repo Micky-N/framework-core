@@ -30,7 +30,7 @@
 class LoggerRendererDefault implements LoggerRenderer {
 
 	/** @inheritdoc */
-	public function render($input) {
+	public function render($input): string|bool {
 		return print_r($input, true);
 	}
 }

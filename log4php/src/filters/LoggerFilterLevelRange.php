@@ -108,31 +108,29 @@ class LoggerFilterLevelRange extends LoggerFilter {
 	 */
 	public function decide(LoggerLoggingEvent $event) {
 		$level = $event->getLevel();
+        $test = true;
 		
 		if($this->levelMin !== null) {
-			if($level->isGreaterOrEqual($this->levelMin) == false) {
+			if(!$level->isGreaterOrEqual($this->levelMin)) {
 				// level of event is less than minimum
-				return LoggerFilter::DENY;
+				$test = false;
 			}
 		}
 
 		if($this->levelMax !== null) {
-			if($level->toInt() > $this->levelMax->toInt()) {
+			if(!$level->isLess($this->levelMax)) {
 				// level of event is greater than maximum
 				// Alas, there is no Level.isGreater method. and using
 				// a combo of isGreaterOrEqual && !Equal seems worse than
 				// checking the int values of the level objects..
-				return LoggerFilter::DENY;
+				$test = false;
 			}
 		}
 
 		if($this->acceptOnMatch) {
-			// this filter set up to bypass later filters and always return
-			// accept if level in range
-			return LoggerFilter::ACCEPT;
+			return $test ? LoggerFilter::ACCEPT : LoggerFilter::DENY;
 		} else {
-			// event is ok for this filter; allow later filters to have a look..
-			return LoggerFilter::NEUTRAL;
+            return $test ? LoggerFilter::DENY : LoggerFilter::ACCEPT;
 		}
 	}
 }

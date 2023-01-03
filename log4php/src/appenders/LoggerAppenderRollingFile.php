@@ -206,7 +206,7 @@ class LoggerAppenderRollingFile extends LoggerAppenderFile {
 		if(flock($this->fp, LOCK_EX)) {
 			
 			// Write to locked file
-			if(fwrite($this->fp, $string) === false) {
+			if(fwrite($this->fp, $string ?? '') === false) {
 				$this->warn("Failed writing to file. Closing appender.");
 				$this->closed = true;
 			}
@@ -291,15 +291,15 @@ class LoggerAppenderRollingFile extends LoggerAppenderFile {
 	 * Sets the 'compress' parameter.
 	 * @param boolean $compress
 	 */
-	public function setCompress($compress) {
+	public function setCompress(bool $compress) {
 		$this->setBoolean('compress', $compress);
 	}
 	
 	/**
 	 * Returns the 'compress' parameter.
-	 * @param boolean 
 	 */
-	public function getCompress() {
+	public function getCompress(): bool
+    {
 		return $this->compress;
 	}
 }

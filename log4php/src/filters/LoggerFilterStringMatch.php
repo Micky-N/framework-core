@@ -80,10 +80,13 @@ class LoggerFilterStringMatch extends LoggerFilter {
 		if($msg === null or $this->stringToMatch === null) {
 			return LoggerFilter::NEUTRAL;
 		}
-		
-		if(strpos($msg, $this->stringToMatch) !== false ) {
-			return ($this->acceptOnMatch) ? LoggerFilter::ACCEPT : LoggerFilter::DENY;
-		}
-		return LoggerFilter::NEUTRAL;
+
+        $test = preg_match("/$this->stringToMatch/", $msg) == 1;
+        if($this->acceptOnMatch){
+            return $test ? LoggerFilter::ACCEPT : LoggerFilter::DENY;
+        }else{
+            return $test ? LoggerFilter::DENY : LoggerFilter::ACCEPT;
+        }
+
 	}
 }

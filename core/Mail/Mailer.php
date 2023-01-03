@@ -77,6 +77,12 @@ class Mailer
         $this->message = new MailerMessage($subject, $body, $contentType, $charset);
         return $this->message;
     }
+    
+    public function message(MailerMessage $message): static
+    {
+        $this->message = $message;
+        return $this;
+    }
 
     /**
      * @param string $view
