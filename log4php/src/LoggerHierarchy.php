@@ -140,7 +140,7 @@ class LoggerHierarchy {
 			
 			$this->loggers[$name] = $logger;
 		}		
-		
+
 		return $this->loggers[$name];
 	} 
 	
@@ -193,11 +193,11 @@ class LoggerHierarchy {
 	 */
 	public function resetConfiguration() {
 		$root = $this->getRootLogger();
-		
+
 		$root->setLevel(LoggerLevel::getLevelDebug());
 		$this->setThreshold(LoggerLevel::getLevelAll());
 		$this->shutDown();
-		
+
 		foreach($this->loggers as $logger) {
 			$logger->setLevel(null);
 			$logger->setAdditivity(true);
