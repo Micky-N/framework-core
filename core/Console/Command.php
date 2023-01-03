@@ -91,6 +91,9 @@ class Command
     public function run($argv): mixed
     {
         array_shift($argv);
+        if(!$argv){
+            return null;
+        }
         $getOpt = [];
         $index = 0;
         self::$currentCommand = $argv[0] !== '-h' && $argv[0] !== '--help' ? $argv[0] : '';

@@ -5,13 +5,19 @@ namespace MkyCore\Interfaces;
 interface MailerTemplateInterface
 {
     /**
-     * Generate mail view
-     * HTML or Txt
+     * Generate mail view in HTML
      *
-     * @param bool $text
      * @return string
      */
-    public function generate(bool $text = false): string;
+    public function generate(): string;
+
+    /**
+     * Generate mail view in Plain text
+     * return false to not use
+     *
+     * @return string|false
+     */
+    public function generateText(): string|false;
 
     /**
      * Set views file

@@ -15,8 +15,8 @@ class MailerMessage extends \Swift_Message
     public function setTemplate(MailerTemplateInterface $template, bool $withText = false): MailerMessage
     {
         $res = $this->setBody($template->generate(), 'text/html');
-        if($withText){
-            $res->addPart($template->generate(true));
+        if ($withText && ($text = $template->generateText())) {
+            $res->addPart($text, 'text/plain');
         }
         return $res;
     }
