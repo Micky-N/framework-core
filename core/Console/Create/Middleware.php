@@ -20,6 +20,10 @@ class Middleware extends Create
         $name = reset($params);
         $alias = '';
 
+        if(isset($this->moduleOptions['write']) && !$this->moduleOptions['write']){
+            return $replaceParams;
+        }
+
         if (!isset($this->moduleOptions['type'])) {
             do {
                 $confirm = true;

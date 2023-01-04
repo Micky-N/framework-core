@@ -25,7 +25,7 @@ class Remember extends \MkyCore\Console\Create\Create
         $middleware = new Middleware($this->app, [], [
             'name' => 'rememberToken',
             'module' => 'root',
-            'type' => 'global'
+            'write' => false
         ]);
         $middlewareOut = $middleware->process();
         $middlewareAR = $middlewareOut == false;
