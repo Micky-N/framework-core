@@ -62,8 +62,6 @@ DOCS;
     /**
      * Register events and their listeners
      * @example app->addEvent(Event::class, ['action' => Listener::class]);
-     * and register notification systems
-     * @example app->addNotificationSystem('example', ExampleNotificationSystem::class);
      *
      * @return void
      */
