@@ -42,6 +42,9 @@ class Command
         ],
         'tmp' => [
             'link' => 'Create symlinks from filesystems config'
+        ],
+        'generate' => [
+            'key' => 'Generate a new app key'
         ]
     ];
     const STRUCTURE = [
@@ -75,6 +78,9 @@ class Command
         ],
         'tmp' => [
             'link'
+        ],
+        'generate' => [
+            'key'
         ]
     ];
     public static string $currentCommand = '';

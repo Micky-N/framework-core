@@ -8,13 +8,6 @@ class Crypt
     private static string $key;
     private static string $algo;
 
-    /**
-     * Encrypt string value
-     *
-     * @param string $plaintext
-     * @param string|null $key
-     * @return string
-     */
     public static function encrypt(string $plaintext, ?string $key = null): string
     {
         self::set();
@@ -26,20 +19,13 @@ class Crypt
         return base64_encode($iv . $hmac . $ciphertext_raw);
     }
 
-    private static function set(): void
+    private static function set()
     {
         self::$cipher = "AES-128-CBC";
         self::$key = env('APP_KEY', 'd56b367ce779578be2833208fc499202');
         self::$algo = 'sha256';
     }
 
-    /**
-     * Retrieve real encrypted value
-     *
-     * @param string $ciphertext
-     * @param string|null $key
-     * @return string
-     */
     public static function decrypt(string $ciphertext, ?string $key = null): string
     {
         self::set();
@@ -55,6 +41,5 @@ class Crypt
         {
             return $original_plaintext;
         }
-        return '';
     }
 }

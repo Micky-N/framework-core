@@ -81,8 +81,8 @@ class Middleware extends Create
             $prefix = "'$alias' => ";
         }
         $arr = explode("\n", file_get_contents($file));
-        $index = array_keys(preg_grep("/'$typeMiddlewarefile' => \[/i", $arr));
-        if (!$index) {
+        $findType = array_keys(preg_grep("/'$typeMiddlewarefile' => \[/i", $arr));
+        if (!$findType) {
             $end = count($arr) - 1;
             $virgule = $end - 1;
             if (str_contains($arr[$virgule], ']')) {
@@ -92,10 +92,11 @@ class Middleware extends Create
             $arr = implode("\n", $arr);
             file_put_contents($file, $arr);
             $arr = explode("\n", file_get_contents($file));
-            $index = array_keys(preg_grep("/'$typeMiddlewarefile' => \[/i", $arr));
+            $findType = array_keys($p = preg_grep("/'$typeMiddlewarefile' => \[/i", $arr));
         }
-        $middlewaresLine = $index[0];
-        array_splice($arr, $middlewaresLine + 1, 0, "\t    $prefix$class::class,");
+        $arr2 = array_slice($arr, $findType[0], count($arr) -1, true);
+        $index = array_keys(preg_grep("/\],/", $arr2))[0];
+        array_splice($arr, $index, 0, "\t    $prefix$class::class,");
         $arr = array_values($arr);
         $arr = implode("\n", $arr);
         return file_put_contents($file, $arr) !== false;
