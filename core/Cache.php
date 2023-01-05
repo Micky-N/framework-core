@@ -70,16 +70,16 @@ class Cache
      */
     public function store(string $key, mixed $data, int $expiration = 0): static
     {
-        $storeData = array(
+        $storeData = [
             'time'   => time(),
-            'expire' => $expiration,
+            'expire' => time() + $expiration,
             'data'   => serialize($data)
-        );
+        ];
         $dataArray = $this->loadCache();
         if (true === is_array($dataArray)) {
             $dataArray[$key] = $storeData;
         } else {
-            $dataArray = array($key => $storeData);
+            $dataArray = [$key => $storeData];
         }
         $cacheData = json_encode($dataArray);
         file_put_contents($this->getCacheDir(), $cacheData);
@@ -128,7 +128,7 @@ class Cache
      * @param string $key
      * @return static
      */
-    public function erase($key): static
+    public function erase(string $key): static
     {
         $cacheData = $this->loadCache();
         if (true === is_array($cacheData)) {
@@ -154,7 +154,7 @@ class Cache
         if (true === is_array($cacheData)) {
             $counter = 0;
             foreach ($cacheData as $key => $entry) {
-                if (true === $this->checkExpired($entry['time'], $entry['expire'])) {
+                if (true === $this->checkExpired($entry['expire'])) {
                     unset($cacheData[$key]);
                     $counter++;
                 }
@@ -224,18 +224,16 @@ class Cache
     /**
      * Check whether a timestamp is still in the duration 
      * 
-     * @param integer $timestamp
-     * @param integer $expiration
+     * @param int $timestamp
+     * @param int $expiration
      * @return boolean
      */
-    private function checkExpired($timestamp, $expiration): bool
+    private function checkExpired(int $expiration): bool
     {
-        $result = false;
-        if ($expiration !== 0) {
-            $timeDiff = time() - $timestamp;
-            ($timeDiff > $expiration) ? $result = true : $result = false;
+        if ($expiration == 0) {
+            return true;
         }
-        return $result;
+        return $expiration - time() < 0;
     }
 
     /**
@@ -261,7 +259,7 @@ class Cache
      * @param string $path
      * @return static
      */
-    public function setCachePath($path): static
+    public function setCachePath(string $path): static
     {
         $this->cachepath = $path;
         return $this;
@@ -283,7 +281,7 @@ class Cache
      * @param string $name
      * @return static
      */
-    public function setCache($name): static
+    public function setCache(string $name): static
     {
         $this->cachename = $name;
         return $this;
