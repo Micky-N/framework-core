@@ -30,7 +30,18 @@ class Cookie
      */
     public function get(string $id, mixed $default = null): mixed
     {
-        return $_COOKIE[$id] ?? $default;
+        if(isset($_COOKIE[$id])){
+            $cookie = $_COOKIE[$id];
+            if(is_array($cookie)){
+                foreach ($cookie as $key => $val){
+                    $cookie[$key] = Crypt::decrypt($val);
+                }
+            }else{
+                $cookie = Crypt::decrypt($cookie);
+            }
+            return $cookie;
+        }
+        return $default;
     }
 
     /**
@@ -70,15 +81,15 @@ class Cookie
         }
         if (is_array($value)) {
             foreach ($value as $key => $val) {
-                if (setcookie($id . "[$key]", $val, $time, $path, $domain, $secure, $httpOnly)) {
-                    $_COOKIE[$id] = array_replace_recursive($_COOKIE[$id] ?? [], [$key => $val]);
+                if (setcookie($id . "[$key]", Crypt::encrypt($val), $time, $path, $domain, $secure, $httpOnly)) {
+                    $_COOKIE[$id] = array_replace_recursive(!empty($_COOKIE[$id]) && is_array($_COOKIE[$id]) ? $_COOKIE[$id] : [], [$key => Crypt::encrypt($val)]);
                 } else {
                     return false;
                 }
             }
         } else {
-            if (setcookie($id, $value, $time, $path, $domain, $secure, $httpOnly)) {
-                $_COOKIE[$id] = $value;
+            if (setcookie($id, Crypt::encrypt($value), $time, $path, $domain, $secure, $httpOnly)) {
+                $_COOKIE[$id] = Crypt::encrypt($value);
             } else {
                 return false;
             }
