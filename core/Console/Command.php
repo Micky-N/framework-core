@@ -129,7 +129,7 @@ class Command
             throw new Exception("Action not found");
         }
         if (!in_array($getOpt[$action], self::STRUCTURE[$action])) {
-            throw new Exception("Value '{$getOpt[$action]}' not found in action '$action'");
+            throw new Exception("Value '$getOpt[$action]' not found in action '$action'");
         }
         $class = 'MkyCore\Console\\' . ucfirst($action) . '\\' . ucfirst($getOpt[$action]);
         array_shift($getOpt);

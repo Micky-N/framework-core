@@ -4,7 +4,9 @@
 namespace MkyCore\Exceptions\Mysql;
 
 
-class MysqlException extends \Exception
+use Exception;
+
+class MysqlException extends Exception
 {
 
 }

@@ -2,7 +2,9 @@
 
 namespace MkyCore\EventNotification;
 
-class HasManyNotification extends \MkyCore\RelationEntity\HasMany
+use MkyCore\RelationEntity\HasMany;
+
+class HasManyNotification extends HasMany
 {
     
 }

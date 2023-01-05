@@ -9,7 +9,6 @@ use Psr\Http\Message\ResponseInterface;
 class RedirectResponse implements ResponseHandlerInterface
 {
 
-    private Response|ResponseInterface|null $response = null;
     private string $url = '';
     private int $status = 300;
     private string $reasonPhrase = '';
@@ -74,7 +73,7 @@ class RedirectResponse implements ResponseHandlerInterface
         if($this->url){
             $response = $response->withHeader('Location', $this->url);
         }
-        return $this->response = $response;
+        return $response;
     }
 
     /**

@@ -3,8 +3,9 @@
 namespace MkyCore\Mail;
 
 use MkyCore\Interfaces\MailerTemplateInterface;
+use Swift_Message;
 
-class MailerMessage extends \Swift_Message
+class MailerMessage extends Swift_Message
 {
 
     /**

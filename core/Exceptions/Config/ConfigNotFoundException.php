@@ -2,7 +2,9 @@
 
 namespace MkyCore\Exceptions\Config;
 
-class ConfigNotFoundException extends \Exception
+use Exception;
+
+class ConfigNotFoundException extends Exception
 {
 
 }

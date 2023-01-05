@@ -12,7 +12,9 @@ use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Request;
 use MkyCore\Router\Route;
+use ReflectionClass;
 use ReflectionException;
+use ReflectionFunction;
 use ReflectionUnionType;
 
 class DispatcherMiddleware implements MiddlewareInterface
@@ -48,10 +50,10 @@ class DispatcherMiddleware implements MiddlewareInterface
                 $controller = $actionRoute[0];
                 $method = $actionRoute[1];
                 $controller = $this->app->get($controller);
-                $controllerReflection = new \ReflectionClass($controller);
+                $controllerReflection = new ReflectionClass($controller);
                 $methodReflection = $controllerReflection->getMethod($method);
             } elseif ($actionRoute instanceof Closure) {
-                $methodReflection = new \ReflectionFunction($actionRoute);
+                $methodReflection = new ReflectionFunction($actionRoute);
             }
             $reflectionParameters = $methodReflection->getParameters();
             $params = [];

@@ -76,7 +76,7 @@ class Notification extends Entity
         $this->data = $data;
     }
 
-	public function readAt()
+	public function readAt(): ?string
     {
         return $this->readAt;
     }
@@ -89,7 +89,7 @@ class Notification extends Entity
         $this->readAt = $readAt;
     }
 
-	public function createdAt()
+	public function createdAt(): ?string
     {
         return $this->createdAt;
     }
@@ -99,7 +99,7 @@ class Notification extends Entity
         $this->createdAt = $createdAt;
     }
 
-	public function updatedAt()
+	public function updatedAt(): ?string
     {
         return $this->updatedAt;
     }

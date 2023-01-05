@@ -7,6 +7,8 @@ use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionNamedType;
+use ReflectionUnionType;
 
 class Container implements ContainerInterface
 {
@@ -177,7 +179,7 @@ class Container implements ContainerInterface
             if (!$type) {
                 throw new FailedToResolveContainerException("Failed to resolve class \"$alias\" because param \"$name\" is missing a type hint");
             }
-            if ($type instanceof \ReflectionUnionType) {
+            if ($type instanceof ReflectionUnionType) {
                 if (isset($options[$parameter->getName()])) {
                     return $options[$parameter->getName()];
                 } else if ($parameter->isDefaultValueAvailable()) {
@@ -186,7 +188,7 @@ class Container implements ContainerInterface
                 throw new FailedToResolveContainerException("Failed to resolve class \"$alias\" because of param \"$name\"");
             }
 
-            if ($type instanceof \ReflectionNamedType) {
+            if ($type instanceof ReflectionNamedType) {
                 if (!$type->isBuiltin()) {
                     return $this->get($type->getName(), ...$options);
                 } else if (isset($options[$parameter->getName()])) {

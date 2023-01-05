@@ -16,6 +16,7 @@ use MkyCore\Exceptions\Router\RouteNotFoundException;
 use MkyCore\Facades\Config;
 use MkyCore\File;
 use MkyCore\Str;
+use ReflectionClass;
 use ReflectionException;
 
 class Router
@@ -216,7 +217,7 @@ class Router
      */
     private function parseModule(string $controller): ?ModuleKernel
     {
-        $controller = new \ReflectionClass($controller);
+        $controller = new ReflectionClass($controller);
         $controllerPath = $controller->getFileName();
         $explode = explode(DIRECTORY_SEPARATOR, $controllerPath);
         $explode = array_reverse($explode);
@@ -408,49 +409,49 @@ class Router
         $crudActions = [
             'index' => [
                 'request' => 'get',
-                'url' => "{$path}$namespace",
+                'url' => "$path$namespace",
                 'action' => [$controller, 'index' . $action],
                 'name' => "$namespace.index",
                 'module' => $moduleName
             ],
             'show' => [
                 'request' => 'get',
-                'url' => "{$path}$namespace{$id}",
+                'url' => "$path$namespace$id",
                 'action' => [$controller, 'show' . $action],
                 'name' => "$namespace.show",
                 'module' => $moduleName
             ],
             'create' => [
                 'request' => 'get',
-                'url' => "{$path}$namespace/new",
+                'url' => "$path$namespace/new",
                 'action' => [$controller, 'new' . $action],
                 'name' => "$namespace.new",
                 'module' => $moduleName
             ],
             'store' => [
                 'request' => 'post',
-                'url' => "{$path}$namespace",
+                'url' => "$path$namespace",
                 'action' => [$controller, 'store' . $action],
                 'name' => "$namespace.create",
                 'module' => $moduleName
             ],
             'edit' => [
                 'request' => 'get',
-                'url' => "{$path}$namespace/edit{$id}",
+                'url' => "$path$namespace$id/edit",
                 'action' => [$controller, 'edit' . $action],
                 'name' => "$namespace.edit",
                 'module' => $moduleName
             ],
             'update' => [
                 'request' => 'put',
-                'url' => "{$path}$namespace{$id}/update",
+                'url' => "$path$namespace$id/update",
                 'action' => [$controller, 'update' . $action],
                 'name' => "$namespace.update",
                 'module' => $moduleName
             ],
             'destroy' => [
                 'request' => 'delete',
-                'url' => "{$path}$namespace{$id}/destroy",
+                'url' => "$path$namespace$id/destroy",
                 'action' => [$controller, 'destroy' . $action],
                 'name' => "$namespace.destroy",
                 'module' => $moduleName
@@ -510,35 +511,35 @@ class Router
         $crudActions = [
             'index' => [
                 'request' => 'get',
-                'url' => "{$path}$namespace",
+                'url' => "$path$namespace",
                 'action' => [$controller, 'index' . $action],
                 'name' => "$namespace.index",
                 'module' => $moduleName
             ],
             'show' => [
                 'request' => 'get',
-                'url' => "{$path}$namespace{$id}",
+                'url' => "$path$namespace$id",
                 'action' => [$controller, 'show' . $action],
                 'name' => "$namespace.show",
                 'module' => $moduleName
             ],
             'store' => [
                 'request' => 'post',
-                'url' => "{$path}$namespace",
+                'url' => "$path$namespace",
                 'action' => [$controller, 'store' . $action],
                 'name' => "$namespace.store",
                 'module' => $moduleName
             ],
             'update' => [
                 'request' => 'put',
-                'url' => "{$path}$namespace{$id}/update",
+                'url' => "$path$namespace$id/update",
                 'action' => [$controller, 'update' . $action],
                 'name' => "$namespace.update",
                 'module' => $moduleName
             ],
             'destroy' => [
                 'request' => 'delete',
-                'url' => "{$path}$namespace{$id}/destroy",
+                'url' => "$path$namespace$id/destroy",
                 'action' => [$controller, 'destroy' . $action],
                 'name' => "$namespace.destroy",
                 'module' => $moduleName

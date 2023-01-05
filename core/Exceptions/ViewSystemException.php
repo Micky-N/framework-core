@@ -2,7 +2,9 @@
 
 namespace MkyCore\Exceptions;
 
-class ViewSystemException extends \Exception
+use Exception;
+
+class ViewSystemException extends Exception
 {
 
 }

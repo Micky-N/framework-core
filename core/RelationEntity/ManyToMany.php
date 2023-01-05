@@ -34,7 +34,7 @@ class ManyToMany implements RelationEntityInterface
         $this->query = $this->managerRelation->select("$tableRelate.*", "$this->pivot.*")
             ->from($tableRelate)
             ->join($this->pivot, "$tableRelate.$primaryKeyTwo", '=', "$this->pivot.$this->foreignKeyTwo")
-            ->where("{$this->pivot}.{$this->foreignKeyOne}", $this->entity->{$this->entity->getPrimaryKey()}());
+            ->where("$this->pivot.$this->foreignKeyOne", $this->entity->{$this->entity->getPrimaryKey()}());
 
     }
 

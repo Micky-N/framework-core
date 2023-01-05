@@ -2,7 +2,9 @@
 
 namespace MkyCore\EventNotification;
 
-class NotificationEvent extends \MkyCore\Abstracts\Event
+use MkyCore\Abstracts\Event;
+
+class NotificationEvent extends Event
 {
 
     public function __construct()

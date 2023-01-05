@@ -2,7 +2,9 @@
 
 namespace MkyCore\Exceptions\Container;
 
-class NotInstantiableContainerException extends \Exception
+use Exception;
+
+class NotInstantiableContainerException extends Exception
 {
 
 }

@@ -176,13 +176,16 @@ if (!function_exists('method')) {
 
 if (!function_exists('asset')) {
     /**
-     * @param string $asset
+     * @param ?string $asset
      * @return string
      */
-    function asset(string $asset): string
+    function asset(string $asset = null): string
     {
         try {
             $base = app()->get(Request::class)->baseUri();
+            if(!$asset){
+                return $base;
+            }
             return $base . '/assets/' . trim($asset, '/');
         } catch (Exception $ex) {
             return '';
@@ -192,13 +195,16 @@ if (!function_exists('asset')) {
 
 if (!function_exists('public_path')) {
     /**
-     * @param string $path
+     * @param ?string $path
      * @return string
      */
-    function public_path(string $path): string
+    function public_path(string $path = null): string
     {
         try {
             $base = app()->get('path:public');
+            if(!$path){
+                return $base;
+            }
             return $base . '/' . trim($path, '/');
         } catch (Exception $ex) {
             return '';
@@ -208,13 +214,16 @@ if (!function_exists('public_path')) {
 
 if (!function_exists('tmp_path')) {
     /**
-     * @param string $path
+     * @param ?string $path
      * @return string
      */
-    function tmp_path(string $path): string
+    function tmp_path(string $path = null): string
     {
         try {
             $base = app()->get('path:tmp');
+            if(!$path){
+                return $base;
+            }
             return $base . '/' . trim($path, '/');
         } catch (Exception $ex) {
             return '';

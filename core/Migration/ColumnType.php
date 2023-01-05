@@ -319,7 +319,7 @@ class ColumnType
 WHERE information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE = 'FOREIGN KEY' 
 AND information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA = :schema
 AND information_schema.TABLE_CONSTRAINTS.TABLE_NAME = :table
-AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getDatabase(), 'fk' => "FK_{$foreignKey}%"]);
+AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getDatabase(), 'fk' => "FK_$foreignKey%"]);
 
         return array_map(function (array $fk) {
             return array_shift($fk);

@@ -56,9 +56,9 @@ class MigrationFile
     {
         if ($file) {
             $file = $this->getMigrationFile($file);
-            $migrationFile = File::makePath([$this->app->get('path:database'), 'migrations', "{$file}.php"], true);
+            $migrationFile = File::makePath([$this->app->get('path:database'), 'migrations', "$file.php"], true);
             if (!$migrationFile) {
-                throw MigrationException::MIGRATION_FILE_NOT_FOUND("{$file}.php");
+                throw MigrationException::MIGRATION_FILE_NOT_FOUND("$file.php");
             }
             $this->instantiateMigration($direction, $migrationFile);
         } else {

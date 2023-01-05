@@ -2,6 +2,8 @@
 
 namespace MkyCore\Facades;
 
+use MkyCore\Abstracts\Entity;
+use MkyCore\Abstracts\Facade;
 use MkyCore\AuthManager;
 use MkyCore\Interfaces\AuthSystemInterface;
 
@@ -13,11 +15,11 @@ use MkyCore\Interfaces\AuthSystemInterface;
  * @method static AuthManager use(string $provider, bool $replace = false)
  * @method static array|mixed getProviderConfig(?string $key = null)
  * @method static string getProviderName()
- * @method static \MkyCore\Abstracts\Entity|bool|null user()
+ * @method static Entity|bool|null user()
  * @method static AuthSystemInterface getManager()
  * @see \MkyCore\AuthManager
  */
-class Auth extends \MkyCore\Abstracts\Facade
+class Auth extends Facade
 {
-    protected static string $accessor = \MkyCore\AuthManager::class;
+    protected static string $accessor = AuthManager::class;
 }

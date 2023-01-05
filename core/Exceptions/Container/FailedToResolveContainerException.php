@@ -2,7 +2,9 @@
 
 namespace MkyCore\Exceptions\Container;
 
-class FailedToResolveContainerException extends \Exception
+use Exception;
+
+class FailedToResolveContainerException extends Exception
 {
 
 }

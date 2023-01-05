@@ -5,6 +5,8 @@ namespace MkyCore\Abstracts;
 use MkyCore\Application;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use ReflectionClass;
+use ReflectionException;
 
 abstract class ModuleKernel
 {
@@ -44,7 +46,7 @@ abstract class ModuleKernel
      */
     public function getModulePath(bool $namespaced = false): string
     {
-        $reflection = new \ReflectionClass($this);
+        $reflection = new ReflectionClass($this);
         $shortName = $reflection->getShortName();
         if ($namespaced) {
             $res = str_replace("\\$shortName", '', $reflection->getNamespaceName());
@@ -73,6 +75,9 @@ abstract class ModuleKernel
      *
      * @param int $limit
      * @return array
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
     public function getAncestorsKernel(int $limit = 0): array
     {
@@ -86,6 +91,9 @@ abstract class ModuleKernel
      * @param array $ancestors
      * @param int $limit
      * @return array
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
     private function getAncestorsRecursive(array &$ancestors = [], int $limit = 0): array
     {
@@ -118,7 +126,7 @@ abstract class ModuleKernel
      * @return ModuleKernel|null
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function getParentKernel(): ?ModuleKernel
     {

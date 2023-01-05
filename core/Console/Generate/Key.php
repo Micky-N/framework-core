@@ -2,9 +2,10 @@
 
 namespace MkyCore\Console\Generate;
 
+use MkyCore\Console\Create\Create;
 use MkyCore\Str;
 
-class Key extends \MkyCore\Console\Create\Create
+class Key extends Create
 {
     public function process(): bool|string
     {

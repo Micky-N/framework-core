@@ -2,9 +2,10 @@
 
 namespace MkyCore\Console\Install;
 
+use MkyCore\Console\Create\Create;
 use MkyCore\Console\Create\Middleware;
 
-class Remember extends \MkyCore\Console\Create\Create
+class Remember extends Create
 {
     public function process(): bool|string
     {

@@ -4,7 +4,9 @@
 namespace MkyCore\Exceptions\Middleware;
 
 
-class CsrfMiddlewareException extends \Exception
+use Exception;
+
+class CsrfMiddlewareException extends Exception
 {
 
 }

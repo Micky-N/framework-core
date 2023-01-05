@@ -276,6 +276,6 @@ abstract class Manager
     {
         $pk = $this->getPrimaryKey();
         $ids = $this->select($pk)->get();
-        return $ids[array_rand($ids, 1)]->{$pk};
+        return $ids[array_rand($ids)]->{$pk};
     }
 }

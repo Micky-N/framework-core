@@ -88,7 +88,7 @@ PK;
     {
         $props = array_map(function ($prop) {
             $set = ucfirst($prop);
-            $propString = <<<GETTER
+            return <<<GETTER
 public function $prop()
     {
         return \$this->$prop;
@@ -99,8 +99,6 @@ public function $prop()
         \$this->$prop = \$$prop;
     }
 GETTER;
-
-            return $propString;
         }, $properties);
         return join("\n\n\t", $props);
     }

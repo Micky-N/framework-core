@@ -30,7 +30,7 @@ class Create extends \MkyCore\Console\Create\Create
         $name = $this->handlerRules('name', $namebase);
         $final = $output . DIRECTORY_SEPARATOR . $name . '.php';
         if (file_exists($final)) {
-            return $this->sendError('File already exists', 'Populators' . DIRECTORY_SEPARATOR . "{$name}.php");
+            return $this->sendError('File already exists', 'Populators' . DIRECTORY_SEPARATOR . "$name.php");
         }
         $manager = $this->getManagerQuestion($namebase);
         $class = explode('\\', $manager);

@@ -2,6 +2,11 @@
 
 namespace MkyCore\Console;
 
+use MkyCore\Console\Create\Create;
+use MkyCore\Console\Show\Module;
+use MkyCore\Console\Show\Route;
+use MkyCore\Migration\Schema;
+
 trait Color
 {
 
@@ -81,8 +86,11 @@ trait Color
         echo $message;
         return trim((string)readline("> "));
     }
-    
-    protected static function getInstance()
+
+    /**
+     * @return Create
+     */
+    protected static function getInstance(): Create
     {
         return new self;
     }

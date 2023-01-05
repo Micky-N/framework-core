@@ -2,7 +2,9 @@
 
 namespace MkyCore\EventNotification;
 
-class HasManyUnReadNotification extends \MkyCore\RelationEntity\HasMany
+use MkyCore\RelationEntity\HasMany;
+
+class HasManyUnReadNotification extends HasMany
 {
 
     public function markAsRead()
