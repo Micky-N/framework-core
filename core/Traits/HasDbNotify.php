@@ -25,7 +25,7 @@ trait HasDbNotify
     {
         return $this->hasManyUnReadNotification(Notification::class, 'entity_id')->queryBuilder(function (QueryBuilderMysql $queryBuilderMysql) {
             return $queryBuilderMysql->where('entity', Database::stringifyEntity($this))
-                ->whereNull('read_at', 'NULL');
+                ->whereNull('read_at');
         });
     }
 

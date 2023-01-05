@@ -3,10 +3,11 @@
 namespace MkyCore;
 
 use MkyCore\Interfaces\ResponseHandlerInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use function Http\Response\send;
 
-class Response extends \GuzzleHttp\Psr7\Response implements \Psr\Http\Message\ResponseFactoryInterface
+class Response extends \GuzzleHttp\Psr7\Response implements ResponseFactoryInterface
 {
     public static function getFromHandler(mixed $response, array $headers = []): static
     {

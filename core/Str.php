@@ -4,6 +4,7 @@ namespace MkyCore;
 
 use Doctrine\Inflector\Inflector;
 use Doctrine\Inflector\InflectorFactory;
+use Exception;
 
 class Str
 {
@@ -66,7 +67,7 @@ class Str
     {
         try {
             return bin2hex(random_bytes($length));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return '';
         }
     }

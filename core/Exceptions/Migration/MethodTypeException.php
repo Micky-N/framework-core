@@ -2,7 +2,9 @@
 
 namespace MkyCore\Exceptions\Migration;
 
-class MethodTypeException extends \Exception
+use Exception;
+
+class MethodTypeException extends Exception
 {
 
 }

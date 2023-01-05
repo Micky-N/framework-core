@@ -2,14 +2,12 @@
 
 namespace MkyCore;
 
-use App\Providers\AppServiceProvider;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Exceptions\Config\ConfigNotFoundException;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
-use MkyCore\Notification\Database\DatabaseNotificationSystem;
 use MkyCore\Router\Route;
 use ReflectionClass;
 use ReflectionException;
@@ -28,17 +26,7 @@ class Application extends Container
      */
     private array $events = [];
 
-    /**
-     * @var array<string, string>
-     */
-    private array $notifications = [];
 
-    /**
-     * @var array<string, string>
-     */
-    private array $notificationSystems = [
-        'database' => DatabaseNotificationSystem::class
-    ];
     private string $environmentFile;
 
     /**

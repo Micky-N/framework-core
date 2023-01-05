@@ -2,7 +2,9 @@
 
 namespace MkyCore\Exceptions\Permission;
 
-class PermissionAliasNotFoundException extends \Exception
+use Exception;
+
+class PermissionAliasNotFoundException extends Exception
 {
 
 }

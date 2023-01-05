@@ -2,7 +2,9 @@
 
 namespace MkyCore\Exceptions\Router;
 
-class RouteCrudMethodNotExists extends \Exception
+use Exception;
+
+class RouteCrudMethodNotExists extends Exception
 {
 
 }

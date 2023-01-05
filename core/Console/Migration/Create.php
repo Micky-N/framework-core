@@ -24,10 +24,10 @@ class Create extends AbstractCreate
         $replaceParams = $this->moduleOptions;
         $name = array_shift($params);
         $nameSnaked = Str::toSnake($name);
-        $nameFile = time() . "_{$nameSnaked}";
+        $nameFile = time() . "_$nameSnaked";
         $final = $output . DIRECTORY_SEPARATOR . $nameFile . '.php';
         if (file_exists($final)) {
-            return $this->sendError('File already exists', 'migrations' . DIRECTORY_SEPARATOR . "{$nameFile}.php");
+            return $this->sendError('File already exists', 'migrations' . DIRECTORY_SEPARATOR . "$nameFile.php");
         }
         $parsedModel = file_get_contents($getModel);
         $parsedModel = str_replace('!name', Str::classify($name), $parsedModel);

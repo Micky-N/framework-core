@@ -2,7 +2,9 @@
 
 namespace MkyCore\TwigExtensions;
 
-class TwigExtensionFilter extends \Twig\Extension\AbstractExtension
+use Twig\Extension\AbstractExtension;
+
+class TwigExtensionFilter extends AbstractExtension
 {
     public function getFilters(): array
     {

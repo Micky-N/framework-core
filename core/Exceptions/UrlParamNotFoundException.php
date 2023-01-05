@@ -2,7 +2,9 @@
 
 namespace MkyCore\Exceptions;
 
-class UrlParamNotFoundException extends \Exception
+use Exception;
+
+class UrlParamNotFoundException extends Exception
 {
 
 }

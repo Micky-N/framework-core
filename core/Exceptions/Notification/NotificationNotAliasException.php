@@ -4,7 +4,9 @@
 namespace MkyCore\Exceptions\Notification;
 
 
-class NotificationNotAliasException extends \Exception
+use Exception;
+
+class NotificationNotAliasException extends Exception
 {
 
 }

@@ -2,7 +2,9 @@
 
 namespace MkyCore\Exceptions;
 
-class RememberMeException extends \Exception
+use Exception;
+
+class RememberMeException extends Exception
 {
 
 }

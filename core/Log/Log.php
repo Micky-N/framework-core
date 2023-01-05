@@ -2,7 +2,9 @@
 
 namespace MkyCore\Log;
 
+use Exception;
 use Logger;
+use LoggerLevel;
 use MkyCore\Application;
 use MkyCore\Config;
 
@@ -69,12 +71,12 @@ class Log
         return $filter;
     }
 
-    public function info(mixed $message, ?\Exception $throwable = null): void
+    public function info(mixed $message, ?Exception $throwable = null): void
     {
-        $this->log(\LoggerLevel::getLevelInfo(), $message, $throwable);
+        $this->log(LoggerLevel::getLevelInfo(), $message, $throwable);
     }
 
-    private function log(\LoggerLevel $loggerLevel, mixed $message, ?\Exception $throwable = null): void
+    private function log(LoggerLevel $loggerLevel, mixed $message, ?Exception $throwable = null): void
     {
         $this->getCurrentLogger()->log($loggerLevel, $message, $throwable);
     }
@@ -89,34 +91,34 @@ class Log
         return Logger::getLogger($name);
     }
 
-    public function debug(mixed $message, ?\Exception $throwable = null): void
+    public function debug(mixed $message, ?Exception $throwable = null): void
     {
-        $this->log(\LoggerLevel::getLevelDebug(), $message, $throwable);
+        $this->log(LoggerLevel::getLevelDebug(), $message, $throwable);
     }
 
-    public function error(mixed $message, ?\Exception $throwable = null): void
+    public function error(mixed $message, ?Exception $throwable = null): void
     {
-        $this->log(\LoggerLevel::getLevelError(), $message, $throwable);
+        $this->log(LoggerLevel::getLevelError(), $message, $throwable);
     }
 
-    public function fatal(mixed $message, ?\Exception $throwable = null): void
+    public function fatal(mixed $message, ?Exception $throwable = null): void
     {
-        $this->log(\LoggerLevel::getLevelFatal(), $message, $throwable);
+        $this->log(LoggerLevel::getLevelFatal(), $message, $throwable);
     }
 
-    public function off(mixed $message, ?\Exception $throwable = null): void
+    public function off(mixed $message, ?Exception $throwable = null): void
     {
-        $this->log(\LoggerLevel::getLevelOff(), $message, $throwable);
+        $this->log(LoggerLevel::getLevelOff(), $message, $throwable);
     }
 
-    public function trace(mixed $message, ?\Exception $throwable = null): void
+    public function trace(mixed $message, ?Exception $throwable = null): void
     {
-        $this->log(\LoggerLevel::getLevelTrace(), $message, $throwable);
+        $this->log(LoggerLevel::getLevelTrace(), $message, $throwable);
     }
 
-    public function warn(mixed $message, ?\Exception $throwable = null): void
+    public function warn(mixed $message, ?Exception $throwable = null): void
     {
-        $this->log(\LoggerLevel::getLevelWarn(), $message, $throwable);
+        $this->log(LoggerLevel::getLevelWarn(), $message, $throwable);
     }
 
     /**

@@ -260,12 +260,14 @@ class Module extends Create
     {
         $file = File::makePath([$this->app->get('path:app'), 'Providers', 'AppServiceProvider.php']);
         $arr = explode("\n", file_get_contents($file));
-        $index = array_keys(preg_grep('/private array \$modules = \[/', $arr));
+        $findModule = array_keys(preg_grep('/private array \$modules = \[/', $arr));
+        $arr2 = array_slice($arr, $findModule[0], count($arr) -1, true);
+        $index = array_keys(preg_grep("/\];/", $arr2));
         if (!$index) {
             return false;
         }
         $moduleLine = $index[0];
-        array_splice($arr, $moduleLine + 1, 0, "\t    '$alias' => \\$fileKernel::class,");
+        array_splice($arr, $moduleLine, 0, "\t    '$alias' => \\$fileKernel::class,");
         $arr = array_values($arr);
         $arr = implode("\n", $arr);
         $this->app->addModule($alias, $fileKernel);

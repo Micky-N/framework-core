@@ -4,7 +4,9 @@
 namespace MkyCore\Exceptions\Notification;
 
 
-class NotificationSystemException extends \Exception
+use Exception;
+
+class NotificationSystemException extends Exception
 {
 
 }

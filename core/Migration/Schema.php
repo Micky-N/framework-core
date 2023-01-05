@@ -179,7 +179,7 @@ class Schema
     {
 
         try {
-            $result = DB::query("SELECT 1 FROM {$table} LIMIT 1");
+            $result = DB::query("SELECT 1 FROM $table LIMIT 1");
         } catch (Exception $e) {
             // We got an exception (table not found)
             return false;

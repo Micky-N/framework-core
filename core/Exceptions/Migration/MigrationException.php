@@ -2,7 +2,9 @@
 
 namespace MkyCore\Exceptions\Migration;
 
-class MigrationException extends \Exception
+use Exception;
+
+class MigrationException extends Exception
 {
 
     public static function FILE_ALREADY_EXISTS(string $fileName): static

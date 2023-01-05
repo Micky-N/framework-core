@@ -38,7 +38,7 @@ class Config
                     if (!is_null($default)) {
                         return $default;
                     }
-                    throw new ConfigNotFoundException("config {$configArray[$i]} do not exists");
+                    throw new ConfigNotFoundException("config $configArray[$i] do not exists");
                 }
             }
         }

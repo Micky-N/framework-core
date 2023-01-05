@@ -13,6 +13,7 @@ use MkyCore\Facades\Redirect;
 use MkyCore\Interfaces\MiddlewareInterface;
 use MkyCore\Request;
 use MkyCore\Router\Route;
+use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 
@@ -59,7 +60,7 @@ class PermissionMiddleware implements MiddlewareInterface
     private function getAuthServiceProvider(mixed $module): ?ServiceProvider
     {
         $module = $this->app->getModule($module);
-        $reflection = new \ReflectionClass($module);
+        $reflection = new ReflectionClass($module);
         $moduleKernelShortName = $reflection->getShortName();
         $moduleNameSpace = str_replace($moduleKernelShortName, '', $reflection->getNamespaceName());
         $authServiceProvider = $moduleNameSpace . '\Providers\AuthServiceProvider';

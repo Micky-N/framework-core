@@ -2,9 +2,11 @@
 
 namespace MkyCore\TwigExtensions;
 
+use MkyCore\Facades\Router;
+use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
-class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
+class TwigExtensionFunction extends AbstractExtension
 {
 
     public function getFunctions(): array
@@ -21,7 +23,7 @@ class TwigExtensionFunction extends \Twig\Extension\AbstractExtension
         ];
     }
 
-    public function route(string $name = null, array $params = []): \MkyCore\Facades\Router|string
+    public function route(string $name = null, array $params = []): Router|string
     {
         return route($name, $params);
     }

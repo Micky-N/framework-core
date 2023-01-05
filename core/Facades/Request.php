@@ -3,11 +3,14 @@
 namespace MkyCore\Facades;
 
 
+use Carbon\Carbon;
 use MkyCore\Abstracts\Facade;
+use MkyCore\AuthManager;
+use MkyCore\RedirectResponse;
 
 /**
  * @method static array|string header(string $name, string $default = null)
- * @method static \Carbon\Carbon|null date(string $name, string $format = 'Y-m-d H:i:s', string $timezone = 'Europe/Paris')
+ * @method static Carbon|null date(string $name, string $format = 'Y-m-d H:i:s', string $timezone = 'Europe/Paris')
  * @method static mixed post(string $name = null, string|int $default = null)
  * @method static mixed query(string $name = null, string|int $default = null)
  * @method static mixed input(string $name = null, string|int $default = null)
@@ -34,9 +37,9 @@ use MkyCore\Abstracts\Facade;
  * @method static string path()
  * @method static \MkyCore\Request addQuery(array $queries)
  * @method static string|null bearerToken()
- * @method static \MkyCore\AuthManager auth()
+ * @method static AuthManager auth()
  * @method static string ip()
- * @method static \MkyCore\RedirectResponse|bool validate(array $rules)
+ * @method static RedirectResponse|bool validate(array $rules)
  * @method static mixed server(string $key, mixed $default = null)
  * @see \MkyCore\Request
  */

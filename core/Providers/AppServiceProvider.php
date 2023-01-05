@@ -4,6 +4,7 @@ namespace MkyCore\Providers;
 
 use MkyCore\Abstracts\ServiceProvider;
 use MkyCore\Application;
+use MkyCore\Cache;
 use MkyCore\Config;
 use MkyCore\Container;
 use MkyCore\Database;
@@ -11,8 +12,6 @@ use MkyCore\FileManager;
 use MkyCore\Request;
 use MkyCore\Response;
 use MkyCore\Router\Router;
-use MkyCore\Session;
-use MkyCore\View\Compile;
 use Psr\Http\Message\ResponseInterface;
 
 class AppServiceProvider extends ServiceProvider
@@ -32,10 +31,6 @@ class AppServiceProvider extends ServiceProvider
             return new Response();
         });
 
-        $this->app->singleton(Session::class, function (Container $container, array $options = []) {
-            return new Session($options);
-        });
-
         $this->app->singleton(Config::class, function (Container $container) {
             return new Config($container->getInstance(Application::class), $container->get('path:config'));
         });
@@ -50,6 +45,12 @@ class AppServiceProvider extends ServiceProvider
             $system = $container->get(Config::class)->get('database.default', 'mysql');
             $configDB = array_merge($container->get(Config::class)->get('database.connections.' . $system), compact('system'));
             return new Database($configDB);
+        });
+
+        $this->app->singleton(Cache::class, function(Container $container){
+            $cacheDefault = $container->get(Config::class)->get('cache.default', 'app');
+            $cacheConfig = $container->get(Config::class)->get('cache.spaces.'.$cacheDefault, []);
+            return new Cache($cacheDefault, $cacheConfig);
         });
     }
 }

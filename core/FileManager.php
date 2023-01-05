@@ -24,7 +24,7 @@ use League\Flysystem\UnableToReadFile;
 use League\Flysystem\UnableToResolveFilesystemMount;
 use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\UnableToWriteFile;
-use MkyCore\FileSystems\LocalFileSystem;
+use MkyCore\FileAdapterSystems\LocalFileAdapterSystem;
 use Throwable;
 
 class FileManager implements FilesystemOperator
@@ -37,13 +37,13 @@ class FileManager implements FilesystemOperator
 
     private string $prefix;
     private array $drivers = [
-        'local' => LocalFileSystem::class
+        'local' => LocalFileAdapterSystem::class
     ];
 
     public function __construct(string $space, array $config)
     {
         $this->prefix = $space . '://';
-        $filesystems[$space] = new LocalFileSystem($config);
+        $filesystems[$space] = new LocalFileAdapterSystem($config);
 
         $this->mountFilesystems($filesystems);
     }
@@ -165,6 +165,36 @@ class FileManager implements FilesystemOperator
         return isset($this->drivers[$driver]);
     }
 
+    public function chmod(string $location, int $permission): bool
+    {
+        return chmod($this->getPath($location), $permission);
+    }
+
+    public function getPath(string $location): string
+    {
+        [$filesystem, $path] = $this->determineFilesystemAndPath($location);
+        return $path;
+    }
+
+    /**
+     * @param string $path
+     * @return array{0:FilesystemOperator, 1:string, 2:string}
+     */
+    private function determineFilesystemAndPath(string $path): array
+    {
+        if (strpos($path, '://') < 1) {
+            throw UnableToResolveFilesystemMount::becauseTheSeparatorIsMissing($path);
+        }
+
+        [$mountIdentifier, $mountPath] = explode('://', $path, 2);
+
+        if (!array_key_exists($mountIdentifier, $this->filesystems)) {
+            throw UnableToResolveFilesystemMount::becauseTheMountWasNotRegistered($mountIdentifier);
+        }
+
+        return [$this->filesystems[$mountIdentifier], $mountPath, $mountIdentifier];
+    }
+
     /**
      * Check if location exists in file system
      *
@@ -185,25 +215,6 @@ class FileManager implements FilesystemOperator
         } catch (Throwable $exception) {
             throw UnableToCheckExistence::forLocation($location, $exception);
         }
-    }
-
-    /**
-     * @param string $path
-     * @return array{0:FilesystemOperator, 1:string, 2:string}
-     */
-    private function determineFilesystemAndPath(string $path): array
-    {
-        if (strpos($path, '://') < 1) {
-            throw UnableToResolveFilesystemMount::becauseTheSeparatorIsMissing($path);
-        }
-
-        [$mountIdentifier, $mountPath] = explode('://', $path, 2);
-
-        if (!array_key_exists($mountIdentifier, $this->filesystems)) {
-            throw UnableToResolveFilesystemMount::becauseTheMountWasNotRegistered($mountIdentifier);
-        }
-
-        return [$this->filesystems[$mountIdentifier], $mountPath, $mountIdentifier];
     }
 
     /**
@@ -271,6 +282,16 @@ class FileManager implements FilesystemOperator
         } catch (UnableToReadFile $exception) {
             throw UnableToReadFile::fromLocation($location, $exception->reason(), $exception);
         }
+    }
+
+    public function readable(string $location): bool
+    {
+        return is_readable($location);
+    }
+
+    public function writable(string $location): bool
+    {
+        return is_writable($location);
     }
 
     /**

@@ -8,6 +8,13 @@ class Crypt
     private static string $key;
     private static string $algo;
 
+    /**
+     * Encrypt text
+     *
+     * @param string $plaintext
+     * @param string|null $key
+     * @return string
+     */
     public static function encrypt(string $plaintext, ?string $key = null): string
     {
         self::set();
@@ -19,13 +26,23 @@ class Crypt
         return base64_encode($iv . $hmac . $ciphertext_raw);
     }
 
-    private static function set()
+    /**
+     * @return void
+     */
+    private static function set(): void
     {
         self::$cipher = "AES-128-CBC";
         self::$key = env('APP_KEY', 'd56b367ce779578be2833208fc499202');
         self::$algo = 'sha256';
     }
 
+    /**
+     * Decrypt encrypted text
+     *
+     * @param string $ciphertext
+     * @param string|null $key
+     * @return string
+     */
     public static function decrypt(string $ciphertext, ?string $key = null): string
     {
         self::set();
@@ -37,9 +54,7 @@ class Crypt
         $ciphertext_raw = substr($c, $ivlen + $sha2len);
         $original_plaintext = openssl_decrypt($ciphertext_raw, self::$cipher, $key, OPENSSL_RAW_DATA, $iv);
         $calcmac = hash_hmac('sha256', $ciphertext_raw, $key, true);
-        if (hash_equals($hmac, $calcmac))// timing attack safe comparison
-        {
-            return $original_plaintext;
-        }
+        // timing attack safe comparison
+        return hash_equals($hmac, $calcmac) ? $original_plaintext : '';
     }
 }
