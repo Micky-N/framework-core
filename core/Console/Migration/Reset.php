@@ -9,13 +9,13 @@ class Reset extends Migration
     public function process(): bool|string
     {
         $pop = in_array('--pop', $this->params);
-        exec('php mky migration:clear', $output);
-        for ($i = 0; $i < count($output); $i++) {
-            echo $output[$i]."\n";
+        exec('php mky migration:clear', $outputClear);
+        for ($i = 0; $i < count($outputClear); $i++) {
+            echo $outputClear[$i] . "\n";
         }
-        exec('php mky migration:run'.($pop ? ' --pop' : ''), $output);
-        for ($i = 0; $i < count($output); $i++) {
-            echo $output[$i]."\n";
+        exec('php mky migration:run' . ($pop ? ' --pop' : ''), $outputRun);
+        for ($i = 0; $i < count($outputRun); $i++) {
+            echo $outputRun[$i] . "\n";
         }
         return true;
     }

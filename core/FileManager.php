@@ -5,6 +5,7 @@ namespace MkyCore;
 use DateTimeInterface;
 use Exception;
 use League\Flysystem\DirectoryListing;
+use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\StorageAttributes;
@@ -24,7 +25,7 @@ use League\Flysystem\UnableToReadFile;
 use League\Flysystem\UnableToResolveFilesystemMount;
 use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\UnableToWriteFile;
-use MkyCore\FileAdapterSystems\LocalFileAdapterSystem;
+use MkyCore\FileSystems\LocalFileSystem;
 use Throwable;
 
 class FileManager implements FilesystemOperator
@@ -35,16 +36,28 @@ class FileManager implements FilesystemOperator
      */
     private array $filesystems = [];
 
+    private Filesystem $currentFileSystem;
+
     private string $prefix;
     private array $drivers = [
-        'local' => LocalFileAdapterSystem::class
+        'local' => LocalFileSystem::class
     ];
 
     public function __construct(string $space, array $config)
     {
         $this->prefix = $space . '://';
-        $filesystems[$space] = new LocalFileAdapterSystem($config);
-
+        $driver = $config['driver'];
+        if (in_array($driver, $this->drivers)) {
+            $driver = $this->drivers[$driver];
+        } else {
+            $driver = config('filesystems.drivers.' . $driver, false);
+        }
+        if(!$driver){
+            $driver = $config['driver'];
+            throw new UnableToMountFilesystem("Driver $driver not exists");
+        }
+        $filesystems[$space] = new $driver($config);
+        $this->currentFileSystem = $filesystems[$space];
         $this->mountFilesystems($filesystems);
     }
 
@@ -151,7 +164,6 @@ class FileManager implements FilesystemOperator
 
         $this->filesystems[$space] = $filesystem;
         return $filesystem;
-
     }
 
     /**
@@ -172,8 +184,7 @@ class FileManager implements FilesystemOperator
 
     public function getPath(string $location): string
     {
-        [$filesystem, $path] = $this->determineFilesystemAndPath($location);
-        return $path;
+        return $this->determineFilesystemAndPath($location)[1];
     }
 
     /**
@@ -313,12 +324,12 @@ class FileManager implements FilesystemOperator
 
         return
             $filesystem
-                ->listContents($path, $deep)
-                ->map(
-                    function (StorageAttributes $attributes) use ($mountIdentifier) {
-                        return $attributes->withPath(sprintf('%s://%s', $mountIdentifier, $attributes->path()));
-                    }
-                );
+            ->listContents($path, $deep)
+            ->map(
+                function (StorageAttributes $attributes) use ($mountIdentifier) {
+                    return $attributes->withPath(sprintf('%s://%s', $mountIdentifier, $attributes->path()));
+                }
+            );
     }
 
     /**
@@ -536,8 +547,7 @@ class FileManager implements FilesystemOperator
         string             $destinationPath,
         string             $source,
         string             $destination
-    ): void
-    {
+    ): void {
         try {
             $sourceFilesystem->move($sourcePath, $destinationPath);
         } catch (UnableToMoveFile $exception) {
@@ -557,7 +567,7 @@ class FileManager implements FilesystemOperator
         try {
             $this->copy($source, $destination, $config);
             $this->delete($source);
-        } catch (UnableToCopyFile|UnableToDeleteFile $exception) {
+        } catch (UnableToCopyFile | UnableToDeleteFile $exception) {
             throw UnableToMoveFile::fromLocationTo($source, $destination, $exception);
         }
     }
@@ -624,8 +634,7 @@ class FileManager implements FilesystemOperator
         string             $destinationPath,
         string             $source,
         string             $destination
-    ): void
-    {
+    ): void {
         try {
             $sourceFilesystem->copy($sourcePath, $destinationPath);
         } catch (UnableToCopyFile $exception) {
@@ -652,13 +661,12 @@ class FileManager implements FilesystemOperator
         string             $destinationPath,
         string             $source,
         string             $destination
-    ): void
-    {
+    ): void {
         try {
             $visibility = $visibility ?? $sourceFilesystem->visibility($sourcePath);
             $stream = $sourceFilesystem->readStream($sourcePath);
             $destinationFilesystem->writeStream($destinationPath, $stream, compact('visibility'));
-        } catch (UnableToRetrieveMetadata|UnableToReadFile|UnableToWriteFile $exception) {
+        } catch (UnableToRetrieveMetadata | UnableToReadFile | UnableToWriteFile $exception) {
             throw UnableToCopyFile::fromLocationTo($source, $destination, $exception);
         }
     }
@@ -785,4 +793,11 @@ class FileManager implements FilesystemOperator
         return $this->filesystems;
     }
 
+    /**
+     * @return Filesystem
+     */
+    public function getCurrentFileSystem(): Filesystem
+    {
+        return $this->currentFileSystem;
+    }
 }

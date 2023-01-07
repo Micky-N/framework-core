@@ -1,6 +1,6 @@
 <?php
 
-namespace MkyCore\FileAdapterSystems;
+namespace MkyCore\FileSystems;
 
 use DateTimeInterface;
 use League\Flysystem\Config;
@@ -12,7 +12,7 @@ use League\Flysystem\UrlGeneration\TemporaryUrlGenerator;
 use League\Flysystem\Visibility;
 use MkyCore\Facades\Request;
 
-class LocalFileAdapterSystem extends Filesystem
+class LocalFileSystem extends Filesystem
 {
 
     private string $root;
