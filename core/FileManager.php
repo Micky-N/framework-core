@@ -5,6 +5,7 @@ namespace MkyCore;
 use DateTimeInterface;
 use Exception;
 use League\Flysystem\DirectoryListing;
+use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\StorageAttributes;
@@ -35,6 +36,8 @@ class FileManager implements FilesystemOperator
      */
     private array $filesystems = [];
 
+    private Filesystem $currentFileSystem;
+
     private string $prefix;
     private array $drivers = [
         'local' => LocalFileSystem::class
@@ -51,10 +54,10 @@ class FileManager implements FilesystemOperator
         }
         if(!$driver){
             $driver = $config['driver'];
-            throw new FilesystemException("Driver $driver not exists");
+            throw new UnableToMountFilesystem("Driver $driver not exists");
         }
         $filesystems[$space] = new $driver($config);
-
+        $this->currentFileSystem = $filesystems[$space];
         $this->mountFilesystems($filesystems);
     }
 
@@ -181,8 +184,7 @@ class FileManager implements FilesystemOperator
 
     public function getPath(string $location): string
     {
-        [$filesystem, $path] = $this->determineFilesystemAndPath($location);
-        return $path;
+        return $this->determineFilesystemAndPath($location)[1];
     }
 
     /**
@@ -789,5 +791,13 @@ class FileManager implements FilesystemOperator
     public function getFilesystems(): array
     {
         return $this->filesystems;
+    }
+
+    /**
+     * @return Filesystem
+     */
+    public function getCurrentFileSystem(): Filesystem
+    {
+        return $this->currentFileSystem;
     }
 }
