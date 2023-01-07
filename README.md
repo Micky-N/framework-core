@@ -15,10 +15,11 @@ Mky Framework is a web application framework using HMVC architecture. Implementi
 
 - MVC architecture.
 - Routing system.
-- Dependancy Injection container with auto-wiring.
+- Dependancy Injection Container with auto-wiring.
 - Database migration and populate.
 - ORM with manager and entity.
-- Event and notification system.
+- Event system.
+- File system made thanks to Flysystem
 
 MkyFramework is accessible, powerful and efficient for large applications.
 
