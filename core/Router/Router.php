@@ -472,16 +472,16 @@ class Router
             ],
             'create' => [
                 'request' => 'get',
-                'url' => "$path$namespace/new",
-                'action' => [$controller, 'new' . $action],
-                'name' => "$namespace.new",
+                'url' => "$path$namespace/create",
+                'action' => [$controller, 'create' . $action],
+                'name' => "$namespace.create",
                 'module' => $moduleName
             ],
             'store' => [
                 'request' => 'post',
                 'url' => "$path$namespace",
                 'action' => [$controller, 'store' . $action],
-                'name' => "$namespace.create",
+                'name' => "$namespace.store",
                 'module' => $moduleName
             ],
             'edit' => [
