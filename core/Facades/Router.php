@@ -2,19 +2,21 @@
 
 namespace MkyCore\Facades;
 
+use Closure;
 use MkyCore\Abstracts\Facade;
 use MkyCore\Router\Route;
 use MkyCore\Router\RouteCrud;
 
 /**
- * @method static Route get(string $url, callable|array $action, string $module = '')
- * @method static Route post(string $url, callable|array $action, string $module = '')
- * @method static Route put(string $url, callable|array $action, string $module = '')
- * @method static Route options(string $url, callable|array $action, string $module = '')
- * @method static Route patch(string $url, callable|array $action, string $module = '')
- * @method static Route delete(string $url, callable|array $action, string $module = '')
+ * @method static Route get(string $url, Closure|array|string $action, string $module = '')
+ * @method static Route post(string $url, Closure|array|string $action, string $module = '')
+ * @method static Route put(string $url, Closure|array|string $action, string $module = '')
+ * @method static Route options(string $url, Closure|array|string $action, string $module = '')
+ * @method static Route patch(string $url, Closure|array|string $action, string $module = '')
+ * @method static Route method(string $url, array $methods, Closure|array|string $action, string $module = '')
+ * @method static Route delete(string $url, Closure|array|string $action, string $module = '')
+ * @method static Route all(string $url, Closure|array|string $action, string $module = '')
  * @method static RouteCrud crud(string $namespace, string $controller, string $moduleName = '')
- * @method static RouteCrud crudApi(string $namespace, string $controller, string $moduleName = '')
  * @method static Route getCurrentRoute()
  * @method static array getRoutes(array $filters = [])
  * @method static void deleteRoute(Route $route)
