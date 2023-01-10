@@ -46,9 +46,14 @@ class DispatcherMiddleware implements MiddlewareInterface
             unset($requestAttributes[Route::class]);
             $actionRoute = $route->getAction();
             $methodReflection = null;
-            if (is_array($actionRoute)) {
-                $controller = $actionRoute[0];
-                $method = $actionRoute[1];
+            if (is_array($actionRoute) || is_string($actionRoute)) {
+                if (is_array($actionRoute)) {
+                    $controller = $actionRoute[0];
+                    $method = $actionRoute[1];
+                } else {
+                    $controller = $actionRoute;
+                    $method = '__invoke';
+                }
                 $controller = $this->app->get($controller);
                 $controllerReflection = new ReflectionClass($controller);
                 $methodReflection = $controllerReflection->getMethod($method);
@@ -101,7 +106,7 @@ class DispatcherMiddleware implements MiddlewareInterface
                     $params[$name] = $reflectionParameter->getDefaultValue();
                 }
             }
-            if (is_array($actionRoute)) {
+            if (is_array($actionRoute) || is_string($actionRoute)) {
                 return $methodReflection->invokeArgs($controller, $params);
             } elseif ($actionRoute instanceof Closure) {
                 return $methodReflection->invokeArgs($params);

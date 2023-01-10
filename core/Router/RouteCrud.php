@@ -2,11 +2,9 @@
 
 namespace MkyCore\Router;
 
-use MkyCore\Str;
-
 class RouteCrud
 {
-    public function __construct(private readonly string $namespace, private readonly array $routes)
+    public function __construct(private readonly string $namespace, private readonly array $routes, private array $params)
     {
     }
 
@@ -33,27 +31,6 @@ class RouteCrud
             } else {
                 $this->routes[$method]->as($name);
             }
-        }
-        return $this;
-    }
-
-    /**
-     * Keep routes matching methods
-     *
-     * @param array $methods
-     * @return $this
-     */
-    public function only(array $methods): static
-    {
-        $routes = [];
-        foreach ($this->routes as $mt => $route) {
-            if (!in_array($mt, $methods)) {
-                $routes[] = $this->routes[$mt];
-            }
-        }
-        for ($i = 0; $i < count($routes); $i++) {
-            $route = $routes[$i];
-            \MkyCore\Facades\Router::deleteRoute($route);
         }
         return $this;
     }
@@ -133,51 +110,53 @@ class RouteCrud
     }
 
     /**
-     * Set route param name by method
+     * Set route param name for all method
      *
-     * @param array $params
+     * @param string $namespace
+     * @param string $param
      * @return $this
-     * @example url => 'users/{user}', method => 'index'
-     * 'index' => 'foo' means url of route with index method will be 'users/{foo}'
-     * '*' => 'foo' means all routes
-     *
-     * @example url => 'users/{user}/blogs/{blog} method => 'index'
-     * 'index' => 'foo.bar' means url of route with index method will be 'users/{foo}/blogs/{bar}'
      */
-    public function params(array $params): RouteCrud
+    public function paramFor(string $namespace, string $param): RouteCrud
     {
-        $newNamespaces = [];
-        if (isset($params['*'])) {
-            $param = $params['*'];
-            foreach ($this->routes as $method => $route) {
-                $oldUrl = $this->routes[$method]->getUrl();
-                $namespaces = explode('.', $this->namespace);
-                $paramExplode = explode('.', $param);
-                for ($i = 0; $i < count($namespaces); $i++) {
-                    $namespace = $namespaces[$i];
-                    $currentParam = $paramExplode[$i] ?? Str::singularize($namespace);
-                    $oldUrl = str_replace('{' . Str::singularize($namespace) . '}', '{' . $currentParam . '}', $oldUrl);
-                    $newNamespaces[] = $currentParam;
-                }
-                $this->routes[$method]->setUrl($oldUrl);
+        foreach ($this->routes as $method => $route) {
+            $oldUrl = $this->routes[$method]->getUrl();
+            if (!($oldParam = $this->params[$namespace])) {
+                continue;
             }
-            unset($params['*']);
+            $newUrl = str_replace('{' . $oldParam . '}', '{' . $param . '}', $oldUrl);
+            $this->routes[$method]->setUrl($newUrl);
+            $this->params[$namespace] = $param;
         }
-        $namespaces = $newNamespaces ?? null;
-        if ($params) {
-            foreach ($params as $method => $param) {
-                $oldUrl = $this->routes[$method]->getUrl();
-                if (!$namespaces) {
-                    $namespaces = explode('.', $this->namespace);
-                }
-                $paramExplode = explode('.', $param);
-                for ($i = 0; $i < count($namespaces); $i++) {
-                    $namespace = $namespaces[$i];
-                    $currentParam = $paramExplode[$i] ?? Str::singularize($namespace);
-                    $oldUrl = str_replace('{' . Str::singularize($namespace) . '}', '{' . $currentParam . '}', $oldUrl);
-                }
-                $this->routes[$method]->setUrl($oldUrl);
+        return $this;
+    }
+
+    /**
+     * Keep only api controller method
+     *
+     * @return $this
+     */
+    public function apiOnly(): RouteCrud
+    {
+        return $this->only(['index', 'store', 'show', 'update', 'destroy']);
+    }
+
+    /**
+     * Keep routes matching methods
+     *
+     * @param array $methods
+     * @return $this
+     */
+    public function only(array $methods): static
+    {
+        $routes = [];
+        foreach ($this->routes as $mt => $route) {
+            if (!in_array($mt, $methods)) {
+                $routes[] = $this->routes[$mt];
             }
+        }
+        for ($i = 0; $i < count($routes); $i++) {
+            $route = $routes[$i];
+            \MkyCore\Facades\Router::deleteRoute($route);
         }
         return $this;
     }

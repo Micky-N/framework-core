@@ -122,7 +122,7 @@ class Router
      * Set GET method route
      *
      * @param string $url
-     * @param Closure|array $action
+     * @param Closure|array|string $action
      * @param string $module
      * @return Route
      * @throws FailedToResolveContainerException
@@ -131,7 +131,7 @@ class Router
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
-    public function get(string $url, Closure|array $action, string $module = ''): Route
+    public function get(string $url, Closure|array|string $action, string $module = ''): Route
     {
         return $this->addRoute([
             'methods' => ['GET', 'HEAD'],
@@ -267,10 +267,10 @@ class Router
     }
 
     /**
-     * Set PUT method route
+     * Set all method route
      *
      * @param string $url
-     * @param callable|array $action
+     * @param Closure|array|string $action
      * @param string $module
      * @return Route
      * @throws FailedToResolveContainerException
@@ -279,7 +279,54 @@ class Router
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
-    public function put(string $url, callable|array $action, string $module = ''): Route
+    public function all(string $url, Closure|array|string $action, string $module = ''): Route
+    {
+        return $this->addRoute([
+            'methods' => self::METHODS,
+            'url' => $url,
+            'action' => $action,
+            'module' => $module
+        ]);
+    }
+
+    /**
+     * Set multi methods route
+     *
+     * @param string $url
+     * @param array $methods
+     * @param Closure|array|string $action
+     * @param string $module
+     * @return Route
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     * @throws RouteAlreadyExistException
+     * @throws RouteNotFoundException
+     */
+    public function method(string $url, array $methods, Closure|array|string $action, string $module = ''): Route
+    {
+        return $this->addRoute([
+            'methods' => $methods,
+            'url' => $url,
+            'action' => $action,
+            'module' => $module
+        ]);
+    }
+
+    /**
+     * Set PUT method route
+     *
+     * @param string $url
+     * @param Closure|array|string $action
+     * @param string $module
+     * @return Route
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     * @throws RouteAlreadyExistException
+     * @throws RouteNotFoundException
+     */
+    public function put(string $url, Closure|array|string $action, string $module = ''): Route
     {
         return $this->addRoute([
             'methods' => 'PUT',
@@ -293,7 +340,7 @@ class Router
      * Set OPTIONS method route
      *
      * @param string $url
-     * @param callable|array $action
+     * @param Closure|array|string $action
      * @param string $module
      * @return Route
      * @throws FailedToResolveContainerException
@@ -302,7 +349,7 @@ class Router
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
-    public function options(string $url, callable|array $action, string $module = ''): Route
+    public function options(string $url, Closure|array|string $action, string $module = ''): Route
     {
         return $this->addRoute([
             'methods' => 'OPTIONS',
@@ -316,7 +363,7 @@ class Router
      * Set PATCH method route
      *
      * @param string $url
-     * @param callable|array $action
+     * @param Closure|array|string $action
      * @param string $module
      * @return Route
      * @throws FailedToResolveContainerException
@@ -325,7 +372,7 @@ class Router
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
-    public function patch(string $url, callable|array $action, string $module = ''): Route
+    public function patch(string $url, Closure|array|string $action, string $module = ''): Route
     {
         return $this->addRoute([
             'methods' => 'PATCH',
@@ -339,7 +386,7 @@ class Router
      * Set DELETE method route
      *
      * @param string $url
-     * @param callable|array $action
+     * @param Closure|array|string $action
      * @param string $module
      * @return Route
      * @throws FailedToResolveContainerException
@@ -348,7 +395,7 @@ class Router
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
-    public function delete(string $url, callable|array $action, string $module = ''): Route
+    public function delete(string $url, Closure|array|string $action, string $module = ''): Route
     {
         return $this->addRoute([
             'methods' => 'DELETE',
@@ -362,7 +409,7 @@ class Router
      * Set POST method route
      *
      * @param string $url
-     * @param callable|array $action
+     * @param Closure|array|string $action
      * @param string $module
      * @return Route
      * @throws FailedToResolveContainerException
@@ -371,7 +418,7 @@ class Router
      * @throws RouteAlreadyExistException
      * @throws RouteNotFoundException
      */
-    public function post(string $url, callable|array $action, string $module = ''): Route
+    public function post(string $url, Closure|array|string $action, string $module = ''): Route
     {
         return $this->addRoute([
             'methods' => 'POST',
@@ -392,6 +439,7 @@ class Router
     public function crud(string $namespace, string $controller, string $moduleName = ''): RouteCrud
     {
         $path = '';
+        $params = [];
         $action = '';
         $namespaceCrud = $namespace;
         if (strpos($namespace, '.')) {
@@ -400,6 +448,7 @@ class Router
             foreach ($namespaces as $key => $name) {
                 if ($key < count($namespaces) - 1) {
                     $path .= $name . '/{' . Str::singularize($name) . '}/';
+                    $params[$name] = Str::singularize($name);
                 }
             }
             array_shift($namespaces);
@@ -458,20 +507,6 @@ class Router
             ],
         ];
 
-        return $this->crudAction($crudActions, $namespaceCrud, $action, $moduleName);
-    }
-
-    /**
-     * Set crud implementation to routes
-     *
-     * @param array $crudActions
-     * @param string $namespace
-     * @param string $action
-     * @param string $moduleName
-     * @return RouteCrud
-     */
-    public function crudAction(array $crudActions, string $namespace, string $action, string $moduleName = ''): RouteCrud
-    {
         $routeCrud = [];
         foreach ($crudActions as $key => $crudAction) {
             $crudKey = str_replace($action, '', $crudAction['action'][1]);
@@ -480,73 +515,8 @@ class Router
                 [$crudAction['url'], $crudAction['action'], $moduleName]
             )->as($crudAction['name']);
         }
-        return new RouteCrud($namespace, $routeCrud);
-    }
+        return new RouteCrud($namespaceCrud, $routeCrud, $params);
 
-    /**
-     * Prepare crud implementation for api
-     *
-     * @param string $namespace
-     * @param string $controller
-     * @param string $moduleName
-     * @return RouteCrud
-     */
-    public function crudApi(string $namespace, string $controller, string $moduleName = ''): RouteCrud
-    {
-        $path = '';
-        $action = '';
-        $namespaceCrud = $namespace;
-        if (strpos($namespace, '.')) {
-            $namespaces = explode('.', $namespace);
-            $namespace = end($namespaces);
-            foreach ($namespaces as $key => $name) {
-                if ($key < count($namespaces) - 1) {
-                    $path .= $name . '/{' . Str::singularize($name) . '}/';
-                }
-            }
-            array_shift($namespaces);
-            $action = ucfirst(join('', $namespaces));
-        }
-        $id = "/{" . Str::singularize(strtolower($namespace)) . "}";
-        $crudActions = [
-            'index' => [
-                'request' => 'get',
-                'url' => "$path$namespace",
-                'action' => [$controller, 'index' . $action],
-                'name' => "$namespace.index",
-                'module' => $moduleName
-            ],
-            'show' => [
-                'request' => 'get',
-                'url' => "$path$namespace$id",
-                'action' => [$controller, 'show' . $action],
-                'name' => "$namespace.show",
-                'module' => $moduleName
-            ],
-            'store' => [
-                'request' => 'post',
-                'url' => "$path$namespace",
-                'action' => [$controller, 'store' . $action],
-                'name' => "$namespace.store",
-                'module' => $moduleName
-            ],
-            'update' => [
-                'request' => 'put',
-                'url' => "$path$namespace$id/update",
-                'action' => [$controller, 'update' . $action],
-                'name' => "$namespace.update",
-                'module' => $moduleName
-            ],
-            'destroy' => [
-                'request' => 'delete',
-                'url' => "$path$namespace$id/destroy",
-                'action' => [$controller, 'destroy' . $action],
-                'name' => "$namespace.destroy",
-                'module' => $moduleName
-            ],
-        ];
-
-        return $this->crudAction($crudActions, $namespaceCrud, $action, $moduleName);
     }
 
     /**
