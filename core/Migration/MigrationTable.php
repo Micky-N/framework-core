@@ -176,12 +176,12 @@ class MigrationTable
     /**
      * Make a text type column
      *
-     * @param string $name
+     * @param string $column
      * @return ColumnType
      */
-    public function text(string $name): ColumnType
+    public function text(string $column): ColumnType
     {
-        return $this->columns[] = $this->addColumn($name, 'text');
+        return $this->columns[] = $this->addColumn($column, 'text');
     }
 
     /**

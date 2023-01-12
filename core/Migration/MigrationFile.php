@@ -21,7 +21,7 @@ class MigrationFile
      * @throws ReflectionException
      * @throws FailedToResolveContainerException
      */
-    public function __construct(private readonly Application $app)
+    public function __construct(private readonly Application $app, private readonly DB $migrationDB)
     {
         $this->databaseDir = File::makePath([$this->app->get('path:base'), 'database', 'migrations']);
     }
@@ -89,6 +89,13 @@ class MigrationFile
             $instantiateMigration = new $class();
             if (method_exists($instantiateMigration, $direction)) {
                 $instantiateMigration->{$direction}();
+                $log = str_replace([$this->app->get('path::database'), '.php'], '', $migrationFile);
+                $log = trim($log, '\/');
+                if($direction == 'up'){
+                    $this->migrationDB->addLog($log);
+                }elseif($direction == 'down'){
+                    $this->migrationDB->deleteLog($log);
+                }
             }
         }
     }

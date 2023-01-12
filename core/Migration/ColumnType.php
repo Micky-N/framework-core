@@ -60,79 +60,6 @@ class ColumnType
     }
 
     /**
-     * Make an integer type column
-     *
-     * @param string $name
-     * @return $this
-     */
-    public function integer(string $name): static
-    {
-        $this->query = "`$name` INT";
-        return $this;
-    }
-
-    /**
-     * Make a big integer type column
-     *
-     * @param string $name
-     * @return $this
-     */
-    public function bigInt(string $name): static
-    {
-        $this->query = "`$name` BIGINT";
-        return $this;
-    }
-
-    /**
-     * Make a small integer type column
-     *
-     * @param string $name
-     * @return $this
-     */
-    public function smallInt(string $name): static
-    {
-        $this->query = "`$name` SMALLINT";
-        return $this;
-    }
-
-    /**
-     * Make a tiny integer type column
-     *
-     * @param string $name
-     * @return $this
-     */
-    public function tinyInt(string $name): static
-    {
-        $this->query = "`$name` TINYINT";
-        return $this;
-    }
-
-    /**
-     * Make a varchar type column
-     *
-     * @param string $name
-     * @param int $limit
-     * @return $this
-     */
-    public function string(string $name, int $limit = 255): static
-    {
-        $this->query = "`$name` varchar(" . $limit . ")";
-        return $this;
-    }
-
-    /**
-     * Make a datetime type column
-     *
-     * @param string $name
-     * @return $this
-     */
-    public function datetime(string $name): static
-    {
-        $this->query = "`$name` datetime";
-        return $this;
-    }
-
-    /**
      * Set default value
      *
      * @param mixed|null $value
@@ -140,19 +67,7 @@ class ColumnType
      */
     public function default(mixed $value = null): static
     {
-        $this->query .= " DEFAULT " . (is_bool($value) ? (int) $value : $value);
-        return $this;
-    }
-
-    /**
-     * Make a timestamp type column
-     *
-     * @param string $name
-     * @return $this
-     */
-    public function timestamp(string $name): static
-    {
-        $this->query = "`$name` timestamp";
+        $this->query .= " DEFAULT " . (is_bool($value) ? (int)$value : $value);
         return $this;
     }
 
@@ -244,34 +159,6 @@ class ColumnType
     public function noActionUpdate(): static
     {
         $this->query .= " ON UPDATE NO ACTION ";
-        return $this;
-    }
-
-    /**
-     * Make a float type column
-     *
-     * @param string $name
-     * @param array $precision
-     * @return $this
-     */
-    public function float(string $name, array $precision = []): static
-    {
-        $this->query = "`$name` FLOAT";
-        if($precision && count($precision) <= 2){
-            $this->query .= '('.join(',', $precision).')';
-        }
-        return $this;
-    }
-
-    /**
-     * Make a text type column
-     *
-     * @param string $name
-     * @return $this
-     */
-    public function text(string $name): static
-    {
-        $this->query = "`$name` TEXT";
         return $this;
     }
 
@@ -405,11 +292,11 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
             $res = $this->getColumnType($column);
             $res = $res ?: 'varchar(255)';
             $type = " $res";
-            
+
         } else {
             $type = $this->useMethod($newType, $column, $options);
             $type = str_replace("`$column`", '', $type->getQuery());
-            $type = " ".trim($type);
+            $type = " " . trim($type);
         }
         $this->query = "CHANGE `$column` `$name`$type";
         return $this;
@@ -433,6 +320,16 @@ AND COLUMN_NAME = :column", ['table' => $this->table, 'column' => $column, 'sche
     }
 
     /**
+     * get Query statement
+     *
+     * @return string
+     */
+    public function getQuery(): string
+    {
+        return $this->query;
+    }
+
+    /**
      * Set a column as foreign key
      *
      * @param string $name
@@ -448,12 +345,115 @@ AND COLUMN_NAME = :column", ['table' => $this->table, 'column' => $column, 'sche
     }
 
     /**
-     * get Query statement
+     * Make an integer type column
      *
-     * @return string
+     * @param string $name
+     * @return $this
      */
-    public function getQuery(): string
+    private function integer(string $name): static
     {
-        return $this->query;
+        $this->query = "`$name` INT";
+        return $this;
+    }
+
+    /**
+     * Make a big integer type column
+     *
+     * @param string $name
+     * @return $this
+     */
+    private function bigInt(string $name): static
+    {
+        $this->query = "`$name` BIGINT";
+        return $this;
+    }
+
+    /**
+     * Make a small integer type column
+     *
+     * @param string $name
+     * @return $this
+     */
+    private function smallInt(string $name): static
+    {
+        $this->query = "`$name` SMALLINT";
+        return $this;
+    }
+
+    /**
+     * Make a tiny integer type column
+     *
+     * @param string $name
+     * @return $this
+     */
+    private function tinyInt(string $name): static
+    {
+        $this->query = "`$name` TINYINT";
+        return $this;
+    }
+
+    /**
+     * Make a varchar type column
+     *
+     * @param string $name
+     * @param int $limit
+     * @return $this
+     */
+    private function string(string $name, int $limit = 255): static
+    {
+        $this->query = "`$name` varchar(" . $limit . ")";
+        return $this;
+    }
+
+    /**
+     * Make a datetime type column
+     *
+     * @param string $name
+     * @return $this
+     */
+    private function datetime(string $name): static
+    {
+        $this->query = "`$name` datetime";
+        return $this;
+    }
+
+    /**
+     * Make a timestamp type column
+     *
+     * @param string $name
+     * @return $this
+     */
+    private function timestamp(string $name): static
+    {
+        $this->query = "`$name` timestamp";
+        return $this;
+    }
+
+    /**
+     * Make a float type column
+     *
+     * @param string $name
+     * @param array $precision
+     * @return $this
+     */
+    private function float(string $name, array $precision = []): static
+    {
+        $this->query = "`$name` FLOAT";
+        if ($precision && count($precision) <= 2) {
+            $this->query .= '(' . join(',', $precision) . ')';
+        }
+        return $this;
+    }
+
+    /**
+     * Make a text type column
+     *
+     * @param string $name
+     * @return $this
+     */
+    private function text(string $name): static
+    {
+        $this->query = "`$name` TEXT";
+        return $this;
     }
 }

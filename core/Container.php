@@ -132,7 +132,7 @@ class Container implements ContainerInterface
      * @param mixed $instance
      * @return $this
      */
-    public function setInstance(string $alias, mixed $instance): Container
+    public function setInstance(string $alias, mixed $instance): static
     {
         $this->sharedInstances[$alias] = $instance;
         return $this;
@@ -221,7 +221,7 @@ class Container implements ContainerInterface
      * @param mixed $concrete
      * @return $this
      */
-    public function bind(string $alias, mixed $concrete): Container
+    public function bind(string $alias, mixed $concrete): static
     {
         $this->set($alias, $concrete);
         return $this;
@@ -267,7 +267,7 @@ class Container implements ContainerInterface
      * @param mixed $concrete
      * @return Container
      */
-    public function forceSingleton(string $alias, mixed $concrete): Container
+    public function forceSingleton(string $alias, mixed $concrete): static
     {
         return $this->removeInstance($alias)
             ->singleton($alias, $concrete);
@@ -280,7 +280,7 @@ class Container implements ContainerInterface
      * @param mixed $concrete
      * @return $this
      */
-    public function singleton(string $alias, mixed $concrete): Container
+    public function singleton(string $alias, mixed $concrete): static
     {
         $this->set($alias, $concrete, true);
         return $this;

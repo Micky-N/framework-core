@@ -2,39 +2,34 @@
 
 namespace MkyCore\Console\Migration;
 
-use Exception;
+use MkyCore\Application;
 use MkyCore\Console\Create\Create as AbstractCreate;
-use MkyCore\Migration\MigrationFile;
-use MkyCore\Migration\Schema;
+use MkyCore\Migration\DB;
 
 abstract class Migration extends AbstractCreate
 {
     public static bool $query = false;
-    protected string $direction = '';
+    protected DB $migrationDB;
 
-    public function process(): bool|string
+    public function __construct(Application $app, array $params = [], array $moduleOptions = [])
     {
-        $migrationRunner = new MigrationFile($this->app);
-        self::$query = in_array('--query', $this->params);
-        $params = $this->parseParams();
-        $file = $params['-f'] ?? null;
-        try {
-            $migrationRunner->actionMigration($this->direction, $file);
-            if ($success = Schema::$SUCCESS) {
-                for ($i = 0; $i < count($success); $i++) {
-                    $response = $success[$i];
-                    echo $this->getColoredString($response[0], 'green', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
-                }
+        $this->migrationDB = $this->app->get(DB::class);
+        parent::__construct($app, $params, $moduleOptions);
+    }
+
+    protected function sendResponse(array $success, array $errors)
+    {
+        if ($success) {
+            for ($i = 0; $i < count($success); $i++) {
+                $response = $success[$i];
+                echo $this->getColoredString($response[0], 'green', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
             }
-            if ($errors = Schema::$ERRORS) {
-                for ($i = 0; $i < count($errors); $i++) {
-                    $response = $errors[$i];
-                    echo $this->getColoredString($response[0], 'red', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
-                }
+        }
+        if ($errors) {
+            for ($i = 0; $i < count($errors); $i++) {
+                $response = $errors[$i];
+                echo $this->getColoredString($response[0], 'red', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
             }
-            return true;
-        } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
         }
     }
 }

@@ -85,10 +85,10 @@ class ContainerTest extends TestCase
     {
         $ipAddressComputer = long2ip(rand(0, 4294967295));
         $this->container->bind(PaymentServiceInterface::class, fn() => new StripeService(1.5, 2));
-        $this->container->bind(InvoiceServiceInterface::class, function(Container $container, array $options){
-            return new WifiSendInvoiceService($container->get(PaymentServiceInterface::class), $options['ipAddressComputer']);
+        $this->container->bind(InvoiceServiceInterface::class, function(Container $container, string $ipAddressComputer){
+            return new WifiSendInvoiceService($container->get(PaymentServiceInterface::class), $ipAddressComputer);
         });
 
-        $this->assertEquals("Computer $ipAddressComputer: StripeService : 3€", $this->container->get(InvoiceServiceInterface::class, compact('ipAddressComputer'))->sendInvoice());
+        $this->assertEquals("Computer $ipAddressComputer: StripeService : 3€", $this->container->get(InvoiceServiceInterface::class, $ipAddressComputer)->sendInvoice());
     }
 }
