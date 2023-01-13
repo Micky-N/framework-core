@@ -14,11 +14,16 @@ class Run extends Migration
         /** @var MigrationFile $migrationRunner */
         $migrationRunner = $this->app->get(MigrationFile::class);
         self::$query = in_array('--query', $this->params);
-        $pop = in_array('--pop', $this->params);
         $params = $this->parseParams();
-        $file = $params['-v'] ?? null;
+        $pop = false;
+        $version = null;
+        if(!empty($params['-v'])){
+            $version = $params['-v'];
+        }elseif(in_array('--pop', $this->params)){
+            $pop = true;
+        }
         try {
-            $migrationRunner->actionMigration('up', $file);
+            $migrationRunner->actionMigration('up', $version);
             if ($pop) {
                 exec('php mky populator:run', $output);
                 for ($i = 0; $i < count($output); $i++) {

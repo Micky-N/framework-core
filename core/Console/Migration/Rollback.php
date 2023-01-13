@@ -14,13 +14,14 @@ class Rollback extends Migration
         $migrationRunner = $this->app->get(MigrationFile::class);
         self::$query = in_array('--query', $this->params);
         $params = $this->parseParams();
-        $number = $params['-n'] ?? 1;
-        $version = $params['-v'] ?? null;
+        $number = 1;
+        $version = null;
         $migrationLogs = [];
-        if ($version) {
-            $version = (int)$version;
-            $migrationLogs = $this->migrationDB->getTo($version);
-        } elseif ($number) {
+        if (!empty($params['-v'])) {
+            $version = $params['-v'];
+            $migrationLogs = $this->migrationDB->getTo((int)$version);
+        } elseif (!empty($params['-n'])) {
+            $number = $params['-n'];
             $migrationLogs = $this->migrationDB->getLast($number);
         }
         try {
