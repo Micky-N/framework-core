@@ -26,7 +26,7 @@ class Command
             'create' => 'Create migration file in format createUserTable => 123456_create_user_table.php',
             'run' => ['Migrate database table, -v to specify the version number or --pop to populate database', '-v or --pop'],
             'rollback' => ['Rollback migration database, -v to specity to rollback to what version or -n to spectify how many version to rollback', '-v or -n'],
-            'reset' => ['clear and migrate database, --pop to populate', '--pop']
+            'reset' => ['Clear and migrate database, --pop to populate', '--pop']
         ],
         'populator' => [
             'create' => 'Create populator class, the name is suffixed by \'Populator\'',
