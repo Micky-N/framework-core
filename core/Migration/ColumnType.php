@@ -85,13 +85,13 @@ class ColumnType
     /**
      * Set reference foreign key
      *
-     * @param string $name
+     * @param string $table
      * @param string $row
      * @return $this
      */
-    public function references(string $name, string $row = 'id'): static
+    public function references(string $table, string $row = 'id'): static
     {
-        $this->query .= " REFERENCES `$name` (`$row`)";
+        $this->query .= " REFERENCES `$table` (`$row`)";
         return $this;
     }
 
