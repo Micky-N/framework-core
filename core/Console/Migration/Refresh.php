@@ -9,7 +9,7 @@ class Refresh extends Migration
     public function process(): bool|string
     {
         $pop = in_array('--pop', $this->params);
-        exec('php mky migration:clear', $outputClear);
+        exec('php mky migration:rollback', $outputClear);
         for ($i = 0; $i < count($outputClear); $i++) {
             echo $outputClear[$i] . "\n";
         }

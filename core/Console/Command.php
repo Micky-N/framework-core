@@ -65,7 +65,7 @@ class Command
         'migration' => [
             'create',
             'run',
-            'clear',
+            'rollback',
             'reset'
         ],
         'populator' => [
