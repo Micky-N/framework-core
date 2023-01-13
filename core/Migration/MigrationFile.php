@@ -83,18 +83,20 @@ class MigrationFile
      */
     private function instantiateMigration(string $direction, string $migrationFile): void
     {
-        if (in_array($direction, ['up', 'down'])) {
-            require $migrationFile;
-            $class = $this->getClassFromFile($migrationFile);
-            $instantiateMigration = new $class();
-            if (method_exists($instantiateMigration, $direction)) {
-                $instantiateMigration->{$direction}();
-                $log = str_replace([$this->app->get('path::database'), '.php'], '', $migrationFile);
-                $log = trim($log, '\/');
-                if($direction == 'up'){
-                    $this->migrationDB->addLog($log);
-                }elseif($direction == 'down'){
-                    $this->migrationDB->deleteLog($log);
+        $log = str_replace([$this->app->get('path:database').DIRECTORY_SEPARATOR.'migrations', '.php'], ['', ''], $migrationFile);
+        $log = trim($log, '\/');
+        if(!$this->migrationDB->isLogExists($log)){
+            if (in_array($direction, ['up', 'down'])) {
+                require $migrationFile;
+                $class = $this->getClassFromFile($migrationFile);
+                $instantiateMigration = new $class();
+                if (method_exists($instantiateMigration, $direction)) {
+                    $instantiateMigration->{$direction}();
+                    if($direction == 'up'){
+                        $this->migrationDB->addLog($log);
+                    }elseif($direction == 'down'){
+                        $this->migrationDB->deleteLog($log);
+                    }
                 }
             }
         }

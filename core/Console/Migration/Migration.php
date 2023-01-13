@@ -13,7 +13,7 @@ abstract class Migration extends AbstractCreate
 
     public function __construct(Application $app, array $params = [], array $moduleOptions = [])
     {
-        $this->migrationDB = $this->app->get(DB::class);
+        $this->migrationDB = $app->get(DB::class);
         parent::__construct($app, $params, $moduleOptions);
     }
 

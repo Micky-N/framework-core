@@ -96,4 +96,15 @@ PRIMARY KEY (`id`))";
             return [];
         }
     }
+
+    public function isLogExists(string $log): bool
+    {
+        $table = self::TABLE;
+        try {
+            $res = $this->database->prepare("SELECT * FROM $table WHERE log = :log", ['log' => $log]);
+            return $res ? true : false;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
 }
