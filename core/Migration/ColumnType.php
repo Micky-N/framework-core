@@ -177,11 +177,12 @@ class ColumnType
      * Drop column and all foreign keys linked
      *
      * @param string $foreignKey
+     * @param string|null $constraint
      * @return $this
      */
-    public function dropColumnAndForeignKey(string $foreignKey): static
+    private function dropColumnAndForeignKey(string $foreignKey, string $constraint = null): static
     {
-        $foreignKeysDb = $this->getForeignKeysDb($foreignKey);
+        $foreignKeysDb = $constraint ? [$constraint] : $this->getForeignKeysDb($foreignKey);
         $queries = [];
         for ($i = 0; $i < count($foreignKeysDb); $i++) {
             $fkDb = $foreignKeysDb[$i];
@@ -219,7 +220,7 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
      * @param string $foreignKey
      * @return $this
      */
-    public function dropForeignKey(string $foreignKey): static
+    private function dropForeignKey(string $foreignKey): static
     {
         $this->query = "DROP FOREIGN KEY $foreignKey";
         return $this;
@@ -231,20 +232,9 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
      * @param string $column
      * @return $this
      */
-    public function dropColumn(string $column): static
+    private function dropColumn(string $column): static
     {
         $this->query = "DROP COLUMN `$column`";
-        return $this;
-    }
-
-    /**
-     * Drop table
-     *
-     * @return $this
-     */
-    public function dropTable(): static
-    {
-        $this->query = "DROP TABLE IF EXISTS `$this->table`";
         return $this;
     }
 
@@ -253,9 +243,9 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
      *
      * @throws MethodTypeException
      */
-    public function modify(string $column, string $type, array $options = []): static
+    private function modify(string $column, string $type, ...$options): static
     {
-        $this->useMethod($type, $column, $options);
+        $this->useMethod($type, $column, ...$options);
         $query = 'MODIFY ';
         $this->query = $query . $this->query;
         return $this;
@@ -266,11 +256,11 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
      *
      * @param string $method
      * @param string $column
-     * @param array $options
+     * @param mixed ...$options
      * @return mixed
      * @throws MethodTypeException
      */
-    private function useMethod(string $method, string $column, array $options = []): mixed
+    private function useMethod(string $method, string $column, ...$options): mixed
     {
         $reflectionClass = new ReflectionClass($this);
         $methods = array_map(fn(ReflectionMethod $meth) => $meth->getName(), $reflectionClass->getMethods());
@@ -286,7 +276,7 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
      *
      * @throws MethodTypeException
      */
-    public function rename(string $column, string $name, string $newType = null, array $options = []): static
+    private function rename(string $column, string $name, string $newType = null, ...$options): static
     {
         if (!$newType) {
             $res = $this->getColumnType($column);
@@ -294,7 +284,7 @@ AND CONSTRAINT_NAME LIKE :fk", ['table' => $this->table, 'schema' => DB::getData
             $type = " $res";
 
         } else {
-            $type = $this->useMethod($newType, $column, $options);
+            $type = $this->useMethod($newType, $column, ...$options);
             $type = str_replace("`$column`", '', $type->getQuery());
             $type = " " . trim($type);
         }
@@ -333,14 +323,15 @@ AND COLUMN_NAME = :column", ['table' => $this->table, 'column' => $column, 'sche
      * Set a column as foreign key
      *
      * @param string $name
+     * @param string|null $constraint
      * @return $this
      */
-    public function foreignKey(string $name): static
+    private function foreignKey(string $name, string $constraint = null): static
     {
-        $fk = "FK_{$name}_" . rand();
-        $constrain = "CONSTRAINT `$fk`";
+        $constraint ??= "FK_{$name}_" . rand();
+        $constraint = "CONSTRAINT `$constraint`";
         $foreignKey = "FOREIGN KEY (`$name`)";
-        $this->query = "$constrain $foreignKey";
+        $this->query = "$constraint $foreignKey";
         return $this;
     }
 

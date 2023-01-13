@@ -207,24 +207,15 @@ class MigrationTable
     }
 
     /**
-     * Drop table
-     *
-     * @return ColumnType
-     */
-    public function dropTable(): ColumnType
-    {
-        return $this->columns[] = $this->addColumn($this->table, 'dropTable');
-    }
-
-    /**
      * Drop column and foreign keys linked to
      *
-     * @param string $foreignKey
+     * @param string $foreignKeythis method will not need a second parameter
+     * @param string|null $constraint
      * @return ColumnType
      */
-    public function dropColumnAndForeignKey(string $foreignKey): ColumnType
+    public function dropColumnAndForeignKey(string $foreignKey, string $constraint = null): ColumnType
     {
-        return $this->columns[] = $this->addColumn($foreignKey, 'dropColumnAndForeignKey');
+        return $this->columns[] = $this->addColumn($foreignKey, 'dropColumnAndForeignKey', $constraint);
     }
 
     /**
@@ -232,12 +223,12 @@ class MigrationTable
      *
      * @param string $column
      * @param string $type
-     * @param array $options
+     * @param mixed ...$options
      * @return ColumnType
      */
-    public function modify(string $column, string $type, array $options = []): ColumnType
+    public function modify(string $column, string $type, ...$options): ColumnType
     {
-        return $this->columns[] = $this->addColumn($column, 'modify', $type, $options);
+        return $this->columns[] = $this->addColumn($column, 'modify', $type, ...$options);
     }
 
     /**
@@ -246,23 +237,24 @@ class MigrationTable
      * @param string $column
      * @param string $name
      * @param string|null $newType
-     * @param array $options
+     * @param mixed ...$options
      * @return ColumnType
      */
-    public function rename(string $column, string $name, string $newType = null, array $options = []): ColumnType
+    public function rename(string $column, string $name, string $newType = null, ... $options): ColumnType
     {
-        return $this->columns[] = $this->addColumn($column, 'rename', $name, $newType, $options);
+        return $this->columns[] = $this->addColumn($column, 'rename', $name, $newType, ...$options);
     }
 
     /**
      * Set column as a foreign key column
      *
      * @param string $column
+     * @param string|null $constraint
      * @return ColumnType
      */
-    public function foreignKey(string $column): ColumnType
+    public function foreignKey(string $column, string $constraint = null): ColumnType
     {
-        return $this->columns[] = $this->addColumn($column, 'foreignKey');
+        return $this->columns[] = $this->addColumn($column, 'foreignKey', $constraint);
     }
 
     /**
