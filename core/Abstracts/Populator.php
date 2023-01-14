@@ -11,7 +11,7 @@ use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Populate\AddOnPivotRelation;
 use MkyCore\Populate\AddOnRelation;
-use MkyCore\Populate\AttachRelation;
+use MkyCore\Populate\AttachOnRelation;
 use MkyCore\Populate\LoopMerging;
 use ReflectionException;
 
@@ -94,7 +94,7 @@ abstract class Populator
      * @param Closure $attachCallback
      * @return $this
      */
-    public function attach(Closure $attachCallback): static
+    public function attachOn(Closure $attachCallback): static
     {
         $this->attachCallbacks[] = $attachCallback;
         return $this;
@@ -137,7 +137,7 @@ abstract class Populator
      */
     private function handleAttachCallback(Closure $attachCallback): void
     {
-        $attachCallback(new AttachRelation($this));
+        $attachCallback(new AttachOnRelation($this));
     }
 
     /**

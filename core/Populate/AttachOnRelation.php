@@ -12,7 +12,7 @@ use MkyCore\Str;
 use ReflectionClass;
 use ReflectionException;
 
-class AttachRelation
+class AttachOnRelation
 {
 
     public function __construct(private readonly Populator $populator)
