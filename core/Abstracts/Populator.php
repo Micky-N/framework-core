@@ -13,7 +13,6 @@ use MkyCore\Populate\AddOnPivotRelation;
 use MkyCore\Populate\AddRelation;
 use MkyCore\Populate\AttachRelation;
 use MkyCore\Populate\LoopMerging;
-use MkyCore\Populate\RelationEntity;
 use ReflectionException;
 
 abstract class Populator
@@ -202,11 +201,31 @@ abstract class Populator
     {
         $currentOperation = $this->order[$this->index] ?? false;
         if ($currentOperation) {
-            $this->index ++;
+            $this->index++;
             return $currentOperation;
         }
         $this->index = 0;
         return false;
+    }
+
+    /**
+     * Get last records populated
+     *
+     * @return Entity[]
+     */
+    public function getLastSaves(): array
+    {
+        return $this->lastSaves;
+    }
+
+    /**
+     * Get count
+     *
+     * @return int
+     */
+    public function getCount(): int
+    {
+        return $this->count;
     }
 
     /**
@@ -271,25 +290,5 @@ abstract class Populator
     private function handleAddPivotCallback(Closure $addCallback, Entity $entity): void
     {
         $addCallback(new AddOnPivotRelation($entity));
-    }
-
-    /**
-     * Get last records populated
-     *
-     * @return Entity[]
-     */
-    public function getLastSaves(): array
-    {
-        return $this->lastSaves;
-    }
-
-    /**
-     * Get count
-     *
-     * @return int
-     */
-    public function getCount(): int
-    {
-        return $this->count;
     }
 }
