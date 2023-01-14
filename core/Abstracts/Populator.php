@@ -22,7 +22,7 @@ abstract class Populator
     protected int $count = 1;
     protected array $mergesData = [];
     protected array $addCallbacks = [];
-    protected array $forCallbacks = [];
+    protected array $attachCallbacks = [];
     protected array $addPivotCallbacks = [];
     protected array $lastSaves = [];
     protected array $order = [];
@@ -91,12 +91,12 @@ abstract class Populator
     /**
      * Add item populated by many-to-one relation
      *
-     * @param Closure $forCallback
+     * @param Closure $attachCallback
      * @return $this
      */
-    public function attach(Closure $forCallback): static
+    public function attach(Closure $attachCallback): static
     {
-        $this->forCallbacks[] = $forCallback;
+        $this->attachCallbacks[] = $attachCallback;
         return $this;
     }
 
@@ -108,7 +108,7 @@ abstract class Populator
      */
     public function populate(): void
     {
-        $this->operationFor();
+        $this->operationAttach();
         $this->operationPopulate();
         $this->runOperation();
     }
@@ -118,12 +118,12 @@ abstract class Populator
      *
      * @return void
      */
-    private function operationFor(): void
+    private function operationAttach(): void
     {
-        if ($this->forCallbacks) {
-            $forCallbacks = $this->forCallbacks;
-            for ($i = 0; $i < count($forCallbacks); $i++) {
-                $this->handleForCallback($forCallbacks[$i]);
+        if ($this->attachCallbacks) {
+            $attachCallbacks = $this->attachCallbacks;
+            for ($i = 0; $i < count($attachCallbacks); $i++) {
+                $this->handleAttachCallback($attachCallbacks[$i]);
             }
         }
     }
@@ -132,12 +132,12 @@ abstract class Populator
      * Populate one item to link with current population
      * Many-to-one relation
      *
-     * @param Closure $forCallback
+     * @param Closure $attachCallback
      * @return void
      */
-    private function handleForCallback(Closure $forCallback): void
+    private function handleAttachCallback(Closure $attachCallback): void
     {
-        $forCallback(new AttachRelation($this));
+        $attachCallback(new AttachRelation($this));
     }
 
     /**
