@@ -11,7 +11,6 @@ use MkyCore\RelationEntity\HasOne;
 use MkyCore\RelationEntity\ManyToMany;
 use MkyCore\Str;
 use ReflectionClass;
-use ReflectionException;
 
 class AddOnPivotRelation
 {
@@ -28,7 +27,7 @@ class AddOnPivotRelation
      * @param string|null $relation
      * @throws Exception
      */
-    public function addOnPivot(Populator $populator, array $data = [], string $relation = null): void
+    public function add(Populator $populator, array $data = [], string $relation = null): void
     {
         if (!$this->entity) {
             return;
@@ -51,16 +50,18 @@ class AddOnPivotRelation
         }
         if ($relation) {
             if (method_exists($this->entity, $relation)) {
-                /** @var ManyToMany $relation */
                 $relation = $this->entity->$relation();
-                $populator->populate();
-                $lastSaves = $populator->getLastSaves();
-                $arrLast = array_slice($lastSaves, -$populator->getCount(), $populator->getCount());
-                for ($i = 0; $i < count($arrLast); $i++) {
-                    $ls = $arrLast[$i];
-                    $testRes = $relation->attachOnPivot($ls, $data);
-                    if ($testRes) {
-                        Run::$count++;
+                if ($relation instanceof ManyToMany) {
+                    /** @var ManyToMany $relation */
+                    $populator->populate();
+                    $lastSaves = $populator->getLastSaves();
+                    $arrLast = array_slice($lastSaves, -$populator->getCount(), $populator->getCount());
+                    for ($i = 0; $i < count($arrLast); $i++) {
+                        $ls = $arrLast[$i];
+                        $testRes = $relation->attachOnPivot($ls, $data);
+                        if ($testRes) {
+                            Run::$count++;
+                        }
                     }
                 }
             }

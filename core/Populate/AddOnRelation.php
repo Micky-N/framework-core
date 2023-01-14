@@ -11,7 +11,7 @@ use MkyCore\Str;
 use ReflectionClass;
 use ReflectionException;
 
-class AddRelation
+class AddOnRelation
 {
 
     public function __construct(private readonly ?Entity $entity = null)
@@ -46,6 +46,7 @@ class AddRelation
             if (method_exists($this->entity, $relation)) {
                 $relation = $this->entity->$relation();
                 if ($relation instanceof HasMany || $relation instanceof HasOne) {
+                    /** @var HasOne|HasMany $relation */
                     $foreignKey = $relation->getForeignKey();
                     $populator->merge(new LoopMerging([
                         $foreignKey => $this->entity->{$this->entity->getPrimaryKey()}()

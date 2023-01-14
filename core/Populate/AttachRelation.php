@@ -25,9 +25,9 @@ class AttachRelation
      * @throws ReflectionException
      * @throws Exception
      */
-    public function attach(Populator $populator, string $relation = null): void
+    public function add(Populator $populator, string $relation = null): void
     {
-        $populator->populate();
+        $populator->count(1)->populate();
         $last = $populator->getLastSaves();
         $lastEntity = $last[0];
         $entity = $this->populator->getManager()->getEntity();

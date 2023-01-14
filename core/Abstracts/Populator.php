@@ -10,7 +10,7 @@ use MkyCore\Console\Populator\Run;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Populate\AddOnPivotRelation;
-use MkyCore\Populate\AddRelation;
+use MkyCore\Populate\AddOnRelation;
 use MkyCore\Populate\AttachRelation;
 use MkyCore\Populate\LoopMerging;
 use ReflectionException;
@@ -68,7 +68,7 @@ abstract class Populator
      * @param Closure $addCallback
      * @return $this
      */
-    public function adds(Closure $addCallback): static
+    public function addOn(Closure $addCallback): static
     {
         $this->addCallbacks[] = $addCallback;
         $this->order[] = 'operationAdd';
@@ -81,7 +81,7 @@ abstract class Populator
      * @param Closure $addPivotCallback
      * @return $this
      */
-    public function addsOnPivot(Closure $addPivotCallback): static
+    public function addOnPivot(Closure $addPivotCallback): static
     {
         $this->addPivotCallbacks[] = $addPivotCallback;
         $this->order[] = 'operationPivot';
@@ -94,7 +94,7 @@ abstract class Populator
      * @param Closure $forCallback
      * @return $this
      */
-    public function for(Closure $forCallback): static
+    public function attach(Closure $forCallback): static
     {
         $this->forCallbacks[] = $forCallback;
         return $this;
@@ -256,7 +256,7 @@ abstract class Populator
      */
     private function handleAddCallback(Closure $addCallback, Entity $entity): void
     {
-        $addCallback(new AddRelation($entity));
+        $addCallback(new AddOnRelation($entity));
     }
 
     /**
