@@ -53,7 +53,7 @@ class LoopMerging
      *
      * @return array
      */
-    public function getDataByModulo(): array
+    private function getDataByModulo(): array
     {
         $modulo = $this->index % count($this->data);
         return $this->data[$modulo] ?? [];
@@ -99,7 +99,7 @@ class LoopMerging
      *
      * @return int
      */
-    public function getCount(): int
+    public function count(): int
     {
         return $this->count;
     }
