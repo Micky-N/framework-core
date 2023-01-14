@@ -9,6 +9,9 @@ use Faker\Generator;
 use MkyCore\Console\Populator\Run;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Populate\AddOnPivotRelation;
+use MkyCore\Populate\AddRelation;
+use MkyCore\Populate\AttachRelation;
 use MkyCore\Populate\LoopMerging;
 use MkyCore\Populate\RelationEntity;
 use ReflectionException;
@@ -63,10 +66,10 @@ abstract class Populator
     /**
      * Add item populated by one-to-many relation
      *
-     * @param callable $addCallback
+     * @param Closure $addCallback
      * @return $this
      */
-    public function adds(callable $addCallback): static
+    public function adds(Closure $addCallback): static
     {
         $this->addCallbacks[] = $addCallback;
         $this->order[] = 'operationAdd';
@@ -76,10 +79,10 @@ abstract class Populator
     /**
      * Add item populated to pivot by many-to-many relation
      *
-     * @param callable $addPivotCallback
+     * @param Closure $addPivotCallback
      * @return $this
      */
-    public function addsOnPivot(callable $addPivotCallback): static
+    public function addsOnPivot(Closure $addPivotCallback): static
     {
         $this->addPivotCallbacks[] = $addPivotCallback;
         $this->order[] = 'operationPivot';
@@ -89,10 +92,10 @@ abstract class Populator
     /**
      * Add item populated by many-to-one relation
      *
-     * @param callable $forCallback
+     * @param Closure $forCallback
      * @return $this
      */
-    public function for(callable $forCallback): static
+    public function for(Closure $forCallback): static
     {
         $this->forCallbacks[] = $forCallback;
         return $this;
@@ -135,7 +138,7 @@ abstract class Populator
      */
     private function handleForCallback(Closure $forCallback): void
     {
-        $forCallback(new RelationEntity($this));
+        $forCallback(new AttachRelation($this));
     }
 
     /**
@@ -234,7 +237,7 @@ abstract class Populator
      */
     private function handleAddCallback(Closure $addCallback, Entity $entity): void
     {
-        $addCallback(new RelationEntity($this, $entity));
+        $addCallback(new AddRelation($entity));
     }
 
     /**
@@ -267,7 +270,7 @@ abstract class Populator
      */
     private function handleAddPivotCallback(Closure $addCallback, Entity $entity): void
     {
-        $addCallback(new RelationEntity($this, $entity));
+        $addCallback(new AddOnPivotRelation($entity));
     }
 
     /**
