@@ -88,7 +88,7 @@ class LoopMerging
      *
      * @return mixed
      */
-    public function resolve(): mixed
+    private function resolve(): mixed
     {
         $resolve = $this->callback;
         return $resolve($this);
