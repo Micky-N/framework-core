@@ -5,8 +5,6 @@ namespace MkyCore\Populate;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Populator;
-use MkyCore\Console\Populator\Run;
-use MkyCore\RelationEntity\HasMany;
 use MkyCore\RelationEntity\HasOne;
 use MkyCore\Str;
 use ReflectionClass;
@@ -42,7 +40,7 @@ class AttachOnRelation
                 $word = $words[$i];
                 if (method_exists($entity, $word)) {
                     $relationTest = $entity->$word();
-                    if ($relationTest instanceof HasMany || $relationTest instanceof HasOne) {
+                    if ($relationTest instanceof HasOne) {
                         $relation = $word;
                         break;
                     }
@@ -51,7 +49,7 @@ class AttachOnRelation
         }
         if ($relation) {
             if (method_exists($entity, $relation)) {
-                /** @var HasOne|HasMany $relation */
+                /** @var HasOne $relation */
                 $relation = $entity->$relation();
                 $foreignKey = $relation->getForeignKey();
                 $this->populator->merge(new LoopMerging([
