@@ -41,7 +41,7 @@ class AddOnPivotRelation
                 $word = $words[$i];
                 if (method_exists($this->entity, $word)) {
                     $relationTest = $this->entity->$word();
-                    if ($relationTest instanceof HasMany || $relationTest instanceof HasOne) {
+                    if ($relationTest instanceof ManyToMany) {
                         $relation = $word;
                         break;
                     }
@@ -52,7 +52,6 @@ class AddOnPivotRelation
             if (method_exists($this->entity, $relation)) {
                 $relation = $this->entity->$relation();
                 if ($relation instanceof ManyToMany) {
-                    /** @var ManyToMany $relation */
                     $populator->populate();
                     $lastSaves = $populator->getLastSaves();
                     $arrLast = array_slice($lastSaves, -$populator->getCount(), $populator->getCount());

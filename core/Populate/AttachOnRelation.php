@@ -6,7 +6,6 @@ use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Populator;
 use MkyCore\RelationEntity\HasOne;
-use MkyCore\Str;
 use ReflectionClass;
 use ReflectionException;
 
@@ -34,27 +33,23 @@ class AttachOnRelation
         if (!$relation) {
             $class = new ReflectionClass($populator);
             $class = $class->getShortName();
-            $class = strtolower(str_replace('Populator', '', $class));
-            $words = [Str::pluralize($class), $class];
-            for ($i = 0; $i < count($words); $i++) {
-                $word = $words[$i];
-                if (method_exists($entity, $word)) {
-                    $relationTest = $entity->$word();
-                    if ($relationTest instanceof HasOne) {
-                        $relation = $word;
-                        break;
-                    }
+            $word = strtolower(str_replace('Populator', '', $class));
+            if (method_exists($entity, $word)) {
+                $relationTest = $entity->$word();
+                if ($relationTest instanceof HasOne) {
+                    $relation = $word;
                 }
             }
         }
         if ($relation) {
             if (method_exists($entity, $relation)) {
-                /** @var HasOne $relation */
                 $relation = $entity->$relation();
-                $foreignKey = $relation->getForeignKey();
-                $this->populator->merge(new LoopMerging([
-                    $foreignKey => $lastEntity->{$lastEntity->getPrimaryKey()}()
-                ]));
+                if($relation instanceof HasOne){
+                    $foreignKey = $relation->getForeignKey();
+                    $this->populator->merge(new LoopMerging([
+                        $foreignKey => $lastEntity->{$lastEntity->getPrimaryKey()}()
+                    ]));
+                }
             }
         }
     }
