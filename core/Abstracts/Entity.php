@@ -73,6 +73,8 @@ abstract class Entity implements JsonSerializable
                         $value = json_decode($value, true);
                     }elseif ($type == 'object') {
                         $value = json_decode($value);
+                    }elseif ($type == 'serialize') {
+                        $value = @unserialize($value);
                     } elseif (method_exists($this, 'to' . ucfirst($type))) {
                         $value = $this->{'to' . ucfirst($type)}($value, $key);
                     }
@@ -93,17 +95,7 @@ abstract class Entity implements JsonSerializable
      */
     private function isDefaultTypes(string $type): bool
     {
-        return in_array($type, $this->getDefaultTypes());
-    }
-
-    /**
-     * Get the built-in types
-     *
-     * @return string[]
-     */
-    private function getDefaultTypes(): array
-    {
-        return ['string', 'int', 'integer', 'float', 'boolean', 'bool'];
+        return in_array($type, ['string', 'int', 'integer', 'float', 'boolean', 'bool']);
     }
 
     /**
