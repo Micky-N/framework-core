@@ -220,16 +220,4 @@ class ManyToMany implements RelationEntityInterface
         DB::prepare($statement, $values);
         return $this->query->where("$this->pivot.$this->primaryKeyPivot", $id)->get(true);
     }
-
-    /**
-     * @param Entity $entity
-     * @return Entity|bool
-     * @throws ReflectionException
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     */
-    public function updateEntity(Entity $entity): Entity|bool
-    {
-        return $this->managerRelation->save($entity);
-    }
 }
