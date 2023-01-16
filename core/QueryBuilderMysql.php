@@ -5,6 +5,8 @@ namespace MkyCore;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Manager;
+use MkyCore\Exceptions\Mysql\MysqlException;
+use ReflectionException;
 
 class QueryBuilderMysql
 {
@@ -134,18 +136,23 @@ class QueryBuilderMysql
      * @param string $operation
      * @param string $to
      * @param string $aliasFirstTable
+     * @param string $type
      * @return $this
-     * @throws Exception
+     * @throws MysqlException
+     * @throws ReflectionException
      */
-    public function join(string $join_table, string $on, string $operation, string $to, string $aliasFirstTable = ''): static
+    public function join(string $join_table, string $on, string $operation, string $to, string $aliasFirstTable = '', string $type = 'left'): static
     {
+        if (!in_array($type, ['left', 'right', 'inner', 'cross'])) {
+            throw new MysqlException("the param type must be left, right, inner or cross");
+        }
         if (!strpos($on, '.')) {
             $on = empty($alias) ? $this->instance->getTable() . ".$on" : "$aliasFirstTable.$on";
         }
         if (!strpos($to, '.')) {
             $to = "$join_table.$to";
         }
-        $this->joins[] = [$join_table, $on, $operation, $to];
+        $this->joins[$type][] = [$join_table, $on, $operation, $to];
 
         return $this;
     }
@@ -192,6 +199,9 @@ class QueryBuilderMysql
         return $this->hasFields()
             . $this->hasFrom()
             . $this->hasJoin()
+            . $this->hasRightJoin()
+            . $this->hasInnerJoin()
+            . $this->hasCrossJoin()
             . $this->hasConditions()
             . $this->hasGroup()
             . $this->hasOrder()
@@ -229,9 +239,51 @@ class QueryBuilderMysql
     private function hasJoin(): string
     {
         $syntax = '';
-        if (!empty($this->joins)) {
-            foreach ($this->joins as $join) {
+        if (!empty($this->joins['left'])) {
+            foreach ($this->joins['left'] as $join) {
                 $syntax .= sprintf(" LEFT JOIN %s ON %s %s %s", ...$join);
+            }
+        }
+        return $syntax;
+    }
+
+    /**
+     * @return string
+     */
+    private function hasRightJoin(): string
+    {
+        $syntax = '';
+        if (!empty($this->joins['right'])) {
+            foreach ($this->joins['right'] as $join) {
+                $syntax .= sprintf(" RIGHT JOIN %s ON %s %s %s", ...$join);
+            }
+        }
+        return $syntax;
+    }
+
+    /**
+     * @return string
+     */
+    private function hasInnerJoin(): string
+    {
+        $syntax = '';
+        if (!empty($this->joins['inner'])) {
+            foreach ($this->joins['inner'] as $join) {
+                $syntax .= sprintf(" INNER JOIN %s ON %s %s %s", ...$join);
+            }
+        }
+        return $syntax;
+    }
+
+    /**
+     * @return string
+     */
+    private function hasCrossJoin(): string
+    {
+        $syntax = '';
+        if (!empty($this->joins['cross'])) {
+            foreach ($this->joins['cross'] as $join) {
+                $syntax .= sprintf(" CROSS JOIN %s ON %s %s %s", ...$join);
             }
         }
         return $syntax;

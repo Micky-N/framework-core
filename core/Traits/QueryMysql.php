@@ -13,7 +13,7 @@ use MkyCore\QueryBuilderMysql;
  * @method QueryBuilderMysql where(string $condition, ...$args)
  * @method QueryBuilderMysql select(...$args)
  * @method QueryBuilderMysql from(string $table, $alias = null)
- * @method QueryBuilderMysql join(string $join_table, string $on, string $operation, string $to, string $aliasFirstTable = '')
+ * @method QueryBuilderMysql join(string $join_table, string $on, string $operation, string $to, string $aliasFirstTable = '', string $type = 'left')
  * @method QueryBuilderMysql first()
  * @method QueryBuilderMysql query(string $statement)
  * @method QueryBuilderMysql prepare(string $statement, array $attribute)
