@@ -55,10 +55,31 @@ class HasOne implements RelationEntityInterface
      */
     public function attach(Entity $entity): false|Entity
     {
-        $primaryKey = $entity->getPrimaryKey();
-        $foreignKey = $this->getForeignKey();
-        $this->entity->{'set' . ucfirst(Str::camelize($foreignKey))}($entity->{$primaryKey}());
-        return $this->entity->getManager()->update($this->entity);
+        try{
+            $primaryKey = $entity->getPrimaryKey();
+            $foreignKey = $this->getForeignKey();
+            $this->entity->{'set' . ucfirst(Str::camelize($foreignKey))}($entity->{$primaryKey}());
+            return $this->entity->getManager()->update($this->entity);
+        }catch (Exception $exception){
+            return false;
+        }
+    }
+
+    /**
+     * Insert row in database with one-to-many relation
+     *
+     * @param Entity $entity
+     * @return false|Entity
+     */
+    public function add(Entity $entity): false|Entity
+    {
+        try {
+            $primaryKey = $this->entity->getPrimaryKey();
+            $entity->{'set' . Str::classify($this->getForeignKey())}($this->entity->{$primaryKey}());
+            return $this->managerRelation->save($entity);
+        } catch (Exception $exception) {
+            return false;
+        }
     }
 
     /**
