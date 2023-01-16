@@ -100,30 +100,37 @@ abstract class Manager
      * Save a new array in database table
      *
      * @param array $data
-     * @param string $table
-     * @return Entity|bool|Manager
-     * @throws Exception
+     * @return Entity|false
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
-    public function create(array $data, string $table = ''): Entity|bool|static
+    public function create(array $data): Entity|false
     {
         $entity = $this->getEntity();
         $entity = new $entity($data);
-        return $this->save($entity, $table);
+        return $this->save($entity);
     }
 
     /**
      * Save a new entity in database table
      *
      * @param Entity $entity
-     * @param string $table
-     * @return $this|false
+     * @return Entity|false
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      * @throws Exception
      */
-    public function save(Entity $entity, string $table = ''): Entity|false
+    public function save(Entity $entity): Entity|false
     {
+        $primaryKey = $entity->{$this->getPrimaryKey()}();
+        if(!is_null($primaryKey)){
+            return $this->update($entity);
+        }
         $data = $this->filterColumns($entity);
         unset($data[$this->getPrimaryKey()]);
-        $table = $table ?: $this->getTable();
+        $table = $this->getTable();
         $keys = [];
         $values = [];
         $inter = [];
@@ -196,7 +203,7 @@ abstract class Manager
      * @throws ReflectionException
      * @throws Exception
      */
-    public function update(Entity $entity): false|Entity
+    private function update(Entity $entity): false|Entity
     {
         $keys = [];
         $values = [];
@@ -221,13 +228,13 @@ abstract class Manager
     }
 
     /**
-     * Get a record
+     * Get a record by primary key
      *
-     * @param mixed $id
+     * @param string|int $id
      * @return Entity|false
      * @throws Exception|ReflectionException
      */
-    public function find(mixed $id): false|Entity
+    public function find(string|int $id): false|Entity
     {
         return $this->where(
             $this->getPrimaryKey(),
@@ -268,14 +275,17 @@ abstract class Manager
     /**
      * Get random key of table
      *
-     * @return string
+     * @return string|int
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      * @throws ReflectionException
      * @throws Exception
      */
-    public function shuffleId(): string
+    public function shuffleId(): string|int
     {
         $pk = $this->getPrimaryKey();
         $ids = $this->select($pk)->get();
-        return $ids[array_rand($ids)]->{$pk};
+        $res = $ids[array_rand($ids)]->{$pk};
+        return is_numeric($res) ? (int) $res : $res;
     }
 }
