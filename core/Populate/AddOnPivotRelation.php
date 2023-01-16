@@ -6,8 +6,6 @@ use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Populator;
 use MkyCore\Console\Populator\Run;
-use MkyCore\RelationEntity\HasMany;
-use MkyCore\RelationEntity\HasOne;
 use MkyCore\RelationEntity\ManyToMany;
 use MkyCore\Str;
 use ReflectionClass;
@@ -57,7 +55,7 @@ class AddOnPivotRelation
                     $arrLast = array_slice($lastSaves, -$populator->getCount(), $populator->getCount());
                     for ($i = 0; $i < count($arrLast); $i++) {
                         $ls = $arrLast[$i];
-                        $testRes = $relation->attachOnPivot($ls, $data);
+                        $testRes = $relation->add($ls, $data);
                         if ($testRes) {
                             Run::$count++;
                         }

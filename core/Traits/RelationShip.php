@@ -82,9 +82,10 @@ trait RelationShip
      * @param string $pivot
      * @param string $foreignKeyOne
      * @param string $foreignKeyTwo
+     * @param string $primaryKeyPivot
      * @return ManyToMany|false
      */
-    public function manyToMany(Entity|string $entityRelation, string $pivot = '', string $foreignKeyOne = '', string $foreignKeyTwo = ''): ManyToMany|false
+    public function manyToMany(Entity|string $entityRelation, string $pivot = '', string $foreignKeyOne = '', string $foreignKeyTwo = '', string $primaryKeyPivot = 'id'): ManyToMany|false
     {
         try {
             $primaryKeyOne = $this->getPrimaryKey();
@@ -108,7 +109,7 @@ trait RelationShip
                 }
             }
             $name = debug_backtrace()[1]['function'] ?? $preForeignKeyOne . '_' . $preForeignKeyTwo;
-            $relation = new ManyToMany($this, $entityRelation, $foreignKeyOne, $foreignKeyTwo, $pivot);
+            $relation = new ManyToMany($this, $entityRelation, $foreignKeyOne, $foreignKeyTwo, $pivot, $primaryKeyPivot);
             return $this->relations[$name] = $relation;
         } catch (Exception $ex) {
             return false;

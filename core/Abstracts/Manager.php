@@ -7,6 +7,7 @@ use MkyCore\Annotation\Annotation;
 use MkyCore\Database;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Exceptions\Manager\NotSaveManagerException;
 use MkyCore\Str;
 use MkyCore\Traits\QueryMysql;
 use ReflectionClass;
@@ -124,6 +125,10 @@ abstract class Manager
      */
     public function save(Entity $entity): Entity|false
     {
+        if(get_class($entity) !== $this->getEntity()){
+            $class = get_class($entity);
+            throw new NotSaveManagerException("Class $class is must be an instance of {$this->getEntity()}");
+        }
         $primaryKey = $entity->{$this->getPrimaryKey()}();
         if(!is_null($primaryKey)){
             return $this->update($entity);

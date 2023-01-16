@@ -5,6 +5,8 @@ namespace MkyCore\RelationEntity;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Manager;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\RelationEntityInterface;
 use MkyCore\QueryBuilderMysql;
 use MkyCore\Str;
@@ -59,27 +61,22 @@ class HasOne implements RelationEntityInterface
             $primaryKey = $entity->getPrimaryKey();
             $foreignKey = $this->getForeignKey();
             $this->entity->{'set' . ucfirst(Str::camelize($foreignKey))}($entity->{$primaryKey}());
-            return $this->entity->getManager()->update($this->entity);
+            return $this->entity->getManager()->save($this->entity);
         }catch (Exception $exception){
             return false;
         }
     }
 
     /**
-     * Insert row in database with one-to-many relation
-     *
      * @param Entity $entity
-     * @return false|Entity
+     * @return Entity|false
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      */
-    public function add(Entity $entity): false|Entity
+    public function update(Entity $entity): array|false
     {
-        try {
-            $primaryKey = $this->entity->getPrimaryKey();
-            $entity->{'set' . Str::classify($this->getForeignKey())}($this->entity->{$primaryKey}());
-            return $this->managerRelation->save($entity);
-        } catch (Exception $exception) {
-            return false;
-        }
+        return $this->managerRelation->save($entity);
     }
 
     /**

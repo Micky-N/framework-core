@@ -5,6 +5,8 @@ namespace MkyCore\RelationEntity;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Manager;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\RelationEntityInterface;
 use MkyCore\QueryBuilderMysql;
 use MkyCore\Str;
@@ -107,11 +109,11 @@ class HasMany implements RelationEntityInterface
 
     /**
      * @param string|int $id
-     * @return Entity|bool|null
+     * @return Entity|false|null
      * @throws ReflectionException
      * @throws Exception
      */
-    public function delete(string|int $id): Entity|bool|null
+    public function delete(string|int $id): Entity|false|null
     {
         if ($toDelete = $this->managerRelation->find($id)) {
             return $this->managerRelation->delete($toDelete);
@@ -137,11 +139,16 @@ class HasMany implements RelationEntityInterface
     }
 
     /**
+     * @param array $data
+     * @return Entity|false
      * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
      */
-    public function update(array $data)
+    public function update(array $data): array|false
     {
         $entities = $this->get();
+        $res = [];
         for ($i = 0; $i < count($entities); $i++) {
             $entity = $entities[$i];
             foreach ($data as $key => $value) {
@@ -149,7 +156,8 @@ class HasMany implements RelationEntityInterface
                     $entity->{'set' . Str::classify($key)}($value);
                 }
             }
-            $this->managerRelation->update($entity);
+            $res[] = $this->managerRelation->save($entity);
         }
+        return $res;
     }
 }

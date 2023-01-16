@@ -5,6 +5,8 @@ namespace MkyCore\RelationEntity;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Manager;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Facades\DB;
 use MkyCore\Interfaces\RelationEntityInterface;
 use MkyCore\QueryBuilderMysql;
@@ -25,7 +27,8 @@ class ManyToMany implements RelationEntityInterface
         private readonly Entity $entityRelation,
         private readonly string $foreignKeyOne,
         private readonly string $foreignKeyTwo,
-        private readonly string $pivot
+        private readonly string $pivot,
+        private readonly string $primaryKeyPivot,
     )
     {
         $this->managerRelation = $this->entityRelation->getManager();
@@ -39,27 +42,14 @@ class ManyToMany implements RelationEntityInterface
     }
 
     /**
-     * @inheritDoc
-     * @return array|false
-     */
-    public function get(): array|false
-    {
-        try {
-            return $this->query->get();
-        }catch(Exception $exception){
-            return false;
-        }
-    }
-
-    /**
      * Insert row in pivot database table many-to-many relation
      *
      * @param Entity $entity
      * @param array $options
-     * @return bool|Entity
+     * @return false|Entity[]
      * @throws ReflectionException
      */
-    public function attachOnPivot(Entity $entity, array $options = []): bool|Entity
+    public function add(Entity $entity, array $options = []): false|array
     {
         $primaryKeyOne = $this->entity->getPrimaryKey();
         $primaryKeyTwo = $entity->getPrimaryKey();
@@ -77,7 +67,21 @@ class ManyToMany implements RelationEntityInterface
         }
         $statement = 'INSERT INTO ' . $this->pivot . ' (' . implode(', ', $keys) . ')';
         $statement .= ' VALUES (' . implode(', ', $inter) . ')';
-        return DB::prepare($statement, $values);
+        DB::prepare($statement, $values);
+        return $this->get();
+    }
+
+    /**
+     * @inheritDoc
+     * @return Entity[]|false
+     */
+    public function get(): array|false
+    {
+        try {
+            return $this->query->get();
+        } catch (Exception $exception) {
+            return false;
+        }
     }
 
     /**
@@ -98,26 +102,6 @@ class ManyToMany implements RelationEntityInterface
     public function getEntityRelation(): Entity
     {
         return $this->entityRelation;
-    }
-
-    /**
-     * Get the first foreign key
-     *
-     * @return string
-     */
-    public function getForeignKeyOne(): string
-    {
-        return $this->foreignKeyOne;
-    }
-
-    /**
-     * Get the second foreign key
-     *
-     * @return string
-     */
-    public function getForeignKeyTwo(): string
-    {
-        return $this->foreignKeyTwo;
     }
 
     /**
@@ -142,13 +126,110 @@ class ManyToMany implements RelationEntityInterface
         return $this;
     }
 
-    public function delete(string|int $id)
+    /**
+     * Get the first foreign key
+     *
+     * @return string
+     */
+    public function getForeignKeyOne(): string
     {
-        //
+        return $this->foreignKeyOne;
     }
 
-    public function clear()
+    /**
+     * Get the second foreign key
+     *
+     * @return string
+     */
+    public function getForeignKeyTwo(): string
     {
-        //
+        return $this->foreignKeyTwo;
+    }
+
+    /**
+     * Delete all records in hasMany relation
+     *
+     * @return Entity[]|false
+     * @throws Exception
+     */
+    public function clear(): array|false
+    {
+        $entities = $this->get();
+        $res = [];
+        for ($i = 0; $i < count($entities); $i++) {
+            $entity = $entities[$i];
+            if ($this->deleteFromEntity($entity)) {
+                $res[] = $entity;
+            }
+        }
+        return $res;
+    }
+
+    /**
+     * @param Entity $entity
+     * @return false|Entity
+     * @throws ReflectionException
+     */
+    public function deleteFromEntity(Entity $entity): false|Entity
+    {
+        if (!($deleted = $this->managerRelation->delete($entity))) {
+            return false;
+        }
+        $statement = 'DELETE FROM ' . $this->pivot . ' WHERE ' . $this->foreignKeyOne . ' = :' . $this->foreignKeyOne . ' AND WHERE ' . $this->foreignKeyTwo . ' = :' . $this->foreignKeyTwo;
+        DB::prepare($statement, [
+            $this->foreignKeyOne => $this->entity->{$this->entity->getPrimaryKey()}(),
+            $this->foreignKeyTwo => $deleted->{$deleted->getPrimaryKey()}()
+        ]);
+        return $deleted;
+    }
+
+    /**
+     * @param string|int $id
+     * @return false|Entity
+     * @throws Exception
+     */
+    public function delete(string|int $id): false|Entity
+    {
+        $entity = $this->query->where($this->primaryKeyPivot, $id)->get(true);
+        $statement = 'DELETE FROM ' . $this->pivot . ' WHERE ' . $this->primaryKeyPivot . ' = :' . $this->primaryKeyPivot;
+        DB::prepare($statement, [
+            $this->primaryKeyPivot => $id
+        ]);
+        return $entity;
+    }
+
+    public function update(string|int $id, array $data): false|Entity
+    {
+
+        $keys = [];
+        $values = [];
+        unset($data[$this->primaryKeyPivot]);
+        foreach ($data as $k => $v) {
+            $keys[] = "$k = :$k";
+            $values[$k] = $v;
+        }
+        $statement =
+            'UPDATE ' .
+            $this->pivot .
+            ' SET ' .
+            implode(', ', $keys) .
+            ' WHERE ' .
+            $this->primaryKeyPivot .
+            ' = :' . $this->primaryKeyPivot;
+        $values[$this->primaryKeyPivot] = $id;
+        DB::prepare($statement, $values);
+        return $this->query->where("$this->pivot.$this->primaryKeyPivot", $id)->get(true);
+    }
+
+    /**
+     * @param Entity $entity
+     * @return Entity|bool
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     */
+    public function updateEntity(Entity $entity): Entity|bool
+    {
+        return $this->managerRelation->save($entity);
     }
 }
