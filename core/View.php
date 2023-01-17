@@ -117,7 +117,11 @@ class View implements ResponseHandlerInterface
     }
 
     /**
+     * @param ModuleKernel $moduleKernel
+     * @throws FailedToResolveContainerException
      * @throws LoaderError
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
     private function getParentViewsDirectory(ModuleKernel $moduleKernel): void
     {
