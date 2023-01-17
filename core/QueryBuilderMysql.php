@@ -30,6 +30,12 @@ class QueryBuilderMysql
     private array $conditions = [];
 
     /**
+     * OR WHERE
+     * @var array
+     */
+    private array $orConditions = [];
+
+    /**
      * ORDER BY
      * @var array
      */
@@ -109,15 +115,35 @@ class QueryBuilderMysql
         return $this;
     }
 
-    public function whereNull($column): static
+    /**
+     * @return $this
+     */
+    public function orWhere(string $column, ...$condition): static
     {
-        $this->conditions[] = sprintf('%s IS NULL', $column);
+        if (count($condition) === 1)
+            $this->orConditions[] = sprintf('%s = "%s"', $column, ...$condition);
+        else if (count($condition) === 2)
+            $this->orConditions[] = sprintf('%s %s "%s"', $column, ...$condition);
         return $this;
     }
 
-    public function whereNotNull($column): static
+    public function whereNull(string $column, bool $or = false): static
     {
-        $this->conditions[] = sprintf('%s IS NOT NULL', $column);
+        if($or){
+            $this->orConditions[] = sprintf('%s IS NULL', $column);
+        }else{
+            $this->conditions[] = sprintf('%s IS NULL', $column);
+        }
+        return $this;
+    }
+
+    public function whereNotNull(string $column, bool $or = false): static
+    {
+        if($or){
+            $this->orConditions[] = sprintf('%s IS NOT NULL', $column);
+        }else{
+            $this->conditions[] = sprintf('%s IS NOT NULL', $column);
+        }
         return $this;
     }
 
@@ -203,6 +229,7 @@ class QueryBuilderMysql
             . $this->hasInnerJoin()
             . $this->hasCrossJoin()
             . $this->hasConditions()
+            . $this->hasOrConditions()
             . $this->hasGroup()
             . $this->hasOrder()
             . $this->hasLimit();
@@ -296,6 +323,17 @@ class QueryBuilderMysql
     {
         if (!empty($this->conditions))
             return ' WHERE ' . implode(' AND ', $this->conditions);
+        else
+            return '';
+    }
+
+    /**
+     * @return string
+     */
+    private function hasOrConditions(): string
+    {
+        if (!empty($this->orConditions))
+            return ' OR WHERE ' . implode(' OR ', $this->orConditions);
         else
             return '';
     }

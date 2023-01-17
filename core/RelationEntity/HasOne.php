@@ -7,6 +7,7 @@ use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Manager;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Exceptions\Mysql\MysqlException;
 use MkyCore\Interfaces\RelationEntityInterface;
 use MkyCore\QueryBuilderMysql;
 use MkyCore\Str;
@@ -19,7 +20,11 @@ class HasOne implements RelationEntityInterface
     private QueryBuilderMysql $query;
 
     /**
+     * @param Entity $entity
+     * @param Entity $entityRelation
+     * @param string $foreignKey
      * @throws ReflectionException
+     * @throws MysqlException
      */
     public function __construct(private readonly Entity $entity, private readonly Entity $entityRelation, private readonly string $foreignKey)
     {
