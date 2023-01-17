@@ -2,6 +2,7 @@
 
 namespace MkyCore\RelationEntity;
 
+use Closure;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Manager;
@@ -67,12 +68,12 @@ class HasMany implements RelationEntityInterface
     /**
      * Query builder callback to specify some relation requirements
      *
-     * @param callable $callback
+     * @param Closure $closure
      * @return $this
      */
-    public function queryBuilder(callable $callback): HasMany
+    public function queryBuilder(Closure $closure): HasMany
     {
-        $this->query = $callback($this->query);
+        $this->query = $closure($this->query);
         return $this;
     }
 
