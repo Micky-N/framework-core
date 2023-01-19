@@ -71,6 +71,12 @@ class TwigCompile implements ViewCompileInterface
                 }
             }
         }
+        if(method_exists($rootKernel, 'getTwigGlobalVariables')){
+            $globalVariables = $rootKernel->getTwigGlobalVariables();
+            foreach ($globalVariables as $name => $value){
+                $this->twig->addGlobal($name, $value);
+            }
+        }
         $this->twig->getExtension(CoreExtension::class)->setTimezone(Config::get('app.timezone'));
 
         return $this->twig->render($view, $params);
