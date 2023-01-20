@@ -58,17 +58,10 @@ class View implements ResponseHandlerInterface
             if (!in_array($viewsModuleConfig, self::VIEWS_STRATEGIES)) {
                 throw new ViewSystemException("View config $viewsModuleConfig not correct, must be base, module or parent");
             }
-            switch ($viewsModuleConfig) {
-                case 'both':
-                    $this->getModuleViewsDirectory($module);
-                    $this->getParentViewsDirectory($module);
-                    break;
-                case 'parent':
-                    $this->getParentViewsDirectory($module);
-                    break;
-                case 'module':
-                    $this->getModuleViewsDirectory($module);
-                    break;
+            if ($viewsModuleConfig == 'parent') {
+                $this->getParentViewsDirectory($module);
+            } elseif ($viewsModuleConfig == 'module') {
+                $this->getModuleViewsDirectory($module);
             }
         }
         if (str_starts_with($view, '@/')) {
@@ -84,6 +77,22 @@ class View implements ResponseHandlerInterface
     {
         $this->compile->addPath($path, $namespace);
         return $this;
+    }
+
+    /**
+     * @param ModuleKernel $moduleKernel
+     * @throws FailedToResolveContainerException
+     * @throws LoaderError
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    private function getParentViewsDirectory(ModuleKernel $moduleKernel): void
+    {
+        /** @var ModuleKernel[] $ancestors */
+        $ancestors = $moduleKernel->getAncestorsKernel();
+        foreach ($ancestors as $ancestor) {
+            $this->compile->addPath($ancestor->getModulePath() . DIRECTORY_SEPARATOR . 'views', $ancestor->getAlias());
+        }
     }
 
     /**
@@ -113,22 +122,6 @@ class View implements ResponseHandlerInterface
             }
 
             $this->compile->addPath($viewPath, $module->getAlias());
-        }
-    }
-
-    /**
-     * @param ModuleKernel $moduleKernel
-     * @throws FailedToResolveContainerException
-     * @throws LoaderError
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     */
-    private function getParentViewsDirectory(ModuleKernel $moduleKernel): void
-    {
-        /** @var ModuleKernel[] $ancestors */
-        $ancestors = $moduleKernel->getAncestorsKernel();
-        foreach ($ancestors as $ancestor) {
-            $this->compile->addPath($ancestor->getModulePath() . DIRECTORY_SEPARATOR . 'views', $ancestor->getAlias());
         }
     }
 
