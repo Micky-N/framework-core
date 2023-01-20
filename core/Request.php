@@ -340,7 +340,7 @@ class Request extends ServerRequest implements ServerRequestInterface
 
     /**
      * @param string $name
-     * @return mixed
+     * @return bool
      */
     public function hasFlash(string $name): bool
     {
@@ -363,7 +363,7 @@ class Request extends ServerRequest implements ServerRequestInterface
 
     /**
      * @param string $name
-     * @return mixed
+     * @return bool
      */
     public function hasOld(string $name): bool
     {

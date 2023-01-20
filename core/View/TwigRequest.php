@@ -20,12 +20,17 @@ class TwigRequest
         return $this->request->session($name, $default);
     }
 
+    public function cookies(string $name = null, mixed $default = null)
+    {
+        return $this->request->cookie($name, $default);
+    }
+
     public function old(string $name, mixed $default = null)
     {
         return $this->request->old($name, $default);
     }
 
-    public function hasOld(string $name)
+    public function hasOld(string $name): bool
     {
         return $this->request->hasOld($name);
     }
@@ -35,7 +40,7 @@ class TwigRequest
         return $this->request->flash($name, $default);
     }
 
-    public function hasFlash(string $name)
+    public function hasFlash(string $name): bool
     {
         return $this->request->hasFlash($name);
     }
