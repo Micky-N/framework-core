@@ -20,7 +20,7 @@ class TwigRequest
         return $this->request->session($name, $default);
     }
 
-    public function cookies(string $name = null, mixed $default = null)
+    public function cookie(string $name, mixed $default = null)
     {
         return $this->request->cookie($name, $default);
     }
