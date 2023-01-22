@@ -25,20 +25,31 @@ class Input
         if($inputs){
             $options = [];
             for($i = 0; $i < count($inputs); $i++){
+                $resOption = null;
                 if(!empty($inputs[$i])){
                     $input = $inputs[$i];
+                    $key = $i;
                     if(str_starts_with($input, '--') && $input[2] !== '-'){
                         $explodeInputs = explode('=', $input);
                         $key = str_replace('--', '', trim($explodeInputs[0]));
-                        $options[$key] = !empty($explodeInputs[1]) ? trim($explodeInputs[1]) : false;
-                    }elseif(str_starts_with($input, '-') && $input[1] !== '-'){
+                        $resOption = !empty($explodeInputs[1]) ? trim($explodeInputs[1]) : false;
+                    }elseif(str_starts_with($input, '-') && $input[1] !== '-' && strlen($input) == 2){
                         $key = $input[1];
                         if(isset($inputs[$i + 1]) && !str_starts_with($inputs[$i + 1], '-') && !str_contains($inputs[$i + 1], '=')){
-                            $options[$key] = trim($inputs[$i + 1]);
+                            $resOption = trim($inputs[$i + 1]);
                             array_splice($inputs, $i + 1, 1);
                         }else{
-                            $options[$key] = false;
+                            $resOption = false;
                         }
+                    }elseif(str_starts_with($input, '-') && $input[1] !== '-' && strlen($input) > 2){
+                        $key = $input[1];
+                        $value = str_replace("-$key", '', $input);
+                        $resOption = $value;
+                    }
+                    if(!isset($options[$key])){
+                        $options[$key] = $resOption;
+                    }else if(isset($options[$key])){
+                        $options[$key] = is_array($options[$key]) ? array_push($options[$key], $resOption) : [$options[$key], $resOption];
                     }
                 }
             }
@@ -94,6 +105,15 @@ class Input
     }
 
     /**
+     * @param string $name
+     * @return bool
+     */
+    public function hasOption(string $name): bool
+    {
+        return isset($this->options[$name]);
+    }
+
+    /**
      * @param array $options
      */
     public function setOptions(array $options): void
@@ -118,6 +138,15 @@ class Input
     public function getArguments(): array
     {
         return $this->arguments;
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function hasArgument(string $name): bool
+    {
+        return isset($this->arguments[$name]);
     }
 
     /**
@@ -149,8 +178,14 @@ class Input
         unset($this->options[$name]);
     }
 
+    /**
+     * @throws CommandException
+     */
     public function getArgument(string $name)
     {
+        if(!$this->hasArgument($name)){
+            throw CommandException::ArgumentNotFound($name);
+        }
         $argument = $this->arguments[$name];
         if(is_null($argument)){
             return null;
@@ -161,8 +196,14 @@ class Input
         return $argument;
     }
 
+    /**
+     * @throws CommandException
+     */
     public function getOption(string $name)
     {
+        if(!$this->hasOption($name)){
+            throw CommandException::OptionNotFound($name);
+        }
         $options = $this->options[$name];
         if(is_null($options)){
             return null;

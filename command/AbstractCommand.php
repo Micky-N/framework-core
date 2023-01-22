@@ -94,29 +94,8 @@ abstract class AbstractCommand
         $commandOptions = $this->getOptions();
         $inputOptions = $input->getOptions();
         foreach ($commandOptions as $name => $commandOption) {
-            if (!isset($inputOptions[$name])) {
-                if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::IS_ARRAY | InputOption::OPTIONAL])) {
-                    $inputOptions[$name] = null;
-                }else if ($commandOption->getType() == InputOption::NONE) {
-                    $inputOptions[$name] = false;
-                }else if($commandOption->hasDefault()){
-                    $inputOptions[$name] = $commandOption->getDefault();
-                }else if (in_array($commandOption->getType(), [InputOption::REQUIRED, InputOption::IS_ARRAY | InputOption::REQUIRED])) {
-                    throw CommandException::OptionNotFound($name);
-                }
-            } else if (!$inputOptions[$name]) {
-                if($commandOption->hasDefault()){
-                    $inputOptions[$name] = $commandOption->getDefault();
-                }else if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::IS_ARRAY | InputOption::OPTIONAL])) {
-                    $inputOptions[$name] = null;
-                }else if ($commandOption->getType() == InputOption::NONE) {
-                    $inputOptions[$name] = true;
-                }
-            } else {
-                if (in_array($commandOption->getType(), [InputOption::IS_ARRAY, InputOption::IS_ARRAY | InputOption::REQUIRED, InputArgument::IS_ARRAY | InputArgument::OPTIONAL])) {
-                    $inputOptions[$name] = $inputOptions;
-                }
-            }
+            $inputOptions = $this->getLongInputOptionCommand($inputOptions, $name, $commandOption);
+            $inputOptions = $this->getShortInputOptionCommand($inputOptions, $name, $commandOption);
             $commandOption->setValue($inputOptions[$name]);
         }
         $input->setOptions($commandOptions);
@@ -130,13 +109,98 @@ abstract class AbstractCommand
         return $this->options;
     }
 
+    /**
+     * @param array $inputOptions
+     * @param int|string $name
+     * @param InputOption $commandOption
+     * @return array
+     * @throws CommandException
+     */
+    private function getLongInputOptionCommand(array $inputOptions, int|string $name, InputOption $commandOption): array
+    {
+        if (isset($inputOptions[$commandOption->getShortname()])) {
+            return $inputOptions;
+        }
+        if (!isset($inputOptions[$name])) {
+            if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::IS_ARRAY | InputOption::OPTIONAL, InputOption::NEGATIVE])) {
+                if ($commandOption->getType() === InputOption::NEGATIVE && array_key_exists("no-$name", $inputOptions)) {
+                    $inputOptions = $this->replaceKey($inputOptions, "no-$name", $name);
+                } else {
+                    $inputOptions[$name] = null;
+                }
+            } else if ($commandOption->getType() === InputOption::NONE) {
+                $inputOptions[$name] = false;
+            } else if ($commandOption->hasDefault()) {
+                $inputOptions[$name] = $commandOption->getDefault();
+            } else if (in_array($commandOption->getType(), [InputOption::REQUIRED, InputOption::IS_ARRAY | InputOption::REQUIRED])) {
+                throw CommandException::OptionNotFound($name);
+            }
+        } else if (!$inputOptions[$name]) {
+            if (in_array($commandOption->getType(), [InputOption::NONE, InputOption::NONE | InputOption::REQUIRED, InputOption::NONE | InputOption::OPTIONAL, InputOption::NEGATIVE])) {
+                $inputOptions[$name] = true;
+            } else if ($commandOption->hasDefault()) {
+                $inputOptions[$name] = $commandOption->getDefault();
+            } else if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::IS_ARRAY | InputOption::OPTIONAL])) {
+                $inputOptions[$name] = null;
+            } else if ($commandOption->getType() === InputOption::NONE) {
+                $inputOptions[$name] = true;
+            }
+        } else {
+            if (in_array($commandOption->getType(), [InputOption::IS_ARRAY, InputOption::IS_ARRAY | InputOption::REQUIRED, InputOption::IS_ARRAY | InputOption::OPTIONAL])) {
+                $inputOptions[$name] = (array)$inputOptions[$name];
+            }
+        }
+        return $inputOptions;
+    }
+
+    /**
+     * @param array $inputOptions
+     * @param int|string $name
+     * @param InputOption $commandOption
+     * @return array
+     * @throws CommandException
+     */
+    private function getShortInputOptionCommand(array $inputOptions, int|string $name, InputOption $commandOption): array
+    {
+        if (isset($inputOptions[$name])) {
+            return $inputOptions;
+        }
+        $shortOption = $commandOption->getShortname();
+        if (!isset($inputOptions[$shortOption])) {
+            if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::IS_ARRAY | InputOption::OPTIONAL])) {
+                $inputOptions[$name] = null;
+            } else if ($commandOption->getType() == InputOption::NONE) {
+                $inputOptions[$name] = false;
+            } else if ($commandOption->hasDefault()) {
+                $inputOptions[$name] = $commandOption->getDefault();
+            } else if (in_array($commandOption->getType(), [InputOption::REQUIRED, InputOption::IS_ARRAY | InputOption::REQUIRED])) {
+                throw CommandException::OptionNotFound($name);
+            }
+        } else if (!$inputOptions[$shortOption]) {
+            if ($commandOption->hasDefault()) {
+                $inputOptions[$name] = $commandOption->getDefault();
+            } else if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::IS_ARRAY | InputOption::OPTIONAL])) {
+                $inputOptions[$name] = null;
+            } else if ($commandOption->getType() == InputOption::NONE) {
+                $inputOptions[$name] = true;
+            }
+        } else {
+            $inputOptions[$name] = $inputOptions[$shortOption];
+            unset($inputOptions[$shortOption]);
+            if (in_array($commandOption->getType(), [InputOption::IS_ARRAY, InputOption::IS_ARRAY | InputOption::REQUIRED, InputArgument::IS_ARRAY | InputArgument::OPTIONAL])) {
+
+            }
+        }
+        return $inputOptions;
+    }
+
     protected function addArgument(string $name, string $type, string $description): static
     {
         $this->arguments[$name] = new InputArgument($name, $type, $description);
         return $this;
     }
 
-    protected function addOption(string $name, ?string $shortName, string $type, string $description, string|bool $default = null): static
+    protected function addOption(string $name, ?string $shortName, string $type, string $description, string|array|bool $default = null): static
     {
         $this->options[$name] = new InputOption($name, $shortName, $type, $description, $default);
         return $this;

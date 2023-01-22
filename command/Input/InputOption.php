@@ -10,12 +10,12 @@ class InputOption
     const NONE = 8;
     const NEGATIVE = 16;
 
-    private string|array|false|null $value = null;
+    private string|array|bool|null $value = null;
 
     public function __construct(
         private readonly string  $name,
         private readonly ?string $shortname,
-        private readonly string  $type,
+        private readonly int     $type,
         private readonly string  $description,
         private readonly mixed   $default = null
     )
@@ -32,9 +32,9 @@ class InputOption
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getType(): string
+    public function getType(): int
     {
         return $this->type;
     }
@@ -66,12 +66,12 @@ class InputOption
     /**
      * @return string|array|false|null
      */
-    public function getValue(): string|array|false|null
+    public function getValue(): string|array|bool|null
     {
         return $this->value;
     }
 
-    public function setValue(string|array|false|null $value): void
+    public function setValue(string|array|bool|null $value): void
     {
         $this->value = $value;
     }

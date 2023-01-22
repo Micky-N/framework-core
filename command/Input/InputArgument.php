@@ -12,7 +12,7 @@ class InputArgument
 
     public function __construct(
         private readonly string $name,
-        private readonly int $type,
+        private readonly int    $type,
         private readonly string $description
     )
     {
