@@ -42,10 +42,10 @@ class ValidatorTest extends TestCase
         $this->assertTrue($validator2->passed());
 
         $this->assertFalse($validator3->passed());
-        $this->assertCount(2, $validator3->getErrors());
+        $this->assertCount(1, $validator3->getErrors());
 
         $this->assertFalse($validator4->passed());
-        $this->assertCount(2, $validator4->getErrors());
+        $this->assertCount(1, $validator4->getErrors());
     }
 
     public function testMaxMinLengthPassed()
@@ -61,10 +61,10 @@ class ValidatorTest extends TestCase
         $this->assertTrue($validator2->passed());
 
         $this->assertFalse($validator3->passed());
-        $this->assertCount(1, $validator3->getErrors()['message']);
+        $this->assertCount(1, $validator3->getErrors());
 
         $this->assertFalse($validator4->passed());
-        $this->assertCount(1, $validator4->getErrors()['message']);
+        $this->assertCount(1, $validator4->getErrors());
     }
 
     public function testTextFieldPassed()
@@ -85,7 +85,7 @@ class ValidatorTest extends TestCase
         $this->assertTrue($validator_different->passed());
 
         $this->assertFalse($validator_fake->passed());
-        $this->assertCount(1, $validator_fake->getErrors()['message']);
+        $this->assertCount(1, $validator_fake->getErrors());
     }
 
     public function testTextPassed()
@@ -101,7 +101,7 @@ class ValidatorTest extends TestCase
         $this->assertTrue($validator_same->passed());
         $this->assertTrue($validator_different->passed());
         $this->assertFalse($validator_block_confirm->passed());
-        $this->assertCount(1, $validator_block_confirm->getErrors()['message']);
+        $this->assertCount(1, $validator_block_confirm->getErrors());
     }
 
     public function testDatePassed()
@@ -133,10 +133,10 @@ class ValidatorTest extends TestCase
 
         $this->assertTrue($validator_passed->passed());
         $this->assertFalse($validator_block->passed());
-        $this->assertCount(1, $validator_block->getErrors()['message']);
+        $this->assertCount(1, $validator_block->getErrors());
 
         // Get the last error_message
-        $this->assertEquals('text field must be same as code', $validator_block->getErrors()['message']['text']);
+        $this->assertEquals('text field must be same as code', $validator_block->getErrors()['text']);
     }
 
     public function testException()

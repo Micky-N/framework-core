@@ -39,7 +39,8 @@
     },
     "autoload": {
         "psr-4": {
-            "MkyCore\\": "core/"
+            "MkyCore\\": "core/",
+            "MkyCommand\\": "command/"
         },
         "files": [
             "core/Helpers/helpers.php",

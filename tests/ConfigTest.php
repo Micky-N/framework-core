@@ -2,6 +2,7 @@
 
 namespace MkyCore\Tests;
 
+use MkyCore\Application;
 use PHPUnit\Framework\TestCase;
 use MkyCore\Config;
 use MkyCore\Exceptions\Config\ConfigNotFoundException;
@@ -15,7 +16,7 @@ class ConfigTest extends TestCase
 
     public function setUp(): void
     {
-        $this->config = new Config(__DIR__.'/App/config');
+        $this->config = new Config(new Application(__DIR__.'/App'), __DIR__.'/App/config');
     }
 
     /**

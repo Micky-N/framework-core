@@ -46,8 +46,7 @@ class RouterTest extends TestCase
      */
     public function testNameRoute()
     {
-        $route = $this->router->get('boo', function () {
-        })->as('booName');
+        $route = $this->router->get('boo', function () { return true; })->as('booName');
         $this->assertTrue($route->getName() == 'booName');
         $this->assertEquals('/boo', $this->router->getUrlFromName('booName', [], false));
     }
