@@ -7,7 +7,7 @@ use MkyCommand\Input;
 class TestCommand extends \MkyCommand\AbstractCommand
 {
 
-    public function execute(Input $input): mixed
+    public function execute(): mixed
     {
         return true;
     }

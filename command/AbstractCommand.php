@@ -18,13 +18,19 @@ abstract class AbstractCommand
      * @var InputOption[]
      */
     protected array $options = [];
+    protected ?Input $input = null;
 
     public function __construct()
     {
 
     }
 
-    abstract public function execute(Input $input): mixed;
+    abstract public function execute(): mixed;
+
+    public function settings(): void
+    {
+
+    }
 
     /**
      * @return string
@@ -51,6 +57,7 @@ abstract class AbstractCommand
     {
         $this->setRealArguments($input);
         $this->setRealOptions($input);
+        $this->input = $input;
     }
 
     /**

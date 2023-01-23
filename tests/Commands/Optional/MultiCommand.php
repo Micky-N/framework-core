@@ -13,7 +13,7 @@ class MultiCommand extends \MkyCommand\AbstractCommand
         $this->addOption('names', 'n', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Array values', ['Test']);
     }
 
-    public function execute(Input $input): mixed
+    public function execute(): mixed
     {
         return true;
     }

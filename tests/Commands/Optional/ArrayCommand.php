@@ -13,7 +13,7 @@ class ArrayCommand extends \MkyCommand\AbstractCommand
         $this->addOption('names', 'n', InputArgument::IS_ARRAY, 'Array values', [1, 2]);
     }
 
-    public function execute(Input $input): mixed
+    public function execute(): mixed
     {
         return true;
     }

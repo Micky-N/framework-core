@@ -14,7 +14,7 @@ class GreetingCommand extends \MkyCommand\AbstractCommand
             ->addArgument('lastName', InputArgument::OPTIONAL, 'The last name');
     }
 
-    public function execute(Input $input): mixed
+    public function execute(): mixed
     {
         return true;
     }

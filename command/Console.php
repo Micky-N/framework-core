@@ -36,7 +36,9 @@ class Console
         $signature = $input->getSignature();
         if ($this->hasCommand($signature)) {
             $this->currentCommand = $this->getCommand($signature);
-            return $this->currentCommand->execute($input);
+            $this->currentCommand->settings();
+            $this->currentCommand->setRealInput($input);
+            return $this->currentCommand->execute();
         }
         throw CommandException::CommandNotFound($signature);
     }

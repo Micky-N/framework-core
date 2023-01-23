@@ -8,12 +8,12 @@ use MkyCommand\Input\InputOption;
 class TestOptionalCommand extends \MkyCommand\AbstractCommand
 {
 
-    public function settings()
+    public function settings(): void
     {
         $this->addOption('name', 'n', InputOption::OPTIONAL, '', false);
     }
 
-    public function execute(Input $input): mixed
+    public function execute(): mixed
     {
         return true;
     }
