@@ -8,7 +8,7 @@ use MkyCommand\Input;
 use MkyCore\Tests\Commands\Arguments\ArrayCommand;
 use MkyCore\Tests\Commands\Arguments\GreetingCommand;
 use MkyCore\Tests\Commands\Arguments\MultiCommand;
-use MkyCore\Tests\Commands\Arguments\TestCommand;
+use MkyCore\Tests\Commands\Arguments\NoSettingsCommand;
 use MkyCore\Tests\Commands\Optional\ArrayCommand as OptionArrayCommand;
 use MkyCore\Tests\Commands\Optional\MultiCommand as OptionMultiCommand;
 use MkyCore\Tests\Commands\Optional\TestCommand as OptionalTestCommand;
@@ -24,7 +24,7 @@ class InputTest extends TestCase
     public function testNoSettings()
     {
         $input = new Input(['mky', 'greeting', 'Micky']);
-        $command = new TestCommand();
+        $command = new NoSettingsCommand();
         $command->settings();
         $command->setRealInput($input);
         try{
