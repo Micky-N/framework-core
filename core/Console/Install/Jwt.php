@@ -29,15 +29,15 @@ class Jwt extends Create
             $migrationAR = true;
         }
         if ($migrationAR && $configAR) {
-            echo $this->getColoredString('jwt config file and migration file already exists', 'red', 'bold');
+            echo $this->coloredMessage('jwt config file and migration file already exists', 'red', 'bold');
         } elseif ($migrationAR) {
-            echo $this->getColoredString('jwt config file created successfully', 'green', 'bold');
+            echo $this->coloredMessage('jwt config file created successfully', 'green', 'bold');
         } elseif ($configAR) {
-            echo $this->getColoredString('migration file created successfully', 'green', 'bold')."\n";
-            echo $this->getColoredString('run php mky migration:run to migrate the Jwt table', 'green', 'bold');
+            echo $this->coloredMessage('migration file created successfully', 'green', 'bold')."\n";
+            echo $this->coloredMessage('run php mky migration:run to migrate the Jwt table', 'green', 'bold');
         } else {
-            echo $this->getColoredString('jwt config file and migration file created successfully', 'green', 'bold')."\n";
-            echo '> run ' . $this->getColoredString('php mky migration:run', 'yellow') . ' to migrate the Jwt table';
+            echo $this->coloredMessage('jwt config file and migration file created successfully', 'green', 'bold')."\n";
+            echo '> run ' . $this->coloredMessage('php mky migration:run', 'yellow') . ' to migrate the Jwt table';
         }
         return true;
     }

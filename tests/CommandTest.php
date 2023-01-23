@@ -39,4 +39,12 @@ class CommandTest extends TestCase
             $this->assertInstanceOf(CommandException::class, $exception);
         }
     }
+
+    public function testExecuteCommand()
+    {
+        $console = new Console();
+        $console->addCommand('test', new NoSettingsCommand())
+            ->addCommand('greeting', new GreetingCommand());
+        $this->assertEquals('Micky', $console->execute(['mky', 'greeting', 'Micky']));
+    }
 }

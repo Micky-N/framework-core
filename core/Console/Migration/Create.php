@@ -27,7 +27,7 @@ class Create extends AbstractCreate
         $nameFile = time() . "_$nameSnaked";
         $final = $output . DIRECTORY_SEPARATOR . $nameFile . '.php';
         if (file_exists($final)) {
-            return $this->sendError('File already exists', 'migrations' . DIRECTORY_SEPARATOR . "$nameFile.php");
+            return $this->error('File already exists', 'migrations' . DIRECTORY_SEPARATOR . "$nameFile.php");
         }
         $parsedModel = file_get_contents($getModel);
         $parsedModel = str_replace('!name', Str::classify($name), $parsedModel);
@@ -35,6 +35,6 @@ class Create extends AbstractCreate
             mkdir($output, '0777', true);
         }
         file_put_contents($final, $parsedModel);
-        return count($this->moduleOptions) > 0 ? $replaceParams['name'] : $this->sendSuccess("$this->createType file created", $final);
+        return count($this->moduleOptions) > 0 ? $replaceParams['name'] : $this->success("$this->createType file created", $final);
     }
 }

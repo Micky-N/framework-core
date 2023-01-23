@@ -30,7 +30,7 @@ class Create extends \MkyCore\Console\Create\Create
         $name = $this->handlerRules('name', $namebase);
         $final = $output . DIRECTORY_SEPARATOR . $name . '.php';
         if (file_exists($final)) {
-            return $this->sendError('File already exists', 'Populators' . DIRECTORY_SEPARATOR . "$name.php");
+            return $this->error('File already exists', 'Populators' . DIRECTORY_SEPARATOR . "$name.php");
         }
         $manager = $this->getManagerQuestion($namebase);
         $class = explode('\\', $manager);
@@ -44,7 +44,7 @@ class Create extends \MkyCore\Console\Create\Create
         $parsedModel = str_replace('!manager', "$manager", $parsedModel);
         $parsedModel = str_replace('!class', "$class::class", $parsedModel);
         file_put_contents($final, $parsedModel);
-        return count($this->moduleOptions) > 0 ? $replaceParams['name'] : $this->sendSuccess("$this->createType file created", $final);
+        return count($this->moduleOptions) > 0 ? $replaceParams['name'] : $this->success("$this->createType file created", $final);
     }
 
     /**
@@ -56,9 +56,9 @@ class Create extends \MkyCore\Console\Create\Create
     {
         $managerClass = '';
         do{
-            $manager = $this->sendQuestion('Enter the manager to link with populator (module:manager, module:@ for current name suffixed by Manager)') ?: false;
+            $manager = $this->ask('Enter the manager to link with populator (module:manager, module:@ for current name suffixed by Manager)') ?: false;
             if(!$manager){
-                $confirm = $this->sendError('No manager given');
+                $confirm = $this->error('No manager given');
             }else{
                 $manager = str_replace('@', $name, $manager);
                 $managerClass = $this->getModuleAndClass($manager, 'managers', 'Manager');

@@ -41,20 +41,20 @@ class Remember extends Create
         }
 
         if ($middlewareAR && $migrationAR) {
-            echo $this->getColoredString('remember token middleware and migration file already exist', 'red', 'bold');
+            echo $this->coloredMessage('remember token middleware and migration file already exist', 'red', 'bold');
             return false;
         } else if ($migrationAR) {
-            echo $this->getColoredString('remember token migration file already exists', 'red', 'bold')."\n";
-            echo $this->getColoredString('remember token middleware created successfully', 'green', 'bold') . "\n";
+            echo $this->coloredMessage('remember token migration file already exists', 'red', 'bold')."\n";
+            echo $this->coloredMessage('remember token middleware created successfully', 'green', 'bold') . "\n";
         } else if ($middlewareAR) {
-            echo $this->getColoredString('remember token middleware already exists', 'red', 'bold');
-            echo $this->getColoredString('remember token migration file created successfully', 'green', 'bold') . "\n";
-            echo '> run ' . $this->getColoredString('php mky migration:run', 'yellow') . ' to migrate the Remember token table';
+            echo $this->coloredMessage('remember token middleware already exists', 'red', 'bold');
+            echo $this->coloredMessage('remember token migration file created successfully', 'green', 'bold') . "\n";
+            echo '> run ' . $this->coloredMessage('php mky migration:run', 'yellow') . ' to migrate the Remember token table';
         } else {
-            echo $this->getColoredString('remember token middleware created successfully', 'green', 'bold') . "\n";
-            echo $this->getColoredString('remember token migration file created successfully', 'green', 'bold') . "\n";
-            echo '> run ' . $this->getColoredString('php mky migration:run', 'yellow') . ' to migrate the Remember token table';
+            echo $this->coloredMessage('remember token middleware created successfully', 'green', 'bold') . "\n";
+            echo $this->coloredMessage('remember token migration file created successfully', 'green', 'bold') . "\n";
+            echo '> run ' . $this->coloredMessage('php mky migration:run', 'yellow') . ' to migrate the Remember token table';
         }
-        return $this->sendSuccess('Remember system installed successfully');
+        return $this->success('Remember system installed successfully');
     }
 }

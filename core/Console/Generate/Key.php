@@ -23,6 +23,6 @@ class Key extends Create
         }
         array_splice($explodedFile, $index, $replace, "APP_KEY=$newKey");
         file_put_contents('.env', join("\n", $explodedFile));
-        return $this->sendSuccess('Key generated successfully', $newKey);
+        return $this->success('Key generated successfully', $newKey);
     }
 }

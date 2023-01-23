@@ -27,9 +27,9 @@ class Middleware extends Create
         if (!isset($this->moduleOptions['type'])) {
             do {
                 $confirm = true;
-                $type = $this->sendQuestion('Enter the type of middleware (' . join('/', $this->types) . ')', 'route') ?: 'route';
+                $type = $this->ask('Enter the type of middleware (' . join('/', $this->types) . ')', 'route') ?: 'route';
                 if (!in_array($type, $this->types)) {
-                    $this->sendError("Wrong middleware type", $type);
+                    $this->error("Wrong middleware type", $type);
                     $confirm = false;
                 }
             } while (!$confirm);
@@ -41,9 +41,9 @@ class Middleware extends Create
             if ($type === 'route') {
                 do {
                     $confirm = true;
-                    $alias = $this->sendQuestion('Enter the middleware alias', $name) ?: $name;
+                    $alias = $this->ask('Enter the middleware alias', $name) ?: $name;
                     if (!$alias) {
-                        $this->sendError("No alias entered", 'NULL');
+                        $this->error("No alias entered", 'NULL');
                         $confirm = false;
                     }
                 } while (!$confirm);

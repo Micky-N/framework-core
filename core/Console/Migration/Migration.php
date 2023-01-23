@@ -22,13 +22,13 @@ abstract class Migration extends AbstractCreate
         if ($success) {
             for ($i = 0; $i < count($success); $i++) {
                 $response = $success[$i];
-                echo $this->getColoredString($response[0], 'green', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
+                echo $this->coloredMessage($response[0], 'green', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
             }
         }
         if ($errors) {
             for ($i = 0; $i < count($errors); $i++) {
                 $response = $errors[$i];
-                echo $this->getColoredString($response[0], 'red', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
+                echo $this->coloredMessage($response[0], 'red', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
             }
         }
     }

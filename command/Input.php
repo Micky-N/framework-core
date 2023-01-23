@@ -9,8 +9,8 @@ class Input
 {
     private readonly string $file;
     private readonly string $signature;
-    private array $options = [];
-    private array $arguments = [];
+    private array $options;
+    private array $arguments;
 
     public function __construct(array $inputs)
     {

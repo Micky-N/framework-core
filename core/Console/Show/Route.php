@@ -2,7 +2,7 @@
 
 namespace MkyCore\Console\Show;
 
-use MkyCore\Console\Color;
+use MkyCommand\Color;
 use MkyCore\Facades\Router;
 
 class Route extends Show
@@ -28,7 +28,7 @@ class Route extends Show
         $filters = $this->getFilters($this->parseParams());
         $routes = Router::getRoutes($filters);
         if(!$routes){
-            echo $this->getColoredString('No route found with these filter criteria', 'red', 'bold').":\n";
+            echo $this->coloredMessage('No route found with these filter criteria', 'red', 'bold').":\n";
             foreach ($filters as $cr => $value){
                 echo "  - $cr: ".join('|', (array) $value)."\n";
             }
@@ -82,7 +82,7 @@ class Route extends Show
     private function parseMethods(string $methods, bool $print = false): string
     {
         foreach (['POST' => 'green', 'GET' => 'blue', 'PUT' => 'light_purple', 'DELETE' => 'red'] as $method => $color) {
-            $apply = $print ? $method : $this->getColoredString($method, $color);
+            $apply = $print ? $method : $this->coloredMessage($method, $color);
             $methods = str_replace($method, $apply, $methods);
         }
         return $methods;
@@ -90,7 +90,7 @@ class Route extends Show
 
     private function parseUrl(string $url, bool $print = false): string
     {
-        $apply = $print ? '$1' : $this->getColoredString('$1', 'light_yellow', 0);
+        $apply = $print ? '$1' : $this->coloredMessage('$1', 'light_yellow', 0);
         return preg_replace('/(\{.*?})/', $apply, $url);
     }
 }

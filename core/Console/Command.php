@@ -3,6 +3,7 @@
 namespace MkyCore\Console;
 
 use Exception;
+use MkyCommand\Color;
 use MkyCore\Application;
 use MkyCore\Console\Show\ConsoleTable;
 
@@ -143,10 +144,10 @@ class Command
         $selfHelp = $this->getHelps();
         echo "Help for Mky Command CLI\n";
         if($currentCommand){
-            echo $this->getColoredString("Current command: php mky $currentCommand", 'gray')."\n";
+            echo $this->coloredMessage("Current command: php mky $currentCommand", 'gray')."\n";
         }
         foreach ($selfHelp as $method => $helps) {
-            echo "\n" . $this->getColoredString($method, 'yellow') . ":\n";
+            echo "\n" . $this->coloredMessage($method, 'yellow') . ":\n";
             $table = new ConsoleTable();
             foreach ($helps as $key => $help) {
                 $help = (array) $help;
@@ -183,6 +184,6 @@ class Command
         if($params){
             $key .= " [$params]";
         }
-        return $this->getColoredString($key, 'green');
+        return $this->coloredMessage($key, 'green');
     }
 }

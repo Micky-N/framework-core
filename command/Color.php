@@ -1,11 +1,6 @@
 <?php
 
-namespace MkyCore\Console;
-
-use MkyCore\Console\Create\Create;
-use MkyCore\Console\Show\Module;
-use MkyCore\Console\Show\Route;
-use MkyCore\Migration\Schema;
+namespace MkyCommand;
 
 trait Color
 {
@@ -41,7 +36,7 @@ trait Color
         'strike' => '9'
     ];
 
-    protected function getColoredString(string $string, $foreground_color = null, string $style = null, ?string $background_color = null): string
+    public function coloredMessage(string $string, $foreground_color = null, string $style = null, ?string $background_color = null): string
     {
         $colored_string = "";
         $txt_style = 0;
@@ -64,34 +59,38 @@ trait Color
         return $colored_string;
     }
 
-    protected function sendSuccess(string $message, string $res = ''): bool
+    public function success(string $message, string $res = ''): bool
     {
-        echo "\n" . $this->getColoredString($message, 'green', 'bold') . ($res ? ": $res" : '') . "\n";
+        echo "\n" . $this->coloredMessage($message, 'green', 'bold') . ($res ? ": $res" : '') . "\n";
         return true;
     }
 
-    protected function sendError(string $message, string $res = ''): bool
+    public function error(string $message, string $res = ''): bool
     {
-        echo "\n" . $this->getColoredString($message, 'red', 'bold') . ($res ? ": $res" : '') . "\n";
+        echo "\n" . $this->coloredMessage($message, 'red', 'bold') . ($res ? ": $res" : '') . "\n";
         return false;
     }
 
-    protected function sendQuestion(string $question, string $default = ''): string
+    public function info(string $message, string $res = ''): bool
     {
-        $message = "\n" . $this->getColoredString($question, 'blue', 'bold');
+        echo "\n" . $this->coloredMessage($message, 'blue') . ($res ? ": $res" : '') . "\n";
+        return false;
+    }
+
+    public function warning(string $message, string $res = ''): bool
+    {
+        echo "\n" . $this->coloredMessage($message, 'light_yellow') . ($res ? ": $res" : '') . "\n";
+        return false;
+    }
+
+    public function ask(string $question, string $default = ''): string
+    {
+        $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
         if ($default) {
-            $message .= $this->getColoredString(" [$default]", 'light_yellow');
+            $message .= $this->coloredMessage(" [$default]", 'light_yellow');
         }
         $message .= ":\n";
         echo $message;
         return trim((string)readline("> "));
-    }
-
-    /**
-     * @return Create
-     */
-    protected static function getInstance(): Create
-    {
-        return new self;
     }
 }

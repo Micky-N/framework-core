@@ -2,8 +2,8 @@
 
 namespace MkyCore\Console\Create;
 
+use MkyCommand\Color;
 use MkyCore\Application;
-use MkyCore\Console\Color;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\File;
@@ -41,7 +41,7 @@ abstract class Create
         $replaceParams['name'] = $this->handlerRules('name', array_shift($params) ?: $replaceParams['name']);
         if (empty($replaceParams['name']) || empty($replaceParams['module'])) {
             if (!isset($params['name']) && !isset($replaceParams['name'])) {
-                $this->sendError('Name not found');
+                $this->error('Name not found');
                 return false;
             }
             $replaceParams['module'] = !empty($replaceParams['module']) ? $replaceParams['module'] : '';
@@ -49,9 +49,9 @@ abstract class Create
                 $type = strtolower($this->createType);
                 do {
                     $confirm = true;
-                    $module = $this->sendQuestion("In which module do you want to create the $type", 'root') ?: 'root';
+                    $module = $this->ask("In which module do you want to create the $type", 'root') ?: 'root';
                     if (!$this->app->hasModule($module)) {
-                        $this->sendError("Module not found", $module);
+                        $this->error("Module not found", $module);
                         $confirm = false;
                     }
                     $replaceParams['module'] = $module;
@@ -63,7 +63,7 @@ abstract class Create
         $name = $replaceParams['name'];
         $outputDir = $this->getOutPutDir($replaceParams['module']);
         if (file_exists($outputDir . $name . '.php')) {
-            return $this->sendError("$this->createType file already exists", $outputDir . $name . '.php');
+            return $this->error("$this->createType file already exists", $outputDir . $name . '.php');
         }
         $replaceParams = $this->handleQuestions($replaceParams, $params);
         foreach ($replaceParams as $key => $value) {
@@ -82,7 +82,7 @@ abstract class Create
             mkdir($outputDir, '0777', true);
         }
         file_put_contents($outputDir . DIRECTORY_SEPARATOR . $name . '.php', $fileModel);
-        return count($this->moduleOptions) > 0 ? $replaceParams['name'] : $this->sendSuccess("$this->createType created", $outputDir . DIRECTORY_SEPARATOR . $name . '.php');
+        return count($this->moduleOptions) > 0 ? $replaceParams['name'] : $this->success("$this->createType created", $outputDir . DIRECTORY_SEPARATOR . $name . '.php');
     }
 
     public function getModel(): string
@@ -158,14 +158,14 @@ abstract class Create
             }
             $module = $this->app->getModuleKernel($module);
             if (!$module) {
-                return $this->sendError("Module not found", $module);
+                return $this->error("Module not found", $module);
             }
             $module = $module->getModulePath(true);
         }
         $class = [$module, ucfirst($type), ucfirst(array_shift($moduleClass)) . ucfirst($end)];
         $final = join('\\', $class);
         if (!class_exists($final)) {
-            return $this->sendError("Class not exists", $final);
+            return $this->error("Class not exists", $final);
         }
         return $final;
     }

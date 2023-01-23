@@ -3,7 +3,7 @@
 namespace MkyCore\Migration;
 
 use Exception;
-use MkyCore\Console\Color;
+use MkyCommand\Color;
 use MkyCore\Console\Migration\Run;
 use MkyCore\Facades\DB;
 use PDOException;

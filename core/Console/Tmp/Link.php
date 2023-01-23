@@ -14,7 +14,7 @@ class Link extends Create
             $link = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $link);
             $target = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $target);
             if (file_exists($link)) {
-                echo $this->getColoredString('File already exists', 'red', 'bold') . "\n";
+                echo $this->coloredMessage('File already exists', 'red', 'bold') . "\n";
                 continue;
             }
             if (is_link($link)) {
@@ -22,9 +22,9 @@ class Link extends Create
             }
 
             if ($this->app->get(FileManager::class)->get('local')->link($target, $link)) {
-                echo $this->getColoredString('Symlink successfully created', 'yellow') . ': ' . "$link >> $target" . "\n";
+                echo $this->coloredMessage('Symlink successfully created', 'yellow') . ': ' . "$link >> $target" . "\n";
             }
         }
-        return $this->sendSuccess('Symbolic link successfully created');
+        return $this->success('Symbolic link successfully created');
     }
 }

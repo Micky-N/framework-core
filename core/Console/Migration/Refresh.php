@@ -38,7 +38,7 @@ class Refresh extends Migration
             $this->sendResponse(Schema::$SUCCESS, Schema::$ERRORS);
             return true;
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->error($e->getMessage());
         }
     }
 }

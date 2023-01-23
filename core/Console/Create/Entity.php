@@ -23,7 +23,7 @@ class Entity extends Create
         if (!$manager) {
             do {
                 $confirm = true;
-                $manager = trim($this->sendQuestion('Enter the name of manager, or skip'));
+                $manager = trim($this->ask('Enter the name of manager, or skip'));
                 if ($manager) {
                     $confirm = $this->getModuleAndClass($manager, 'managers', 'manager', $replaceParams['module'] ?? '');
                     if ($confirm) {
@@ -33,7 +33,7 @@ class Entity extends Create
             } while (!$confirm);
         }
         do {
-            $property = $this->sendQuestion('Set column', 'n/ to skip') ?: false;
+            $property = $this->ask('Set column', 'n/ to skip') ?: false;
             if ($property) {
                 $properties[] = Str::camelize($property);
             }
@@ -41,7 +41,7 @@ class Entity extends Create
 
         do {
             $confirm = true;
-            $primaryKey = $this->sendQuestion('Set primary column', 'n/ to skip') ?: false;
+            $primaryKey = $this->ask('Set primary column', 'n/ to skip') ?: false;
             if ($primaryKey) {
                 $primaryKey = Str::camelize($primaryKey);
                 if(!in_array($primaryKey, $properties)){

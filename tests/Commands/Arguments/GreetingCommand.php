@@ -16,6 +16,6 @@ class GreetingCommand extends \MkyCommand\AbstractCommand
 
     public function execute(): mixed
     {
-        return true;
+        return $this->input->getArgument('name');
     }
 }

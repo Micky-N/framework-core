@@ -2,7 +2,7 @@
 
 namespace MkyCore\Console\Show;
 
-use MkyCore\Console\Color;
+use MkyCommand\Color;
 
 class Module extends Show
 {
@@ -19,7 +19,7 @@ class Module extends Show
     {
         $print = in_array('--print', $this->params);
         $table = new ConsoleTable();
-        $table->setHeaders(array_map(fn($header) => $this->getColoredString($header, 'green'), array_values(self::HEADERS)));
+        $table->setHeaders(array_map(fn($header) => $this->coloredMessage($header, 'green'), array_values(self::HEADERS)));
         $modules = array_keys($this->app->getModules());
         $headers = array_keys(self::HEADERS);
         for ($i = 0; $i < count($modules); $i++) {

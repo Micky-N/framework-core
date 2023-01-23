@@ -23,7 +23,7 @@ class Event extends Create
         if(!class_exists($eventServiceProvider)){
             do{
                 $confirm = true;
-                $createService = trim($this->sendQuestion('Do you want to create the EventServiceProvider (yes/no)', 'yes')) ?: 'yes';
+                $createService = trim($this->ask('Do you want to create the EventServiceProvider (yes/no)', 'yes')) ?: 'yes';
                 if (!in_array($createService, ['yes', 'no'])) {
                     $confirm = false;
                 }
@@ -47,7 +47,7 @@ class Event extends Create
             $message = 'Provider created';
             $module = $this->app->getModuleKernel($module)->getModulePath();
             $res = $module.DIRECTORY_SEPARATOR.'Providers'.DIRECTORY_SEPARATOR.'EventServiceProvider.php';
-            echo "\n" . $this->getColoredString($message, 'green', 'bold') . ": $res";
+            echo "\n" . $this->coloredMessage($message, 'green', 'bold') . ": $res";
         }
     }
 }

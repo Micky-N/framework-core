@@ -42,19 +42,19 @@ class Module extends Create
         $parentNamespace = $parent->getModulePath(true);
         $name = array_shift($params);
         if (!$name) {
-            return $this->sendError("No name given");
+            return $this->error("No name given");
         }
         $module = ucfirst($name) . 'Module';
         $newPath = File::makePath([$parentPath, $module]);
         if (is_dir($newPath)) {
-            return $this->sendError("Module already exists", $module);
+            return $this->error("Module already exists", $module);
         }
         if(empty($this->moduleOptions['alias'])){
             do {
                 $confirm = true;
-                $alias = $this->sendQuestion('Enter the alias module', $name) ?: $name;
+                $alias = $this->ask('Enter the alias module', $name) ?: $name;
                 if ($this->app->hasModule($alias)) {
-                    $this->sendError("Alias $alias already exists");
+                    $this->error("Alias $alias already exists");
                     $confirm = false;
                 }
             } while (!$confirm);
@@ -65,15 +65,15 @@ class Module extends Create
         if(empty($this->moduleOptions['routeMode'])){
             do {
                 $confirm = true;
-                $routeMode = $this->sendQuestion('Enter the route mode (file/controller/both)', 'controller') ?: 'controller';
+                $routeMode = $this->ask('Enter the route mode (file/controller/both)', 'controller') ?: 'controller';
                 if (!in_array($routeMode, ['file', 'controller', 'both'])) {
-                    $confirm = $this->sendError("Route mode not given", $routeMode);
+                    $confirm = $this->error("Route mode not given", $routeMode);
                 }
             } while (!$confirm);
         }else{
             $routeMode = $this->moduleOptions['routeMode'];
         }
-        $table = $this->moduleOptions['table'] ?? $this->sendQuestion('Enter the table name for manager', 'n/ to skip');
+        $table = $this->moduleOptions['table'] ?? $this->ask('Enter the table name for manager', 'n/ to skip');
         $dirs = [];
         for ($i = 0; $i < count(self::DEFAULT_DIRS); $i++) {
             $dir = self::DEFAULT_DIRS[$i];
@@ -100,7 +100,7 @@ class Module extends Create
         }
 
         if (!$this->declareModuleInApp($alias, $fileKernel)) {
-            return $this->sendError('Error in declaration of module in AppServiceProvider');
+            return $this->error('Error in declaration of module in AppServiceProvider');
         }
 
         $parentAlias = $this->getAncestorsAlias($this->app->get($fileKernel));
@@ -117,7 +117,7 @@ class Module extends Create
 
         if($table){
             // entity
-            echo "\n".$this->getColoredString('Entity Creation', 'light_purple', 'bold');
+            echo "\n".$this->coloredMessage('Entity Creation', 'light_purple', 'bold');
             $entity = new Entity($this->app, [], [
                 'name' => $name,
                 'module' => $alias,
@@ -185,7 +185,7 @@ class Module extends Create
             $files = (array)$files;
             for ($i = 0; $i < count($files); $i++) {
                 $file = $files[$i];
-                echo $this->getColoredString("$key created", 'green', 'bold') . ": $file\n";
+                echo $this->coloredMessage("$key created", 'green', 'bold') . ": $file\n";
             }
         }
         return true;

@@ -28,14 +28,14 @@ class Manager extends Create
                 $name = $this->params['arg0'];
                 $name = Str::pluralize($name);
             }
-            $table = $this->sendQuestion('Enter the table name', $name ?? 'n/ to skip') ?: $name;
+            $table = $this->ask('Enter the table name', $name ?? 'n/ to skip') ?: $name;
         }
 
         $entity = $this->moduleOptions['entity'] ?? false;
         if (!$entity) {
             do {
                 $confirm = true;
-                $entity = trim($this->sendQuestion('Enter the name of entity', 'n/ to skip'));
+                $entity = trim($this->ask('Enter the name of entity', 'n/ to skip'));
                 if ($entity) {
                     $confirm = $this->getModuleAndClass($entity, 'entities', '', $replaceParams['module'] ?? '');
                     if ($confirm) {
