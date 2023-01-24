@@ -20,9 +20,12 @@ abstract class AbstractCommand
     protected array $options = [];
     protected ?Input $input = null;
 
+    protected string $description = '';
+    protected Output $output;
+
     public function __construct()
     {
-
+        $this->output = new Output();
     }
 
     abstract public function execute(): mixed;
@@ -55,6 +58,9 @@ abstract class AbstractCommand
      */
     public function setRealInput(Input $input): void
     {
+        if($this->askHelp($input->getOptions())){
+            exit($this->help($input));
+        }
         $this->setRealArguments($input);
         $this->setRealOptions($input);
         $this->input = $input;
@@ -201,6 +207,14 @@ abstract class AbstractCommand
         return $inputOptions;
     }
 
+    /**
+     * @return string
+     */
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
     protected function addArgument(string $name, string $type, string $description): static
     {
         $this->arguments[$name] = new InputArgument($name, $type, $description);
@@ -221,5 +235,16 @@ abstract class AbstractCommand
             return array_combine($keys, $arr);
         }
         return $arr;
+    }
+
+    private function askHelp(array $options): bool
+    {
+        return isset($options['-h']) || isset($options['--help']);
+    }
+
+    private function help(Input $input): string
+    {
+        $help = ['test'];
+        return join($help);
     }
 }

@@ -22,17 +22,17 @@ class CommandTest extends TestCase
     public function testFindCommandBySignature()
     {
         $console = new Console();
-        $console->addCommand('test', new NoSettingsCommand())
-            ->addCommand('greeting', new GreetingCommand());
-        $console->execute(['mky', 'greeting']);
+        $console->addCommand('test', NoSettingsCommand::class)
+            ->addCommand('greeting', GreetingCommand::class);
+        $console->execute(['mky', 'greeting', 'Micky']);
         $this->assertInstanceOf(GreetingCommand::class, $console->getCurrentCommand());
     }
 
     public function testNotFindCommandBySignature()
     {
         $console = new Console();
-        $console->addCommand('test', new NoSettingsCommand())
-            ->addCommand('greeting', new GreetingCommand());
+        $console->addCommand('test', NoSettingsCommand::class)
+            ->addCommand('greeting', GreetingCommand::class);
         try {
             $console->execute(['mky', 'wrong']);
         } catch (Exception $exception) {
@@ -43,8 +43,16 @@ class CommandTest extends TestCase
     public function testExecuteCommand()
     {
         $console = new Console();
-        $console->addCommand('test', new NoSettingsCommand())
-            ->addCommand('greeting', new GreetingCommand());
+        $console->addCommand('test', NoSettingsCommand::class)
+            ->addCommand('greeting', GreetingCommand::class);
         $this->assertEquals('Micky', $console->execute(['mky', 'greeting', 'Micky']));
+    }
+
+    public function testHelpCommand()
+    {
+        $console = new Console();
+        $console->addCommand('test', NoSettingsCommand::class)
+            ->addCommand('greeting', GreetingCommand::class);
+        $this->assertEquals('Micky', $console->execute(['mky', 'greeting', '-h']));
     }
 }

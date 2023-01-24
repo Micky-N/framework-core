@@ -2,6 +2,10 @@
 
 namespace MkyCommand;
 
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
+
 class Console
 {
 
@@ -10,9 +14,37 @@ class Console
      */
     private array $commands = [];
     private ?AbstractCommand $currentCommand = null;
+    private readonly ?ContainerInterface $container;
 
-    public function addCommand(string $signature, AbstractCommand $command): static
+    /**
+     * @param ?ContainerInterface $container
+     * @return void
+     */
+    public function __construct(?ContainerInterface $container = null)
     {
+        $this->container = $container;
+    }
+
+    /**
+     * @param string $signature
+     * @param string|AbstractCommand $command
+     * @return Console
+     * @throws ConsoleException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function addCommand(string $signature, string|AbstractCommand $command): static
+    {
+        if(is_string($command)){
+            if(!class_exists($command)){
+                throw ConsoleException::CommandNotFound($command);
+            }
+            $command = $this->instantiateCommand($command);
+        }else{
+            if(!($command instanceof AbstractCommand)){
+                throw ConsoleException::CommandNotExtendsAbstract(get_class($command));
+            }
+        }
         $this->commands[$signature] = $command->setSignature($signature);
         return $this;
     }
@@ -68,5 +100,25 @@ class Console
     public function getCurrentCommand(): ?AbstractCommand
     {
         return $this->currentCommand;
+    }
+
+    /**
+     * @param string $command
+     * @return AbstractCommand
+     * @throws ConsoleException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    private function instantiateCommand(string $command): AbstractCommand
+    {
+        if($this->container){
+            $commandInstance = $this->container->get($command);
+        }else{
+            $commandInstance = new $command();
+        }
+        if(!($commandInstance instanceof AbstractCommand)){
+            throw ConsoleException::CommandNotExtendsAbstract($command);
+        }
+        return $commandInstance;
     }
 }

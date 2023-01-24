@@ -14,7 +14,7 @@ class Output
      * @param string|array $message
      * @return void
      */
-    public function writeln(string|array $message): void
+    public function line(string|array $message): void
     {
         echo "\n";
         for ($i = 0; $i < count($message); $i++) {
