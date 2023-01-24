@@ -14,6 +14,7 @@ class GreetingCommand extends \MkyCommand\AbstractCommand
     {
         $this->addArgument('name', InputArgument::REQUIRED, 'Who do you want to greet?')
             ->addArgument('lastName', InputArgument::OPTIONAL, 'The last name');
+        $this->addOption('test', '-t', Input\InputOption::ARRAY | Input\InputOption::REQUIRED, 'Test array named', ['name', 'fdfd', 5]);
     }
 
     public function execute(): mixed

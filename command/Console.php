@@ -91,7 +91,7 @@ class Console
     {
         $input = new Input($inputs);
         if ($this->askHelp($input->getSignature())) {
-            exit($this->helpAll());
+            exit($this->helpAll($input));
         }
         $signature = $input->getSignature();
         if ($this->hasCommand($signature)) {
@@ -114,11 +114,57 @@ class Console
         return in_array($signature, ['-h', '--help']);
     }
 
-    private function helpAll(): string
+    private function helpAll(Input $input): string
     {
-        dd($this->commands);
-        $help = ['test'];
-        return join($help);
+        $res = [];
+        $namespaces = [];
+        $commands = array_values($this->commands);
+        $res[] = "Help for Mky Command CLI" . "\n\n";
+        $res[] = $this->coloredMessage("Available commands:", 'blue') . "\n";
+        if (!$input->hasOption('n') && !$input->hasOption('namespace')) {
+            $table = new ConsoleTable();
+            $table->addRow([$this->coloredMessage('--help, -h [-n|--namespace]', 'green'), 'Display help for a command or all commands, can be filtered by namespace']);
+            $res[] = $table->setIndent(1)
+                ->hideBorder()
+                ->getTable();
+        } else {
+            $namespace = '';
+            if ($input->hasOption('n')) {
+                $namespace = $input->getOption('n');
+            } else if ($input->hasOption('namespace')) {
+                $namespace = $input->getOption('namespace');
+            }
+            $commands = array_filter($commands, function ($command) use ($namespace) {
+                return str_starts_with($command->getSignature(), "$namespace:");
+            });
+            $commands = array_values($commands);
+        }
+        for ($i = 0; $i < count($commands); $i++) {
+            $command = $commands[$i];
+            $namespace = explode(':', $command->getSignature());
+            $namespace = $namespace[0];
+            $description = $command->getDescription();
+            $namespaces[$namespace][] = [$this->coloredMessage($command->getSignature(), 'green'), $description];
+        }
+
+        foreach ($namespaces as $name => $commandNames) {
+            $this->helpByNamespace($name, $commandNames, $res);
+        }
+
+        return join('', $res);
+    }
+
+    private function helpByNamespace(string $name, mixed $commandNames, array &$res = []): void
+    {
+        $res[] = " " . $this->coloredMessage($name, 'yellow') . "\n";
+        $table = new ConsoleTable();
+        for ($i = 0; $i < count($commandNames); $i++) {
+            $commandName = $commandNames[$i];
+            $table->addRow($commandName);
+        }
+        $res[] = $table->setIndent(1)
+            ->hideBorder()
+            ->getTable();
     }
 
     /**
@@ -151,35 +197,62 @@ class Console
         $options = $command->getOptions() ? array_values($command->getOptions()) : [];
         $res = [];
         $res[] = "Help for Mky Command CLI";
-        $res[] = $this->coloredMessage('Current command: php ' . $file . ' ' . $command->getSignature(), 'gray') . "\n";
-        $res[] = $this->coloredMessage($command->getSignature(), 'yellow') . ": {$command->getDescription()}";
+        $res[] = $this->coloredMessage('Command: php ' . $file, 'gray').' '. $this->coloredMessage($command->getSignature(), 'light_yellow') . "\n";
+        $res[] = $this->coloredMessage('Description:', 'blue');
+        $res[] = "  " . $command->getDescription() . "\n";
+        $res[] = $this->coloredMessage('Arguments:', 'yellow');
         $table = new ConsoleTable();
         for ($i = 0; $i < count($arguments); $i++) {
             $argument = $arguments[$i];
-            $table->addRow([$this->getInputType($argument), $argument->getDescription()]);
+            $table->addRow([$this->getInputType($argument), $argument->getDescription(), '']);
         }
 
         for ($j = 0; $j < count($options); $j++) {
             $option = $options[$j];
-            $table->addRow([$this->getInputType($option), $option->getDescription()]);
+            $default = '';
+            if ($option->hasDefault()) {
+                $default = $option->getDefault();
+                $default = is_array($default) ? '[' . join(', ', $default) . ']' : $default;
+            }
+            $table->addRow([$this->getInputType($option), $option->getDescription(), $default]);
         }
 
-        $table->setIndent(1)
-            ->hideBorder();
-        $res[] = $table->getTable();
+        $res[] = $table->setIndent(1)
+            ->hideBorder()
+            ->getTable();
+
         return join("\n", $res);
     }
 
     private function getInputType(InputArgument|InputOption $input): string
     {
         $type = $input instanceof InputOption ? $this->getOptionType($input) : $this->getArgumentType($input);
-        $text = $input->getName() . " [$type]";
+        $text = '';
+        if($input instanceof InputOption){
+            $text .= $input->hasShortName() ? '-'.$input->getShortname().'|' : '';
+        }
+        $text .= $input->getName() . " [$type]";
         return $this->coloredMessage($text, 'green');
     }
 
     private function getOptionType(InputOption $option): string
     {
-        return 'opt';
+        $type = '';
+        $optionType = $option->getType();
+        if ($optionType === InputOption::REQUIRED) {
+            $type = 'required';
+        } else if ($optionType === (InputOption::ARRAY | InputOption::REQUIRED)) {
+            $type = 'array|required';
+        } else if ($optionType === InputOption::OPTIONAL) {
+            $type = 'optional';
+        } else if ($optionType === (InputOption::ARRAY | InputOption::OPTIONAL)) {
+            $type = 'array|optional';
+        } else if ($optionType === InputOption::NONE) {
+            $type = 'none_value';
+        } else if ($optionType === InputOption::NEGATIVE) {
+            $type = 'negative_value';
+        }
+        return $type;
     }
 
     private function getArgumentType(InputArgument $argument): string
@@ -194,33 +267,16 @@ class Console
             $type = 'optional';
         } else if ($argumentType === (InputArgument::ARRAY | InputArgument::OPTIONAL)) {
             $type = 'array|optional';
-        } else if ($argumentType === InputArgument::ARRAY) {
-            $type = 'array';
         }
+
         return $type;
     }
 
-    public function help(): bool
+    /**
+     * @return AbstractCommand|null
+     */
+    public function getCurrentCommand(): ?AbstractCommand
     {
-        $currentCommand = self::$currentCommand;
-        $selfHelp = $this->getHelps();
-        echo "Help for Mky Command CLI\n";
-        if ($currentCommand) {
-            echo $this->coloredMessage("Current command: php mky $currentCommand", 'gray') . "\n";
-        }
-        foreach ($selfHelp as $method => $helps) {
-            echo "\n" . $this->coloredMessage($method, 'yellow') . ":\n";
-            $table = new ConsoleTable();
-            foreach ($helps as $key => $help) {
-                $help = (array)$help;
-                $description = $help[0];
-                $params = $help[1] ?? null;
-                $table->addRow([$this->formatKey($key, $params), $description]);
-            }
-            $table->setIndent(2)
-                ->hideBorder()
-                ->display();
-        }
-        return true;
+        return $this->currentCommand;
     }
 }

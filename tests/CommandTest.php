@@ -7,6 +7,7 @@ use MkyCommand\CommandException;
 use MkyCommand\Console;
 use MkyCore\Tests\Commands\Arguments\GreetingCommand;
 use MkyCore\Tests\Commands\Arguments\NoSettingsCommand;
+use MkyCore\Tests\Commands\Optional\TestOptionalCommand;
 use PHPUnit\Framework\TestCase;
 
 class CommandTest extends TestCase
@@ -59,8 +60,9 @@ class CommandTest extends TestCase
     public function testHelpCommand()
     {
         $console = new Console();
-        $console->addCommand('test', NoSettingsCommand::class)
-            ->addCommand('greeting', GreetingCommand::class);
-        $this->assertEquals('help', $console->execute(['mky', 'greeting', '-h']));
+        $console->addCommand('test:command', NoSettingsCommand::class)
+            ->addCommand('greet:someone', GreetingCommand::class)
+            ->addCommand('greet:optional', TestOptionalCommand::class);
+        $this->assertEquals('help', $console->execute(['mky', '--help']));
     }
 }

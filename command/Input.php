@@ -15,6 +15,9 @@ class Input
     public function __construct(array $inputs)
     {
         $this->file = array_shift($inputs);
+        if(!$inputs){
+            $inputs = ['--list'];
+        }
         $this->signature = array_shift($inputs);
         $this->options = $this->parseInputsToOptions($inputs);
         $this->arguments = $this->parseInputsToArguments($inputs);

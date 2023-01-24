@@ -80,4 +80,9 @@ class InputOption
     {
         return !is_null($this->default);
     }
+
+    public function hasShortName(): bool
+    {
+        return !is_null($this->shortname);
+    }
 }
