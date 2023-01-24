@@ -22,33 +22,35 @@ class Input
 
     private function parseInputsToOptions(array &$inputs): array
     {
-        if($inputs){
+        if ($inputs) {
             $options = [];
-            for($i = 0; $i < count($inputs); $i++){
-                $resOption = null;
-                if(!empty($inputs[$i])){
+            for ($i = 0; $i < count($inputs); $i++) {
+                if (!in_array($i, $inputs)) {
+                    $resOption = null;
                     $input = $inputs[$i];
-                    $key = $i;
-                    if(str_starts_with($input, '--') && $input[2] !== '-'){
+                    if (str_starts_with($input, '--') && $input[2] !== '-') {
                         $explodeInputs = explode('=', $input);
                         $key = str_replace('--', '', trim($explodeInputs[0]));
                         $resOption = !empty($explodeInputs[1]) ? trim($explodeInputs[1]) : false;
-                    }elseif(str_starts_with($input, '-') && $input[1] !== '-' && strlen($input) == 2){
+                    } elseif (str_starts_with($input, '-') && $input[1] !== '-' && strlen($input) == 2) {
                         $key = $input[1];
-                        if(isset($inputs[$i + 1]) && !str_starts_with($inputs[$i + 1], '-') && !str_contains($inputs[$i + 1], '=')){
+                        if (array_key_exists($i + 1, $inputs) && !str_starts_with($inputs[$i + 1], '-') && !str_contains($inputs[$i + 1], '=')) {
                             $resOption = trim($inputs[$i + 1]);
                             array_splice($inputs, $i + 1, 1);
-                        }else{
+                        } else {
                             $resOption = false;
                         }
-                    }elseif(str_starts_with($input, '-') && $input[1] !== '-' && strlen($input) > 2){
+                    } elseif (str_starts_with($input, '-') && $input[1] !== '-' && strlen($input) > 2) {
                         $key = $input[1];
                         $value = str_replace("-$key", '', $input);
                         $resOption = $value;
+                    } else {
+                        continue;
                     }
-                    if(!isset($options[$key])){
-                        $options[$key] = $resOption;
-                    }else if(isset($options[$key])){
+                    if (!array_key_exists($key, $options)) {
+                        $options[$key] = is_numeric($resOption) ? (int)$resOption : $resOption;
+                    } else {
+                        $resOption = is_numeric($resOption) ? (int)$resOption : $resOption;
                         $options[$key] = is_array($options[$key]) ? array_push($options[$key], $resOption) : [$options[$key], $resOption];
                     }
                 }
@@ -60,17 +62,17 @@ class Input
 
     private function parseInputsToArguments(array &$inputs): array
     {
-        if($inputs){
+        if ($inputs) {
             $options = [];
-            for($i = 0; $i < count($inputs); $i++){
-                if(!empty($inputs[$i])){
+            for ($i = 0; $i < count($inputs); $i++) {
+                if (!empty($inputs[$i])) {
                     $input = $inputs[$i];
-                    if(!str_contains($input, '-')){
-                        if(str_contains($input, '=')){
+                    if (!str_starts_with($input, '-')) {
+                        if (str_contains($input, '=')) {
                             $explodeInputs = explode('=', $input);
-                            $options[trim($explodeInputs[0])] = trim($explodeInputs[1]);
-                        }else{
-                            $options[$i] = $input;
+                            $options[trim($explodeInputs[0])] = is_numeric(trim($explodeInputs[1])) ? (int)trim($explodeInputs[1]) : trim($explodeInputs[1]);
+                        } else {
+                            $options[$i] = is_numeric($input) ? (int)$input : $input;
                         }
                     }
                 }
@@ -105,15 +107,6 @@ class Input
     }
 
     /**
-     * @param string $name
-     * @return bool
-     */
-    public function hasOption(string $name): bool
-    {
-        return isset($this->options[$name]);
-    }
-
-    /**
      * @param array $options
      */
     public function setOptions(array $options): void
@@ -141,15 +134,6 @@ class Input
     }
 
     /**
-     * @param string $name
-     * @return bool
-     */
-    public function hasArgument(string $name): bool
-    {
-        return isset($this->arguments[$name]);
-    }
-
-    /**
      * @param array $arguments
      */
     public function setArguments(array $arguments): void
@@ -158,13 +142,14 @@ class Input
     }
 
     /**
-     * @param string $key
+     * @param string $name
+     * @param int $type
      * @param mixed $argument
      * @return Input
      */
-    public function addArgument(string $key, mixed $argument): static
+    public function addArgument(string $name, int $type, mixed $argument): static
     {
-        $this->arguments[$key] = $argument;
+        $this->arguments[$name] = new InputArgument($name, $type);
         return $this;
     }
 
@@ -183,17 +168,26 @@ class Input
      */
     public function getArgument(string $name)
     {
-        if(!$this->hasArgument($name)){
+        if (!$this->hasArgument($name)) {
             throw CommandException::ArgumentNotFound($name);
         }
         $argument = $this->arguments[$name];
-        if(is_null($argument)){
+        if (is_null($argument)) {
             return null;
         }
-        if($argument instanceof InputArgument){
+        if ($argument instanceof InputArgument) {
             return $argument->getValue();
         }
         return $argument;
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function hasArgument(string $name): bool
+    {
+        return isset($this->arguments[$name]);
     }
 
     /**
@@ -201,16 +195,25 @@ class Input
      */
     public function getOption(string $name)
     {
-        if(!$this->hasOption($name)){
+        if (!$this->hasOption($name)) {
             throw CommandException::OptionNotFound($name);
         }
         $options = $this->options[$name];
-        if(is_null($options)){
+        if (is_null($options)) {
             return null;
         }
-        if($options instanceof InputOption){
+        if ($options instanceof InputOption) {
             return $options->getValue();
         }
         return $options;
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function hasOption(string $name): bool
+    {
+        return isset($this->options[$name]);
     }
 }

@@ -75,12 +75,12 @@ abstract class AbstractCommand
         foreach ($commandArguments as $name => $commandArgument) {
             $index = array_search($name, $commandArgumentsKeys);
             if (empty($inputArguments[$index])) {
-                if (in_array($commandArgument->getType(), [InputArgument::REQUIRED, InputArgument::IS_ARRAY | InputArgument::REQUIRED])) {
+                if (in_array($commandArgument->getType(), [InputArgument::REQUIRED, InputArgument::ARRAY | InputArgument::REQUIRED])) {
                     throw CommandException::ArgumentNotFound($name);
                 }
                 $inputArguments[$index] = false;
             } else {
-                if (in_array($commandArgument->getType(), [InputArgument::IS_ARRAY, InputArgument::IS_ARRAY | InputArgument::REQUIRED, InputArgument::IS_ARRAY | InputArgument::OPTIONAL])) {
+                if (in_array($commandArgument->getType(), [InputArgument::ARRAY, InputArgument::ARRAY | InputArgument::REQUIRED, InputArgument::ARRAY | InputArgument::OPTIONAL])) {
                     $inputArguments[$index] = $inputArguments;
                 }
             }
@@ -133,7 +133,7 @@ abstract class AbstractCommand
             return $inputOptions;
         }
         if (!isset($inputOptions[$name])) {
-            if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::IS_ARRAY | InputOption::OPTIONAL, InputOption::NEGATIVE])) {
+            if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::ARRAY | InputOption::OPTIONAL, InputOption::NEGATIVE])) {
                 if ($commandOption->getType() === InputOption::NEGATIVE && array_key_exists("no-$name", $inputOptions)) {
                     $inputOptions = $this->replaceKey($inputOptions, "no-$name", $name);
                 } else {
@@ -143,7 +143,7 @@ abstract class AbstractCommand
                 $inputOptions[$name] = false;
             } else if ($commandOption->hasDefault()) {
                 $inputOptions[$name] = $commandOption->getDefault();
-            } else if (in_array($commandOption->getType(), [InputOption::REQUIRED, InputOption::IS_ARRAY | InputOption::REQUIRED])) {
+            } else if (in_array($commandOption->getType(), [InputOption::REQUIRED, InputOption::ARRAY | InputOption::REQUIRED])) {
                 throw CommandException::OptionNotFound($name);
             }
         } else if (!$inputOptions[$name]) {
@@ -151,13 +151,13 @@ abstract class AbstractCommand
                 $inputOptions[$name] = true;
             } else if ($commandOption->hasDefault()) {
                 $inputOptions[$name] = $commandOption->getDefault();
-            } else if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::IS_ARRAY | InputOption::OPTIONAL])) {
+            } else if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::ARRAY | InputOption::OPTIONAL])) {
                 $inputOptions[$name] = null;
             } else if ($commandOption->getType() === InputOption::NONE) {
                 $inputOptions[$name] = true;
             }
         } else {
-            if (in_array($commandOption->getType(), [InputOption::IS_ARRAY, InputOption::IS_ARRAY | InputOption::REQUIRED, InputOption::IS_ARRAY | InputOption::OPTIONAL])) {
+            if (in_array($commandOption->getType(), [InputOption::ARRAY, InputOption::ARRAY | InputOption::REQUIRED, InputOption::ARRAY | InputOption::OPTIONAL])) {
                 $inputOptions[$name] = (array)$inputOptions[$name];
             }
         }
@@ -178,19 +178,19 @@ abstract class AbstractCommand
         }
         $shortOption = $commandOption->getShortname();
         if (!isset($inputOptions[$shortOption])) {
-            if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::IS_ARRAY | InputOption::OPTIONAL])) {
+            if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::ARRAY | InputOption::OPTIONAL])) {
                 $inputOptions[$name] = null;
             } else if ($commandOption->getType() == InputOption::NONE) {
                 $inputOptions[$name] = false;
             } else if ($commandOption->hasDefault()) {
                 $inputOptions[$name] = $commandOption->getDefault();
-            } else if (in_array($commandOption->getType(), [InputOption::REQUIRED, InputOption::IS_ARRAY | InputOption::REQUIRED])) {
+            } else if (in_array($commandOption->getType(), [InputOption::REQUIRED, InputOption::ARRAY | InputOption::REQUIRED])) {
                 throw CommandException::OptionNotFound($name);
             }
         } else if (!$inputOptions[$shortOption]) {
             if ($commandOption->hasDefault()) {
                 $inputOptions[$name] = $commandOption->getDefault();
-            } else if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::IS_ARRAY | InputOption::OPTIONAL])) {
+            } else if (in_array($commandOption->getType(), [InputOption::OPTIONAL, InputOption::ARRAY | InputOption::OPTIONAL])) {
                 $inputOptions[$name] = null;
             } else if ($commandOption->getType() == InputOption::NONE) {
                 $inputOptions[$name] = true;
@@ -198,9 +198,6 @@ abstract class AbstractCommand
         } else {
             $inputOptions[$name] = $inputOptions[$shortOption];
             unset($inputOptions[$shortOption]);
-            if (in_array($commandOption->getType(), [InputOption::IS_ARRAY, InputOption::IS_ARRAY | InputOption::REQUIRED, InputArgument::IS_ARRAY | InputArgument::OPTIONAL])) {
-
-            }
         }
         return $inputOptions;
     }

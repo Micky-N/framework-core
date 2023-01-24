@@ -2,6 +2,9 @@
 
 namespace MkyCommand;
 
+use MkyCommand\Input\InputArgument;
+use MkyCommand\Input\InputOption;
+use MkyCore\Console\Show\ConsoleTable;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -9,13 +12,14 @@ use Psr\Container\NotFoundExceptionInterface;
 class Console
 {
 
+    use Color;
+
     /**
      * @var AbstractCommand[]
      */
     private array $commands = [];
     private ?AbstractCommand $currentCommand = null;
     private readonly ?ContainerInterface $container;
-    private bool $helpMode = false;
 
     /**
      * @param ?ContainerInterface $container
@@ -87,7 +91,7 @@ class Console
     {
         $input = new Input($inputs);
         if ($this->askHelp($input->getSignature())) {
-            exit($this->help());
+            exit($this->helpAll());
         }
         $signature = $input->getSignature();
         if ($this->hasCommand($signature)) {
@@ -100,8 +104,7 @@ class Console
                 $this->currentCommand->setRealInput($input);
                 return $this->currentCommand->execute();
             }
-            dd($this->currentCommand);
-            exit($this->help($this->currentCommand));
+            exit($this->helpCommand($this->currentCommand, $input->getFile()));
         }
         throw CommandException::CommandNotFound($signature);
     }
@@ -111,7 +114,7 @@ class Console
         return in_array($signature, ['-h', '--help']);
     }
 
-    private function help(?AbstractCommand $command = null): string
+    private function helpAll(): string
     {
         dd($this->commands);
         $help = ['test'];
@@ -142,11 +145,82 @@ class Console
         return isset($options['h']) || isset($options['help']);
     }
 
-    /**
-     * @return AbstractCommand|null
-     */
-    public function getCurrentCommand(): ?AbstractCommand
+    private function helpCommand(AbstractCommand $command, string $file): string
     {
-        return $this->currentCommand;
+        $arguments = $command->getArguments() ? array_values($command->getArguments()) : [];
+        $options = $command->getOptions() ? array_values($command->getOptions()) : [];
+        $res = [];
+        $res[] = "Help for Mky Command CLI";
+        $res[] = $this->coloredMessage('Current command: php ' . $file . ' ' . $command->getSignature(), 'gray') . "\n";
+        $res[] = $this->coloredMessage($command->getSignature(), 'yellow') . ": {$command->getDescription()}";
+        $table = new ConsoleTable();
+        for ($i = 0; $i < count($arguments); $i++) {
+            $argument = $arguments[$i];
+            $table->addRow([$this->getInputType($argument), $argument->getDescription()]);
+        }
+
+        for ($j = 0; $j < count($options); $j++) {
+            $option = $options[$j];
+            $table->addRow([$this->getInputType($option), $option->getDescription()]);
+        }
+
+        $table->setIndent(1)
+            ->hideBorder();
+        $res[] = $table->getTable();
+        return join("\n", $res);
+    }
+
+    private function getInputType(InputArgument|InputOption $input): string
+    {
+        $type = $input instanceof InputOption ? $this->getOptionType($input) : $this->getArgumentType($input);
+        $text = $input->getName() . " [$type]";
+        return $this->coloredMessage($text, 'green');
+    }
+
+    private function getOptionType(InputOption $option): string
+    {
+        return 'opt';
+    }
+
+    private function getArgumentType(InputArgument $argument): string
+    {
+        $type = '';
+        $argumentType = $argument->getType();
+        if ($argumentType === InputArgument::REQUIRED) {
+            $type = 'required';
+        } else if ($argumentType === (InputArgument::ARRAY | InputArgument::REQUIRED)) {
+            $type = 'array|required';
+        } else if ($argumentType === InputArgument::OPTIONAL) {
+            $type = 'optional';
+        } else if ($argumentType === (InputArgument::ARRAY | InputArgument::OPTIONAL)) {
+            $type = 'array|optional';
+        } else if ($argumentType === InputArgument::ARRAY) {
+            $type = 'array';
+        }
+        return $type;
+    }
+
+    public function help(): bool
+    {
+        $currentCommand = self::$currentCommand;
+        $selfHelp = $this->getHelps();
+        echo "Help for Mky Command CLI\n";
+        if ($currentCommand) {
+            echo $this->coloredMessage("Current command: php mky $currentCommand", 'gray') . "\n";
+        }
+        foreach ($selfHelp as $method => $helps) {
+            echo "\n" . $this->coloredMessage($method, 'yellow') . ":\n";
+            $table = new ConsoleTable();
+            foreach ($helps as $key => $help) {
+                $help = (array)$help;
+                $description = $help[0];
+                $params = $help[1] ?? null;
+                $table->addRow([$this->formatKey($key, $params), $description]);
+            }
+            $table->setIndent(2)
+                ->hideBorder()
+                ->display();
+        }
+        return true;
     }
 }

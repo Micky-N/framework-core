@@ -6,11 +6,11 @@ class InputOption
 {
     const REQUIRED = 1;
     const OPTIONAL = 2;
-    const IS_ARRAY = 4;
+    const ARRAY = 4;
     const NONE = 8;
     const NEGATIVE = 16;
 
-    private string|array|bool|null $value = null;
+    private mixed $value = null;
 
     public function __construct(
         private readonly string  $name,
@@ -64,14 +64,14 @@ class InputOption
     }
 
     /**
-     * @return string|array|false|null
+     * @return mixed
      */
-    public function getValue(): string|array|bool|null
+    public function getValue(): mixed
     {
         return $this->value;
     }
 
-    public function setValue(string|array|bool|null $value): void
+    public function setValue(mixed $value): void
     {
         $this->value = $value;
     }

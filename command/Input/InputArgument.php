@@ -6,14 +6,14 @@ class InputArgument
 {
     const REQUIRED = 1;
     const OPTIONAL = 2;
-    const IS_ARRAY = 4;
+    const ARRAY = 4;
 
-    private string|array|false|null $value = null;
+    private mixed $value = null;
 
     public function __construct(
         private readonly string $name,
         private readonly int    $type,
-        private readonly string $description
+        private readonly string $description = ''
     )
     {
 
@@ -44,17 +44,17 @@ class InputArgument
     }
 
     /**
-     * @return string|array|false|null
+     * @return mixed
      */
-    public function getValue(): string|array|false|null
+    public function getValue(): mixed
     {
         return $this->value;
     }
 
     /**
-     * @param string|array|false|null $value
+     * @param mixed $value
      */
-    public function setValue(string|array|false|null $value): void
+    public function setValue(mixed $value): void
     {
         $this->value = $value;
     }
