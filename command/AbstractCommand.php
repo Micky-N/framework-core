@@ -22,6 +22,7 @@ abstract class AbstractCommand
 
     protected string $description = '';
     protected Output $output;
+    protected bool $helpMode = false;
 
     public function __construct()
     {
@@ -58,9 +59,6 @@ abstract class AbstractCommand
      */
     public function setRealInput(Input $input): void
     {
-        if($this->askHelp($input->getOptions())){
-            exit($this->help($input));
-        }
         $this->setRealArguments($input);
         $this->setRealOptions($input);
         $this->input = $input;
@@ -215,6 +213,19 @@ abstract class AbstractCommand
         return $this->description;
     }
 
+    public function setHelpMode(): void
+    {
+        $this->helpMode = true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isHelpMode(): bool
+    {
+        return $this->helpMode;
+    }
+
     protected function addArgument(string $name, string $type, string $description): static
     {
         $this->arguments[$name] = new InputArgument($name, $type, $description);
@@ -235,16 +246,5 @@ abstract class AbstractCommand
             return array_combine($keys, $arr);
         }
         return $arr;
-    }
-
-    private function askHelp(array $options): bool
-    {
-        return isset($options['-h']) || isset($options['--help']);
-    }
-
-    private function help(Input $input): string
-    {
-        $help = ['test'];
-        return join($help);
     }
 }

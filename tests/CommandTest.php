@@ -48,11 +48,19 @@ class CommandTest extends TestCase
         $this->assertEquals('Micky', $console->execute(['mky', 'greeting', 'Micky']));
     }
 
+    public function testHelpAllCommands()
+    {
+        $console = new Console();
+        $console->addCommand('test', NoSettingsCommand::class)
+            ->addCommand('greeting', GreetingCommand::class);
+        $this->assertEquals('help', $console->execute(['mky', '-h']));
+    }
+
     public function testHelpCommand()
     {
         $console = new Console();
         $console->addCommand('test', NoSettingsCommand::class)
             ->addCommand('greeting', GreetingCommand::class);
-        $this->assertEquals('Micky', $console->execute(['mky', 'greeting', '-h']));
+        $this->assertEquals('help', $console->execute(['mky', 'greeting', '-h']));
     }
 }
