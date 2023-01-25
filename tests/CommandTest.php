@@ -3,8 +3,9 @@
 namespace MkyCore\Tests;
 
 use Exception;
-use MkyCommand\CommandException;
 use MkyCommand\Console;
+use MkyCommand\Exceptions\CommandException;
+use MkyCommand\HelpCommand;
 use MkyCore\Tests\Commands\Arguments\GreetingCommand;
 use MkyCore\Tests\Commands\Arguments\NoSettingsCommand;
 use MkyCore\Tests\Commands\Optional\TestOptionalCommand;
@@ -52,17 +53,20 @@ class CommandTest extends TestCase
     public function testHelpAllCommands()
     {
         $console = new Console();
-        $console->addCommand('test', NoSettingsCommand::class)
-            ->addCommand('greeting', GreetingCommand::class);
-        $this->assertEquals('help', $console->execute(['mky', '-h']));
+        $console->addCommand('help', new HelpCommand($console))
+            ->addCommand('test:command', NoSettingsCommand::class)
+            ->addCommand('greet:someone', GreetingCommand::class)
+            ->addCommand('greet:optional', TestOptionalCommand::class);
+        echo $console->execute(['mky', 'help']);
+        $this->assertIsString($console->execute(['mky', 'help']));
     }
 
     public function testHelpCommand()
     {
         $console = new Console();
-        $console->addCommand('test:command', NoSettingsCommand::class)
-            ->addCommand('greet:someone', GreetingCommand::class)
-            ->addCommand('greet:optional', TestOptionalCommand::class);
-        $this->assertTrue($console->execute(['mky', 'help', '-h']));
+        $console->addCommand('test', NoSettingsCommand::class)
+            ->addCommand('greeting', GreetingCommand::class);
+        echo $console->execute(['mky', 'greeting', '-h']);
+        $this->assertIsString($console->execute(['mky', 'greeting', '-h']));
     }
 }

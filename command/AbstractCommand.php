@@ -2,6 +2,7 @@
 
 namespace MkyCommand;
 
+use MkyCommand\Exceptions\CommandException;
 use MkyCommand\Input\InputArgument;
 use MkyCommand\Input\InputOption;
 
@@ -144,8 +145,6 @@ abstract class AbstractCommand
         } else if (!$inputOptions[$name]) {
             if (in_array($commandOption->getType(), [InputOption::NONE, InputOption::NEGATIVE])) {
                 $inputOptions[$name] = true;
-            } else if (in_array($commandOption->getType(), [InputOption::NONE, InputOption::NEGATIVE])) {
-                $inputOptions[$name] = true;
             } else if ($commandOption->hasDefault()) {
                 $inputOptions[$name] = $commandOption->getDefault();
             } else {
@@ -240,10 +239,10 @@ abstract class AbstractCommand
         return $this;
     }
 
-    public function displayHelp(Input $input): bool
+    public function displayHelp(Input $input): string
     {
         $res = [];
-        $res[] = "Help for Mky Command CLI" . "\n\n";
+        $res[] = "Help for Mky CLI Command" . "\n\n";
         $arguments = $this->getArguments() ? array_values($this->getArguments()) : [];
         $options = $this->getOptions() ? array_values($this->getOptions()) : [];
         $res[] = $this->output->coloredMessage('Command: ' . $input->getFile(), 'gray') . ' ' . $this->output->coloredMessage($this->getSignature(), 'light_yellow') . "\n\n";
@@ -270,8 +269,7 @@ abstract class AbstractCommand
             ->hideBorder()
             ->getTable();
 
-        echo join('', $res);
-        return true;
+        return join('', $res);
     }
 
     private function getInputType(InputArgument|InputOption $input): string

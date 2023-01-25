@@ -1,6 +1,6 @@
 <?php
 
-namespace MkyCommand;
+namespace MkyCommand\Exceptions;
 
 use Exception;
 

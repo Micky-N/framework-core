@@ -2,6 +2,7 @@
 
 namespace MkyCommand;
 
+use MkyCommand\Exceptions\CommandException;
 use MkyCommand\Input\InputArgument;
 use MkyCommand\Input\InputOption;
 

@@ -2,8 +2,7 @@
 
 namespace MkyCommand;
 
-use MkyCommand\Input\InputArgument;
-use MkyCommand\Input\InputOption;
+use MkyCommand\Exceptions\CommandException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -22,14 +21,10 @@ class Console
 
     /**
      * @param ?ContainerInterface $container
-     * @throws ConsoleException
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      */
     public function __construct(?ContainerInterface $container = null)
     {
         $this->container = $container;
-        $this->addCommand('help', new HelpCommand($this));
     }
 
     /**

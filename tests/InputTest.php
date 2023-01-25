@@ -3,7 +3,7 @@
 namespace MkyCore\Tests;
 
 use Exception;
-use MkyCommand\CommandException;
+use MkyCommand\Exceptions\CommandException;
 use MkyCommand\Input;
 use MkyCore\Tests\Commands\Arguments\ArrayCommand;
 use MkyCore\Tests\Commands\Arguments\GreetingCommand;

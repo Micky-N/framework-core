@@ -2,9 +2,16 @@
 
 namespace MkyCommand;
 
+use MkyCommand\Exceptions\SectionException;
+
 class Output
 {
     use Color;
+
+    /**
+     * @var array<string, Section>
+     */
+    private array $sections = [];
 
     public function __construct()
     {
@@ -26,5 +33,14 @@ class Output
     public function write(string $message): void
     {
         echo "\n" . $message;
+    }
+
+    /**
+     * @param int $maxLine
+     * @return Section
+     */
+    public function section(int $maxLine = 0): Section
+    {
+        return new Section($maxLine);
     }
 }
