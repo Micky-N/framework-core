@@ -4,7 +4,6 @@ namespace MkyCommand;
 
 use MkyCommand\Input\InputArgument;
 use MkyCommand\Input\InputOption;
-use MkyCore\Console\Show\ConsoleTable;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -23,11 +22,14 @@ class Console
 
     /**
      * @param ?ContainerInterface $container
-     * @return void
+     * @throws ConsoleException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function __construct(?ContainerInterface $container = null)
     {
         $this->container = $container;
+        $this->addCommand('help', new HelpCommand($this));
     }
 
     /**
@@ -90,9 +92,6 @@ class Console
     public function execute(array $inputs): mixed
     {
         $input = new Input($inputs);
-        if ($this->askHelp($input->getSignature())) {
-            exit($this->helpAll($input));
-        }
         $signature = $input->getSignature();
         if ($this->hasCommand($signature)) {
             $this->currentCommand = $this->getCommand($signature);
@@ -104,6 +103,7 @@ class Console
                 $this->currentCommand->setRealInput($input);
                 return $this->currentCommand->execute();
             }
+            /** @var HelpCommand $helpCommand */
             exit($this->helpCommand($this->currentCommand, $input->getFile()));
         }
         throw CommandException::CommandNotFound($signature);

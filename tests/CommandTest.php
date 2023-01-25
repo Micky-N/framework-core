@@ -63,6 +63,6 @@ class CommandTest extends TestCase
         $console->addCommand('test:command', NoSettingsCommand::class)
             ->addCommand('greet:someone', GreetingCommand::class)
             ->addCommand('greet:optional', TestOptionalCommand::class);
-        $this->assertEquals('help', $console->execute(['mky', '--help']));
+        $this->assertEquals('help', $console->execute(['mky', 'help']));
     }
 }
