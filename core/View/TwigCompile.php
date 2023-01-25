@@ -51,7 +51,7 @@ class TwigCompile implements ViewCompileInterface
             $this->twig->addExtension(new TwigExtensionFilter());
         }
         $rootKernel = app()->getModuleKernel('root');
-        $methods = ['getTwigFunctions', 'getTwigFilters'];
+        $methods = ['twigFunctions', 'twigFilters'];
         for ($i = 0; $i < count($methods); $i++) {
             $method = $methods[$i];
             if (!method_exists($rootKernel, $method)) {
@@ -71,8 +71,8 @@ class TwigCompile implements ViewCompileInterface
                 }
             }
         }
-        if(method_exists($rootKernel, 'getTwigGlobalVariables')){
-            $globalVariables = $rootKernel->getTwigGlobalVariables();
+        if(method_exists($rootKernel, 'twigGlobalVariables')){
+            $globalVariables = $rootKernel->twigGlobalVariables();
             foreach ($globalVariables as $name => $value){
                 $this->twig->addGlobal($name, $value);
             }

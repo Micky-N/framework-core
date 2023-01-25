@@ -15,7 +15,15 @@ use ReflectionException;
 class Application extends Container
 {
 
+    /**
+     * @var array<string, string>
+     */
     private array $modules = [];
+    
+    /**
+     * @var array<string, string>
+     */
+    private array $commands = [];
 
     private string $basePath;
 
@@ -39,9 +47,11 @@ class Application extends Container
     public function __construct(string $basePath)
     {
         $this->setBasePath($basePath);
+        $this->setPathsInContainer();
         $this->registerBaseBindings();
         $this->setInitModules();
         $this->registerServiceProviders();
+        $this->registerCliCommands();
         $this->loadEnvironment($basePath . DIRECTORY_SEPARATOR . '.env');
     }
 
@@ -54,8 +64,6 @@ class Application extends Container
     private function setBasePath(string $basePath): void
     {
         $this->basePath = rtrim($basePath, '\/');
-
-        $this->setPathsInContainer();
     }
 
     /**
@@ -105,6 +113,14 @@ class Application extends Container
         }
     }
 
+    private function registerCliCommands()
+    {
+        if (class_exists('App\Commands\CliServiceProvider')) {
+            $cliProvider = $this->get('App\Commands\CliServiceProvider');
+            $this->addCommands($cliProvider->getCommands());
+        }
+    }
+
     /**
      * Replace modules
      *
@@ -117,13 +133,35 @@ class Application extends Container
     }
 
     /**
+     * Set commands
+     *
+     * @param array<string, string> $commands
+     * @return void
+     * 
+     */
+    public function addCommands(array $commands): void
+    {
+        $this->commands = $commands;
+    }
+
+    /**
      * Get all modules
      *
-     * @return ModuleKernel[]
+     * @return array<string, string>
      */
     public function getModules(): array
     {
         return $this->modules;
+    }
+
+    /**
+     * Get all commands
+     *
+     * @return array<string, string>
+     */
+    public function getCommands(): array
+    {
+        return $this->commands;
     }
 
     /**
@@ -301,40 +339,6 @@ class Application extends Container
     public function getListenerActions(string $event, mixed $action): ?string
     {
         return $this->events[$event][$action] ?? null;
-    }
-
-    /**
-     * Get notifications
-     *
-     * @param string $alias
-     * @return string|null
-     */
-    public function getNotification(string $alias): ?string
-    {
-        return $this->notifications[$alias] ?? null;
-    }
-
-    /**
-     * Add notification system
-     *
-     * @param string $alias
-     * @param string $notificationSystem
-     * @return void
-     */
-    public function addNotificationSystem(string $alias, string $notificationSystem): void
-    {
-        $this->notificationSystems[$alias] = $notificationSystem;
-    }
-
-    /**
-     * Get notification system
-     *
-     * @param string $alias
-     * @return string|null
-     */
-    public function getNotificationSystem(string $alias): ?string
-    {
-        return $this->notificationSystems[$alias] ?? null;
     }
 
     /**

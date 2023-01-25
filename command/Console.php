@@ -103,8 +103,7 @@ class Console
                 return $this->currentCommand->displayHelp($input);
             }
             $this->currentCommand->setRealInput($input);
-            return $this->currentCommand->execute();       
-            
+            return $this->currentCommand->execute();
         }
         throw CommandException::CommandNotFound($signature, $this->coloredMessage('php mky help', 'yellow'));
     }
