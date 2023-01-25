@@ -16,7 +16,7 @@ class InputOption
         private readonly string  $name,
         private readonly ?string $shortname,
         private readonly int     $type,
-        private readonly string  $description,
+        private readonly string  $description = '',
         private readonly mixed   $default = null
     )
     {

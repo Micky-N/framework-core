@@ -15,8 +15,8 @@ class Input
     public function __construct(array $inputs)
     {
         $this->file = array_shift($inputs);
-        if(!$inputs){
-            $inputs = ['--list'];
+        if(!$inputs || !$inputs[0]){
+            $inputs = ['help'];
         }
         $this->signature = array_shift($inputs);
         $this->options = $this->parseInputsToOptions($inputs);
@@ -118,13 +118,15 @@ class Input
     }
 
     /**
-     * @param string $key
-     * @param array $option
+     * @param string $name
+     * @param int $type
+     * @param mixed $value
      * @return Input
      */
-    public function addOption(string $key, mixed $option): static
+    public function addOption(string $name, int $type, mixed $value): static
     {
-        $this->options[$key] = $option;
+        $this->options[$name] = new InputOption($name, null, $type);
+        $this->options[$name]->setValue($value);
         return $this;
     }
 
@@ -150,9 +152,10 @@ class Input
      * @param mixed $argument
      * @return Input
      */
-    public function addArgument(string $name, int $type, mixed $argument): static
+    public function addArgument(string $name, int $type, mixed $value): static
     {
         $this->arguments[$name] = new InputArgument($name, $type);
+        $this->arguments[$name]->setValue($value);
         return $this;
     }
 

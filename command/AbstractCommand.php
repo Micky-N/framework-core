@@ -239,4 +239,86 @@ abstract class AbstractCommand
         $this->options[$name] = new InputOption($name, $shortName, $type, $description, $default);
         return $this;
     }
+
+    public function displayHelp(Input $input): bool
+    {
+        $res = [];
+        $res[] = "Help for Mky Command CLI" . "\n\n";
+        $arguments = $this->getArguments() ? array_values($this->getArguments()) : [];
+        $options = $this->getOptions() ? array_values($this->getOptions()) : [];
+        $res[] = $this->output->coloredMessage('Command: ' . $input->getFile(), 'gray') . ' ' . $this->output->coloredMessage($this->getSignature(), 'light_yellow') . "\n\n";
+        $res[] = $this->output->coloredMessage('Description:', 'blue') . "\n";
+        $res[] = "  " . $this->getDescription() . "\n\n";
+        $res[] = $this->output->coloredMessage('Arguments:', 'yellow') . "\n";
+        $table = new ConsoleTable();
+        for ($i = 0; $i < count($arguments); $i++) {
+            $argument = $arguments[$i];
+            $table->addRow([$this->getInputType($argument), $argument->getDescription(), '']);
+        }
+
+        for ($j = 0; $j < count($options); $j++) {
+            $option = $options[$j];
+            $default = '';
+            if ($option->hasDefault()) {
+                $default = $option->getDefault();
+                $default = is_array($default) ? '[' . join(', ', $default) . ']' : $default;
+            }
+            $table->addRow([$this->getInputType($option), $option->getDescription(), $default]);
+        }
+
+        $res[] = $table->setIndent(1)
+            ->hideBorder()
+            ->getTable();
+
+        echo join('', $res);
+        return true;
+    }
+
+    private function getInputType(InputArgument|InputOption $input): string
+    {
+        $type = $input instanceof InputOption ? $this->getOptionType($input) : $this->getArgumentType($input);
+        $text = '';
+        if ($input instanceof InputOption) {
+            $text .= $input->hasShortName() ? '-' . $input->getShortname() . '|' : '';
+        }
+        $text .= $input->getName() . " [$type]";
+        return $this->output->coloredMessage($text, 'green');
+    }
+
+    private function getOptionType(InputOption $option): string
+    {
+        $type = '';
+        $optionType = $option->getType();
+        if ($optionType === InputOption::REQUIRED) {
+            $type = 'required';
+        } else if ($optionType === (InputOption::ARRAY | InputOption::REQUIRED)) {
+            $type = 'array|required';
+        } else if ($optionType === InputOption::OPTIONAL) {
+            $type = 'optional';
+        } else if ($optionType === (InputOption::ARRAY | InputOption::OPTIONAL)) {
+            $type = 'array|optional';
+        } else if ($optionType === InputOption::NONE) {
+            $type = 'none_value';
+        } else if ($optionType === InputOption::NEGATIVE) {
+            $type = 'negative_value';
+        }
+        return $type;
+    }
+
+    private function getArgumentType(InputArgument $argument): string
+    {
+        $type = '';
+        $argumentType = $argument->getType();
+        if ($argumentType === InputArgument::REQUIRED) {
+            $type = 'required';
+        } else if ($argumentType === (InputArgument::ARRAY | InputArgument::REQUIRED)) {
+            $type = 'array|required';
+        } else if ($argumentType === InputArgument::OPTIONAL) {
+            $type = 'optional';
+        } else if ($argumentType === (InputArgument::ARRAY | InputArgument::OPTIONAL)) {
+            $type = 'array|optional';
+        }
+
+        return $type;
+    }
 }
