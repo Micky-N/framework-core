@@ -104,6 +104,7 @@ class Console
                 return $this->currentCommand->execute();
             }
             /** @var HelpCommand $helpCommand */
+            $helpCommand = $this->getCommand('help');
             exit($this->helpCommand($this->currentCommand, $input->getFile()));
         }
         throw CommandException::CommandNotFound($signature);
