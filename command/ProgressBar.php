@@ -20,7 +20,22 @@ class ProgressBar
 
     public function start(string $startMessage = ''): void
     {
-        echo $startMessage . "\n";
+        print $this->draw();
+    }
+
+    private function draw($progressMessage = ''): string
+    {
+        $percent = round(($this->progression * 100) / $this->count());
+        $bar = round(($this->count() * $percent) / 100);
+        return sprintf("\r%s%%[%s>%s] %s/%s %s", $percent, str_repeat("=", $bar), str_repeat(" ", $this->count() - $bar), $this->progression, $this->count(), $progressMessage);
+    }
+
+    public function count(): int
+    {
+        if (is_array($this->elements)) {
+            return count($this->elements);
+        }
+        return $this->elements;
     }
 
     public function process(): int
@@ -53,24 +68,13 @@ class ProgressBar
         return $this->stopProgression ? self::STOP_PROGRESSION : self::PROCESS_SUCCESS;
     }
 
-    public function progress(string $progressMessage = ''): int
+    public function progress(string $progressMessage = ''): static
     {
-        if ($this->stopProgression) {
-            return self::STOP_PROGRESSION;
-        }
         $this->progression++;
-        $percent = round(($this->progression * 100) / $this->count());
-        $bar = round(($this->count() * $percent) / 100);
-        echo sprintf("%s%%[%s>%s] %s/%s %s\r", $percent, str_repeat("=", $bar), str_repeat(" ", $this->count() - $bar), $this->progression, $this->count(), $progressMessage) . "\n";
-        return self::PROCESS_SUCCESS;
-    }
 
-    public function count(): int
-    {
-        if (is_array($this->elements)) {
-            return count($this->elements);
-        }
-        return $this->elements;
+        print $this->draw($progressMessage);
+
+        return $this;
     }
 
     public function reset(): void
@@ -119,10 +123,10 @@ class ProgressBar
      */
     public function current(bool|Closure $real = false): mixed
     {
-        if($real){
-            if(is_bool($real)){
+        if ($real) {
+            if (is_bool($real)) {
                 return array_keys($this->elements)[$this->progression];
-            }elseif(is_callable($real)){
+            } elseif (is_callable($real)) {
                 return $real($this->elements[$this->progression], $this->progression);
             }
         }
@@ -140,5 +144,10 @@ class ProgressBar
     public function isCompleted(): bool
     {
         return $this->progression === $this->count();
+    }
+
+    public function __toString()
+    {
+        return $this->draw();
     }
 }

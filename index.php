@@ -1,6 +1,14 @@
 <?php
 
-require 'vendor/autoload.php';
 
-$logger = Logger::getLogger("main");
-$logger->info("This is an informational message.", true);
+require_once('vendor/autoload.php');
+
+
+$out = new \MkyCommand\Output();
+$p = $out->progressBar(50);
+$p->start();
+while(!$p->isCompleted()){
+    usleep(50000);
+    $p->progress('fkdlkdf');
+}
+
