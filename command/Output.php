@@ -54,4 +54,10 @@ class Output
     {
         return new ConsoleTable();
     }
+
+    public function progressBar(int|array $size): ProgressBar
+    {
+        $size = is_array($size) ? count($size) : $size;
+        return new ProgressBar($size);
+    }
 }
