@@ -14,7 +14,6 @@ class Input
     private readonly string $signature;
     private array $options;
     private array $arguments;
-    private array $variables = [];
 
     public function __construct(array $inputs = [])
     {
@@ -88,7 +87,7 @@ class Input
         }
         return [];
     }
-    
+
     /**
      * @return string
      */
@@ -135,37 +134,6 @@ class Input
     public function setArguments(array $arguments): void
     {
         $this->arguments = $arguments;
-    }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return Input
-     */
-    public function addVariable(string $name, mixed $value): static
-    {
-        $this->variables[$name] = $value;
-        return $this;
-    }
-
-    /**
-     * @param string $name
-     * @return bool
-     */
-    public function hasVariable(string $name): bool
-    {
-        return isset($this->variables[$name]);
-    }
-
-    /**
-     * @param string $name
-     * @return mixed
-     */
-    public function removeVariable(string $name): mixed
-    {
-        $value = $this->arguments[$name];
-        unset($this->arguments[$name]);
-        return $value;
     }
 
     /**
@@ -224,18 +192,7 @@ class Input
         return isset($this->options[$name]);
     }
 
-    public function ask(string $question, string $default = ''): string
-    {
-        $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
-        if ($default) {
-            $message .= $this->coloredMessage(" [$default]", 'light_yellow');
-        }
-        $message .= ":\n";
-        echo $message;
-        return trim((string)readline("> ")) ?: $default;
-    }
-
-    public function askMultiple(string $question, array $choices, int $defaultIndex = null, ?int $maxAttempts = null): string
+    public function choice(string $question, array $choices, int $defaultIndex = null, ?int $maxAttempts = null): string
     {
         $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
         if (!is_null($defaultIndex)) {
@@ -245,39 +202,45 @@ class Input
         echo $message;
         $table = new ConsoleTable();
         $table->hideBorder();
-        for($i = 0; $i < count($choices); $i++){
+        for ($i = 0; $i < count($choices); $i++) {
             $table->addRow(["[$i]", $choices[$i]]);
         }
         $table->display();
         $answer = trim((string)readline("> ")) ?: false;
-        if($answer !== false){
-            if(isset($choices[$answer])){
+        if ($answer !== false) {
+            if (isset($choices[$answer])) {
                 return $choices[$answer];
-            }else{
-                if($maxAttempts && $maxAttempts > 1){
-                    $this->askMultiple($question, $choices, $defaultIndex, $maxAttempts - 1);
-                }else{
+            } else {
+                if ($maxAttempts && $maxAttempts > 1) {
+                    $this->choice($question, $choices, $defaultIndex, $maxAttempts - 1);
+                } else {
                     exit($this->error("Value is not correct, You got your chance"));
                 }
             }
         }
-        return  $choices[$defaultIndex];
-    }
-
-    public function password($message = "Pass:\n", $hidden = true): string
-    {
-        return '';
+        return $choices[$defaultIndex];
     }
 
     public function confirm(string $message, bool $default = false): bool
     {
-        $answer = $this->ask($message. ' (y/n)', $default ? 'y' : 'n');
-        if(!$answer){
+        $answer = $this->ask($message . ' (y/n)', $default ? 'y' : 'n');
+        if (!$answer) {
             return $default;
         }
-        if(!in_array(strtolower($answer), ['y', 'n'])){
+        if (!in_array(strtolower($answer), ['y', 'n'])) {
             exit($this->error('Value not correct'));
         }
-        return strtolower($answer) === 'y' ? true : false;
+        return strtolower($answer) === 'y';
+    }
+
+    public function ask(string $question, string $default = ''): string
+    {
+        $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
+        if ($default) {
+            $message .= $this->coloredMessage(" [$default]", 'light_yellow');
+        }
+        $message .= ":\n";
+        echo $message;
+        return trim((string)readline("> ")) ?: $default;
     }
 }
