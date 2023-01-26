@@ -4,9 +4,12 @@ namespace MkyCommand;
 
 class Section
 {
+    const NEW_LINE = '__-newline-__';
 
     /** @var string[] $texts */
     private array $texts;
+
+    private array $spaces = [];
 
     public function __construct(private int $maxLine = 0)
     {
@@ -20,6 +23,14 @@ class Section
             }
         }
         $this->texts[] = $text;
+        return $this;
+    }
+
+    public function newLine(int $number = 1): static
+    {
+        for($i = 0; $i < $number; $i++){
+            $this->spaces[$this->texts[count($this->texts) - 1]][] = self::NEW_LINE;
+        }
         return $this;
     }
 
@@ -40,11 +51,27 @@ class Section
     }
 
     /**
+     * @param bool $breakLine
      * @return void
      */
-    public function read(): void
+    public function read(bool $breakLine = true): void
     {
-        echo join("\n", $this->texts);
+        $readLines = [];
+        for($i = 0; $i < count($this->texts); $i++){
+            $text = $this->texts[$i];
+            $readLines[] = $text;
+            if($breakLine){
+                $readLines[] = PHP_EOL;
+            }
+            if(isset($this->spaces[$text])){
+                $spaces = $this->spaces[$text];
+                for($j = 0; $j < count($spaces); $j++){
+                    $readLines[] = PHP_EOL;
+                }
+            }
+        }
+        $this->spaces = [];
+        echo join('', $readLines);
     }
 
     /**

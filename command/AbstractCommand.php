@@ -8,6 +8,9 @@ use MkyCommand\Input\InputOption;
 
 abstract class AbstractCommand
 {
+
+    const SUCCESS = 1;
+    const ERROR = 2;
     protected string $signature = '';
 
     /**
@@ -239,17 +242,21 @@ abstract class AbstractCommand
         return $this;
     }
 
-    public function displayHelp(Input $input): string
+    public function displayHelp(Input $input): int
     {
-        $res = [];
-        $res[] = "Help for Mky CLI Command" . "\n\n";
+        $section = $this->output->section();
+        $section->text("Help for Mky CLI Command")->newLine();
         $arguments = $this->getArguments() ? array_values($this->getArguments()) : [];
         $options = $this->getOptions() ? array_values($this->getOptions()) : [];
-        $res[] = $this->output->coloredMessage('Command: ' . $input->getFile(), 'gray') . ' ' . $this->output->coloredMessage($this->getSignature(), 'light_yellow') . "\n\n";
-        $res[] = $this->output->coloredMessage('Description:', 'blue') . "\n";
-        $res[] = "  " . $this->getDescription() . "\n\n";
-        $res[] = $this->output->coloredMessage('Arguments:', 'yellow') . "\n";
-        $table = new ConsoleTable();
+        $section->text($this->output->coloredMessage('Command: ' . $input->getFile(), 'gray') . ' ' . $this->output->coloredMessage($this->getSignature(), 'light_yellow') . "\n")
+            ->newLine()
+            ->text($this->output->coloredMessage('Description:', 'blue'))
+            ->newLine()
+            ->text("  " . $this->getDescription())
+            ->newLine(2)
+            ->text($this->output->coloredMessage('Arguments:', 'yellow'))
+            ->newLine();
+        $table = $this->output->table();
         for ($i = 0; $i < count($arguments); $i++) {
             $argument = $arguments[$i];
             $table->addRow([$this->getInputType($argument), $argument->getDescription(), '']);
@@ -265,11 +272,12 @@ abstract class AbstractCommand
             $table->addRow([$this->getInputType($option), $option->getDescription(), $default]);
         }
 
-        $res[] = $table->setIndent(1)
+        $section->text($table->setIndent(1)
             ->hideBorder()
-            ->getTable();
+            ->getTable());
 
-        return join('', $res);
+        $section->read(false);
+        return self::SUCCESS;
     }
 
     private function getInputType(InputArgument|InputOption $input): string

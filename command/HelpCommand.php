@@ -10,29 +10,32 @@ class HelpCommand extends AbstractCommand
 
     protected string $description = 'Display list of commands, the list can be filtered by namespace';
 
-    public function settings(): void
-    {
-        $this->addOption('namespace', 'n', InputOption::OPTIONAL, 'Namespace for filtering commands');
-    }
-
     public function __construct(private readonly Console $console)
     {
         parent::__construct();
     }
 
-    public function execute(): string
+    public function settings(): void
     {
-        $res = [];
-        $res[] = "Help for Mky CLI Command" . "\n\n";
-        $this->sendHelp($res);
-        return join("", $res);
+        $this->addOption('namespace', 'n', InputOption::OPTIONAL, 'Namespace for filtering commands');
     }
 
-    private function sendHelp(array &$res): void
+    public function execute(): int
+    {
+        $section = $this->output->section();
+        $section->text("Help for Mky CLI Command")
+            ->newLine(2);
+        $this->sendHelp($section);
+        $section->read(false);
+
+        return self::SUCCESS;
+    }
+
+    private function sendHelp(Section $section): void
     {
         $namespaces = [];
         $commands = array_values($this->console->getCommands());
-        $res[] = $this->$this->output->coloredMessage("Available commands:", 'blue') . "\n";
+        $section->text($this->output->coloredMessage("Available commands:", 'blue'))->newLine();
         if ($this->input->hasOption('namespace') && $this->input->getOption('namespace')) {
             $namespace = $this->input->getOption('namespace');
             $commands = array_filter($commands, function ($command) use ($namespace) {
@@ -51,22 +54,22 @@ class HelpCommand extends AbstractCommand
 
         ksort($namespaces, SORT_NATURAL);
         foreach ($namespaces as $name => $commandNames) {
-            $this->helpByNamespace($name, $commandNames, $res);
+            $this->helpByNamespace($name, $commandNames, $section);
         }
     }
 
-    private function helpByNamespace(string $name, mixed $commandNames, array &$res = []): void
+    private function helpByNamespace(string $name, mixed $commandNames, Section $section): void
     {
         if (!is_numeric($name)) {
-            $res[] = " " . $this->output->coloredMessage($name, 'yellow') . "\n";
+            $section->text(" " . $this->output->coloredMessage($name, 'yellow'))->newLine();
         }
-        $table = new ConsoleTable();
+        $table = $this->output->table();
         for ($i = 0; $i < count($commandNames); $i++) {
             $commandName = $commandNames[$i];
             $table->addRow($commandName);
         }
-        $res[] = $table->setIndent(1)
+        $section->text($table->setIndent(1)
             ->hideBorder()
-            ->getTable();
+            ->getTable());
     }
 }

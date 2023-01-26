@@ -57,8 +57,7 @@ class CommandTest extends TestCase
             ->addCommand('test:command', NoSettingsCommand::class)
             ->addCommand('greet:someone', GreetingCommand::class)
             ->addCommand('greet:optional', TestOptionalCommand::class);
-        echo $console->execute(['mky', 'help']);
-        $this->assertIsString($console->execute(['mky', 'help']));
+        $this->assertEquals(1, $console->execute(['mky', 'help']));
     }
 
     public function testHelpCommand()
@@ -66,7 +65,6 @@ class CommandTest extends TestCase
         $console = new Console();
         $console->addCommand('test', NoSettingsCommand::class)
             ->addCommand('greeting', GreetingCommand::class);
-        echo $console->execute(['mky', 'greeting', '-h']);
-        $this->assertIsString($console->execute(['mky', 'greeting', '-h']));
+        $this->assertEquals(1, $console->execute(['mky', 'greeting', '-h']));
     }
 }
