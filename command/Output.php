@@ -2,6 +2,7 @@
 
 namespace MkyCommand;
 
+use Closure;
 use MkyCommand\Exceptions\SectionException;
 
 class Output
@@ -55,9 +56,8 @@ class Output
         return new ConsoleTable();
     }
 
-    public function progressBar(int|array $size): ProgressBar
+    public function progressBar(int|array $elements, ?Closure $closure = null): ProgressBar
     {
-        $size = is_array($size) ? count($size) : $size;
-        return new ProgressBar($size);
+        return new ProgressBar($elements, $closure);
     }
 }
