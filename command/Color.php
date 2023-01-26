@@ -59,27 +59,23 @@ trait Color
         return $colored_string;
     }
 
-    public function success(string $message, string $res = ''): bool
+    public function success(string $message, string $res = ''): void
     {
-        echo "\n" . $this->coloredMessage($message, 'green', 'bold') . ($res ? ": $res" : '') . "\n";
-        return true;
+        echo $this->coloredMessage($message, 'green', 'bold') . ($res ? ": $res" : '') . "\n";
     }
 
-    public function error(string $message, string $res = ''): bool
+    public function error(string $message, string $res = ''): void
     {
-        echo "\n" . $this->coloredMessage($message, 'red', 'bold') . ($res ? ": $res" : '') . "\n";
-        return false;
+        echo $this->coloredMessage($message, 'red', 'bold') . ($res ? ": $res" : '') . "\n";
     }
 
-    public function info(string $message, string $res = ''): bool
+    public function info(string $message, string $res = ''): void
     {
-        echo "\n" . $this->coloredMessage($message, 'blue') . ($res ? ": $res" : '') . "\n";
-        return false;
+        echo $this->coloredMessage($message, 'blue') . ($res ? ": $res" : '') . "\n";
     }
 
-    public function warning(string $message, string $res = ''): bool
+    public function warning(string $message, string $res = ''): void
     {
-        echo "\n" . $this->coloredMessage($message, 'light_yellow') . ($res ? ": $res" : '') . "\n";
-        return false;
+        echo $this->coloredMessage($message, 'light_yellow') . ($res ? ": $res" : '') . "\n";
     }
 }

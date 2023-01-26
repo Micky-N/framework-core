@@ -232,18 +232,36 @@ class Input
         }
         $message .= ":\n";
         echo $message;
-        return trim((string)readline("> "));
+        return trim((string)readline("> ")) ?: $default;
     }
 
-    public function askMultiple(string $question, array $choices, int $defaultIndex = null, ?int $maxAttemps = null): string
+    public function askMultiple(string $question, array $choices, int $defaultIndex = null, ?int $maxAttempts = null): string
     {
         $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
-        if ($defaultIndex) {
-            $message .= $this->coloredMessage(" [$defaultIndex]", 'light_yellow');
+        if (!is_null($defaultIndex)) {
+            $message .= $this->coloredMessage(" [$choices[$defaultIndex]]", 'light_yellow');
         }
         $message .= ":\n";
         echo $message;
-        return trim((string)readline("> "));
+        $table = new ConsoleTable();
+        $table->hideBorder();
+        for($i = 0; $i < count($choices); $i++){
+            $table->addRow(["[$i]", $choices[$i]]);
+        }
+        $table->display();
+        $answer = trim((string)readline("> ")) ?: false;
+        if($answer !== false){
+            if(isset($choices[$answer])){
+                return $choices[$answer];
+            }else{
+                if($maxAttempts && $maxAttempts > 1){
+                    $this->askMultiple($question, $choices, $defaultIndex, $maxAttempts - 1);
+                }else{
+                    exit($this->error("Value is not correct, You got your chance"));
+                }
+            }
+        }
+        return  $choices[$defaultIndex];
     }
 
     public function password($message = "Pass:\n", $hidden = true): string
@@ -251,8 +269,15 @@ class Input
         return '';
     }
 
-    public function confirm(string $message, bool $default): bool
+    public function confirm(string $message, bool $default = false): bool
     {
-        return $default;
+        $answer = $this->ask($message. ' (y/n)', $default ? 'y' : 'n');
+        if(!$answer){
+            return $default;
+        }
+        if(!in_array(strtolower($answer), ['y', 'n'])){
+            exit($this->error('Value not correct'));
+        }
+        return strtolower($answer) === 'y' ? true : false;
     }
 }

@@ -5,4 +5,4 @@ use MkyCommand\Input;
 
 $input = new Input();
 
-$input->hiddenPrompt();
+dd($input->confirm('test', true));
