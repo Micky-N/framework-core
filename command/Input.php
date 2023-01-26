@@ -16,13 +16,13 @@ class Input
     private array $arguments;
     private array $variables = [];
 
-    public function __construct(array $inputs)
+    public function __construct(array $inputs = [])
     {
-        $this->file = array_shift($inputs);
+        $this->file = $inputs ? array_shift($inputs) : '';
         if (!$inputs || !$inputs[0]) {
             $inputs = ['help'];
         }
-        $this->signature = array_shift($inputs);
+        $this->signature = $inputs ? array_shift($inputs) : '';
         $this->options = $this->parseInputsToOptions($inputs);
         $this->arguments = $this->parseInputsToArguments($inputs);
     }
@@ -88,24 +88,7 @@ class Input
         }
         return [];
     }
-
-    public static function prompt()
-    {
-        $stdin = fopen('php://stdin', 'r');
-        if (false === $stdin) {
-            throw new \RuntimeException('Failed to open STDIN, could not prompt user for input.');
-        }
-        $answer = self::trimAnswer(fgets($stdin, 4096));
-        fclose($stdin);
-
-        return $answer;
-    }
-
-    private static function trimAnswer($str)
-    {
-        return preg_replace('{\r?\n$}D', '', (string)$str) ?: '';
-    }
-
+    
     /**
      * @return string
      */
@@ -252,7 +235,7 @@ class Input
         return trim((string)readline("> "));
     }
 
-    public function askMultiple(string $question, array $choices, int $defaultIndex = null): string
+    public function askMultiple(string $question, array $choices, int $defaultIndex = null, ?int $maxAttemps = null): string
     {
         $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
         if ($defaultIndex) {
@@ -263,9 +246,9 @@ class Input
         return trim((string)readline("> "));
     }
 
-    public function password(): string
+    public function password($message = "Pass:\n", $hidden = true): string
     {
-
+        return '';
     }
 
     public function confirm(string $message, bool $default): bool

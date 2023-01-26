@@ -43,4 +43,15 @@ class Output
     {
         return new Section($maxLine);
     }
+
+    /**
+     * Create a new table
+     *
+     * @return ConsoleTable
+     * 
+     */
+    public function table(): ConsoleTable
+    {
+        return new ConsoleTable();
+    }
 }

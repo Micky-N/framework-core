@@ -28,7 +28,7 @@ class ConsoleTable
     /**
      * Adds a column to the table header
      * @param string $content Header cell content
-     * @return ConsoleTable LucidFrame\Console\ConsoleTable
+     * @return ConsoleTable
      */
     public function addHeader(string $content = ''): ConsoleTable
     {
@@ -40,7 +40,7 @@ class ConsoleTable
     /**
      * Set headers for the columns in one-line
      * @param array $content Array of header cell content
-     * @return ConsoleTable LucidFrame\Console\ConsoleTable
+     * @return ConsoleTable
      */
     public function setHeaders(array $content): ConsoleTable
     {
@@ -60,7 +60,7 @@ class ConsoleTable
     /**
      * Adds a row to the table
      * @param array|null $data The row data to add
-     * @return ConsoleTable LucidFrame\Console\ConsoleTable
+     * @return ConsoleTable
      */
     public function addRow(array $data = null): ConsoleTable
     {
@@ -93,7 +93,7 @@ class ConsoleTable
      * @param mixed $content The data of the column
      * @param int|null $col The column index to populate
      * @param int|null $row If starting row is not zero, specify it here
-     * @return ConsoleTable LucidFrame\Console\ConsoleTable
+     * @return ConsoleTable
      */
     public function addColumn(mixed $content, int $col = null, int $row = null): ConsoleTable
     {
@@ -110,7 +110,7 @@ class ConsoleTable
 
     /**
      * Hide table border
-     * @return ConsoleTable LucidFrame\Console\ConsoleTable
+     * @return ConsoleTable
      */
     public function hideBorder(): ConsoleTable
     {
@@ -121,7 +121,7 @@ class ConsoleTable
 
     /**
      * Show all table borders
-     * @return ConsoleTable LucidFrame\Console\ConsoleTable
+     * @return ConsoleTable
      */
     public function showAllBorders(): ConsoleTable
     {
@@ -133,7 +133,7 @@ class ConsoleTable
 
     /**
      * Show table border
-     * @return ConsoleTable LucidFrame\Console\ConsoleTable
+     * @return ConsoleTable
      */
     public function showBorder(): ConsoleTable
     {
@@ -145,7 +145,7 @@ class ConsoleTable
     /**
      * Set padding for each cell
      * @param integer $value The integer value, defaults to 1
-     * @return ConsoleTable LucidFrame\Console\ConsoleTable
+     * @return ConsoleTable
      */
     public function setPadding(int $value = 1): ConsoleTable
     {
@@ -157,7 +157,7 @@ class ConsoleTable
     /**
      * Set left indentation for the table
      * @param integer $value The integer value, defaults to 1
-     * @return ConsoleTable LucidFrame\Console\ConsoleTable
+     * @return ConsoleTable
      */
     public function setIndent(int $value = 0): ConsoleTable
     {
@@ -168,7 +168,7 @@ class ConsoleTable
 
     /**
      * Add horizontal border line
-     * @return ConsoleTable LucidFrame\Console\ConsoleTable
+     * @return ConsoleTable
      */
     public function addBorderLine(): ConsoleTable
     {
