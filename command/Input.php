@@ -8,15 +8,18 @@ use MkyCommand\Input\InputOption;
 
 class Input
 {
+    use Color;
+
     private readonly string $file;
     private readonly string $signature;
     private array $options;
     private array $arguments;
+    private array $variables = [];
 
     public function __construct(array $inputs)
     {
         $this->file = array_shift($inputs);
-        if(!$inputs || !$inputs[0]){
+        if (!$inputs || !$inputs[0]) {
             $inputs = ['help'];
         }
         $this->signature = array_shift($inputs);
@@ -86,6 +89,23 @@ class Input
         return [];
     }
 
+    public static function prompt()
+    {
+        $stdin = fopen('php://stdin', 'r');
+        if (false === $stdin) {
+            throw new \RuntimeException('Failed to open STDIN, could not prompt user for input.');
+        }
+        $answer = self::trimAnswer(fgets($stdin, 4096));
+        fclose($stdin);
+
+        return $answer;
+    }
+
+    private static function trimAnswer($str)
+    {
+        return preg_replace('{\r?\n$}D', '', (string)$str) ?: '';
+    }
+
     /**
      * @return string
      */
@@ -119,19 +139,6 @@ class Input
     }
 
     /**
-     * @param string $name
-     * @param int $type
-     * @param mixed $value
-     * @return Input
-     */
-    public function addOption(string $name, int $type, mixed $value): static
-    {
-        $this->options[$name] = new InputOption($name, null, $type);
-        $this->options[$name]->setValue($value);
-        return $this;
-    }
-
-    /**
      * @return array
      */
     public function getArguments(): array
@@ -149,31 +156,41 @@ class Input
 
     /**
      * @param string $name
-     * @param int $type
-     * @param mixed $argument
+     * @param mixed $value
      * @return Input
      */
-    public function addArgument(string $name, int $type, mixed $value): static
+    public function addVariable(string $name, mixed $value): static
     {
-        $this->arguments[$name] = new InputArgument($name, $type);
-        $this->arguments[$name]->setValue($value);
+        $this->variables[$name] = $value;
         return $this;
     }
 
-    public function deleteArgument(string $name): void
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function hasVariable(string $name): bool
     {
-        unset($this->arguments[$name]);
-    }
-
-    public function deleteOption(string $name): void
-    {
-        unset($this->options[$name]);
+        return isset($this->variables[$name]);
     }
 
     /**
+     * @param string $name
+     * @return mixed
+     */
+    public function removeVariable(string $name): mixed
+    {
+        $value = $this->arguments[$name];
+        unset($this->arguments[$name]);
+        return $value;
+    }
+
+    /**
+     * @param string $name
+     * @return mixed
      * @throws CommandException
      */
-    public function getArgument(string $name)
+    public function getArgument(string $name): mixed
     {
         if (!$this->hasArgument($name)) {
             throw CommandException::ArgumentNotFound($name);
@@ -222,5 +239,37 @@ class Input
     public function hasOption(string $name): bool
     {
         return isset($this->options[$name]);
+    }
+
+    public function ask(string $question, string $default = ''): string
+    {
+        $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
+        if ($default) {
+            $message .= $this->coloredMessage(" [$default]", 'light_yellow');
+        }
+        $message .= ":\n";
+        echo $message;
+        return trim((string)readline("> "));
+    }
+
+    public function askMultiple(string $question, array $choices, int $defaultIndex = null): string
+    {
+        $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
+        if ($defaultIndex) {
+            $message .= $this->coloredMessage(" [$defaultIndex]", 'light_yellow');
+        }
+        $message .= ":\n";
+        echo $message;
+        return trim((string)readline("> "));
+    }
+
+    public function password(): string
+    {
+
+    }
+
+    public function confirm(string $message, bool $default): bool
+    {
+        return $default;
     }
 }

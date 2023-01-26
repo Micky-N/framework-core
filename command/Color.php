@@ -82,15 +82,4 @@ trait Color
         echo "\n" . $this->coloredMessage($message, 'light_yellow') . ($res ? ": $res" : '') . "\n";
         return false;
     }
-
-    public function ask(string $question, string $default = ''): string
-    {
-        $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
-        if ($default) {
-            $message .= $this->coloredMessage(" [$default]", 'light_yellow');
-        }
-        $message .= ":\n";
-        echo $message;
-        return trim((string)readline("> "));
-    }
 }

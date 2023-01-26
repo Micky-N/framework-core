@@ -220,4 +220,10 @@ class InputTest extends TestCase
         $command->setRealInput($input);
         $this->assertFalse($input->getOption('name'));
     }
+
+    public function testQuestion()
+    {
+        $input = new Input(['mky']);
+        echo $input->ask('test');
+    }
 }
