@@ -67,7 +67,7 @@ abstract class AbstractCommand
     {
         $commandArguments = $this->getArguments();
         $commandArgumentsKeys = array_keys($commandArguments);
-        $inputArguments = $input->getArguments();
+        $inputArguments = $input->arguments();
         foreach ($commandArguments as $name => $commandArgument) {
             $index = array_search($name, $commandArgumentsKeys);
             if (empty($inputArguments[$index])) {
@@ -99,7 +99,7 @@ abstract class AbstractCommand
     private function setRealOptions(Input &$input): void
     {
         $commandOptions = $this->getOptions();
-        $inputOptions = $input->getOptions();
+        $inputOptions = $input->options();
         foreach ($commandOptions as $name => $commandOption) {
             $inputOptions = $this->getLongInputOptionCommand($inputOptions, $name, $commandOption);
             $inputOptions = $this->getShortInputOptionCommand($inputOptions, $name, $commandOption);
@@ -222,13 +222,13 @@ abstract class AbstractCommand
         $this->helpMode = true;
     }
 
-    protected function addArgument(string $name, string $type, string $description): static
+    protected function addArgument(string $name, string $type, string $description = ''): static
     {
         $this->arguments[$name] = new InputArgument($name, $type, $description);
         return $this;
     }
 
-    protected function addOption(string $name, ?string $shortName, string $type, string $description, string|array|bool $default = null): static
+    protected function addOption(string $name, ?string $shortName, string $type, string $description = '', string|array|bool $default = null): static
     {
         $this->options[$name] = new InputOption($name, $shortName, $type, $description, $default);
         return $this;

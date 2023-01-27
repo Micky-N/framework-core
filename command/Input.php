@@ -107,7 +107,7 @@ class Input
     /**
      * @return array
      */
-    public function getOptions(): array
+    public function options(): array
     {
         return $this->options;
     }
@@ -123,7 +123,7 @@ class Input
     /**
      * @return array
      */
-    public function getArguments(): array
+    public function arguments(): array
     {
         return $this->arguments;
     }
@@ -141,7 +141,7 @@ class Input
      * @return mixed
      * @throws CommandException
      */
-    public function getArgument(string $name): mixed
+    public function argument(string $name): mixed
     {
         if (!$this->hasArgument($name)) {
             throw CommandException::ArgumentNotFound($name);
@@ -168,7 +168,7 @@ class Input
     /**
      * @throws CommandException
      */
-    public function getOption(string $name)
+    public function option(string $name)
     {
         if (!$this->hasOption($name)) {
             throw CommandException::OptionNotFound($name);
@@ -192,7 +192,7 @@ class Input
         return isset($this->options[$name]);
     }
 
-    public function choice(string $question, array $choices, int $defaultIndex = null, ?int $maxAttempts = null): string
+    public function choice(string $question, array $choices, int $defaultIndex = null, ?int $maxAttempts = null, string $errorMessage = ''): string
     {
         $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
         if (!is_null($defaultIndex)) {
@@ -212,9 +212,11 @@ class Input
                 return $choices[$answer];
             } else {
                 if ($maxAttempts && $maxAttempts > 1) {
-                    $this->choice($question, $choices, $defaultIndex, $maxAttempts - 1);
+                    $maxAttempts--;
+                    echo "\n$errorMessage\n" ?: "\n$maxAttempts remaining attempts\n";
+                    $this->choice($question, $choices, $defaultIndex, $maxAttempts);
                 } else {
-                    exit($this->error("Value is not correct, You got your chance"));
+                    exit($this->error("Value is not correct, the number of attempts is exceeded"));
                 }
             }
         }

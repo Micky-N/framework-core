@@ -28,7 +28,7 @@ class InputTest extends TestCase
         $command->settings();
         $command->setRealInput($input);
         try{
-            $this->assertEquals('Micky', $input->getArgument('name'));
+            $this->assertEquals('Micky', $input->argument('name'));
         }catch(Exception $exception){
             $this->assertEquals('Argument "name" not found', $exception->getMessage());
             $this->assertInstanceOf(CommandException::class, $exception);
@@ -41,7 +41,7 @@ class InputTest extends TestCase
         $command = new GreetingCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertEquals('Micky', $input->getArgument('name'));
+        $this->assertEquals('Micky', $input->argument('name'));
     }
 
     public function testNotFoundArgumentValue()
@@ -64,7 +64,7 @@ class InputTest extends TestCase
         $command = new GreetingCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertFalse($input->getArgument('lastName'));
+        $this->assertFalse($input->argument('lastName'));
     }
 
     public function testArrayArgumentValue()
@@ -73,8 +73,8 @@ class InputTest extends TestCase
         $command = new ArrayCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertCount(2, $input->getArgument('names'));
-        $this->assertEquals(['Micky', 'John'], $input->getArgument('names'));
+        $this->assertCount(2, $input->argument('names'));
+        $this->assertEquals(['Micky', 'John'], $input->argument('names'));
     }
 
     public function testMultiType()
@@ -83,13 +83,13 @@ class InputTest extends TestCase
         $command = new MultiCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertEquals(['Micky', 'John'], $input->getArgument('names'));
+        $this->assertEquals(['Micky', 'John'], $input->argument('names'));
 
         $input = new Input(['mky', 'greeting']);
         $command = new MultiCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertFalse($input->getArgument('names'));
+        $this->assertFalse($input->argument('names'));
     }
 
     public function testGetOptionValue()
@@ -98,7 +98,7 @@ class InputTest extends TestCase
         $optionalTest = new OptionalTestCommand();
         $optionalTest->settings();
         $optionalTest->setRealInput($input);
-        $this->assertEquals('Micky', $input->getOption('name'));
+        $this->assertEquals('Micky', $input->option('name'));
     }
 
     public function testGetDefaultOptionValue()
@@ -107,7 +107,7 @@ class InputTest extends TestCase
         $optionalTest = new OptionalTestCommand();
         $optionalTest->settings();
         $optionalTest->setRealInput($input);
-        $this->assertEquals('Test', $input->getOption('name'));
+        $this->assertEquals('Test', $input->option('name'));
     }
 
     public function testNotFoundOptionValue()
@@ -129,7 +129,7 @@ class InputTest extends TestCase
         $command = new TestOptionalCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertFalse($input->getOption('name'));
+        $this->assertFalse($input->option('name'));
     }
 
     public function testShortNameOption()
@@ -138,13 +138,13 @@ class InputTest extends TestCase
         $optionalTest = new OptionalTestCommand();
         $optionalTest->settings();
         $optionalTest->setRealInput($input);
-        $this->assertEquals('Micky', $input->getOption('name'));
+        $this->assertEquals('Micky', $input->option('name'));
 
         $input = new Input(['mky', 'optional:test', '-nMicky']);
         $optionalTest = new OptionalTestCommand();
         $optionalTest->settings();
         $optionalTest->setRealInput($input);
-        $this->assertEquals('Micky', $input->getOption('name'));
+        $this->assertEquals('Micky', $input->option('name'));
     }
 
     public function testArrayOption()
@@ -153,15 +153,15 @@ class InputTest extends TestCase
         $command = new OptionArrayCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertCount(2, $input->getOption('names'));
-        $this->assertEquals(['Micky', 'John'], $input->getOption('names'));
+        $this->assertCount(2, $input->option('names'));
+        $this->assertEquals(['Micky', 'John'], $input->option('names'));
 
         $input = new Input(['mky', 'greeting', '-nMicky', '-nJohn']);
         $command = new OptionArrayCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertCount(2, $input->getOption('names'));
-        $this->assertEquals(['Micky', 'John'], $input->getOption('names'));
+        $this->assertCount(2, $input->option('names'));
+        $this->assertEquals(['Micky', 'John'], $input->option('names'));
     }
 
     public function testMultiTypeOption()
@@ -170,13 +170,13 @@ class InputTest extends TestCase
         $command = new OptionMultiCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertEquals(['Micky'], $input->getOption('names'));
+        $this->assertEquals(['Micky'], $input->option('names'));
 
         $input = new Input(['mky', 'greeting', '--names']);
         $command = new OptionMultiCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertEquals(['Test'], $input->getOption('names'));
+        $this->assertEquals(['Test'], $input->option('names'));
     }
 
     public function testNoneOption()
@@ -185,19 +185,19 @@ class InputTest extends TestCase
         $command = new TestNoneCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertTrue($input->getOption('name'));
+        $this->assertTrue($input->option('name'));
 
         $input = new Input(['mky', 'optional:test', '-n']);
         $command = new TestNoneCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertTrue($input->getOption('name'));
+        $this->assertTrue($input->option('name'));
 
         $input = new Input(['mky', 'optional:test']);
         $command = new TestNoneCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertFalse($input->getOption('name'));
+        $this->assertFalse($input->option('name'));
     }
 
     public function testNegativeOption()
@@ -206,18 +206,18 @@ class InputTest extends TestCase
         $command = new TestNegativeCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertNull($input->getOption('name'));
+        $this->assertNull($input->option('name'));
 
         $input = new Input(['mky', 'optional:test', '--name']);
         $command = new TestNegativeCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertTrue($input->getOption('name'));
+        $this->assertTrue($input->option('name'));
 
         $input = new Input(['mky', 'optional:test', '--no-name']);
         $command = new TestNegativeCommand();
         $command->settings();
         $command->setRealInput($input);
-        $this->assertFalse($input->getOption('name'));
+        $this->assertFalse($input->option('name'));
     }
 }

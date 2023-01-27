@@ -87,7 +87,7 @@ class Console
         $signature = $input->getSignature();
         if ($this->hasCommand($signature)) {
             $this->currentCommand = $this->getCommand($signature);
-            if ($this->askHelpCommand($input->getOptions())) {
+            if ($this->askHelpCommand($input->options())) {
                 $this->currentCommand->setHelpMode();
             }
             $this->currentCommand->settings();
