@@ -14,6 +14,18 @@ class ProgressBar
     private int $progression = 0;
     private bool $stopProgression = false;
 
+    protected string $charEmpty = '░';
+
+    protected string $charFull = '▓';
+
+    protected string $unicodeCharFull = '█';
+
+    protected string $alternateCharEmpty = '_';
+
+    protected string $crossCharFull = 'X';
+
+    protected string $arrowCharFull = '=';
+
     public function __construct(private int|array $elements, private readonly ?Closure $process = null)
     {
     }
@@ -27,7 +39,7 @@ class ProgressBar
     {
         $percent = round(($this->progression * 100) / $this->count());
         $bar = round(($this->count() * $percent) / 100);
-        return sprintf("\r%s%%[%s>%s] %s/%s %s", $percent, str_repeat("=", $bar), str_repeat(" ", $this->count() - $bar), $this->progression, $this->count(), $progressMessage);
+        return sprintf("\r%s%%[%s>%s] %s/%s %s", $percent, str_repeat($this->unicodeCharFull, $bar), str_repeat($this->charEmpty, $this->count() - $bar), $this->progression, $this->count(), $progressMessage);
     }
 
     public function count(): int
@@ -144,10 +156,5 @@ class ProgressBar
     public function isCompleted(): bool
     {
         return $this->progression === $this->count();
-    }
-
-    public function __toString()
-    {
-        return $this->draw();
     }
 }
