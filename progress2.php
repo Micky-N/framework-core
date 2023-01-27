@@ -6,11 +6,10 @@ require_once('vendor/autoload.php');
 
 $out = new \MkyCommand\Output();
 $p = $out->progressBar(50);
-$p->setCharFull('cross');
-$p->setCharEmpty('underscore');
 $p->start();
 while(!$p->isCompleted()){
     usleep(50000);
     $p->progress('fkdlkdf');
 }
 $p->finish('finish');
+

@@ -58,6 +58,6 @@ class Output
 
     public function progressBar(int|array $elements, ?Closure $closure = null): ProgressBar
     {
-        return new ProgressBar($elements, $closure);
+        return new ProgressBar($this, $elements, $closure);
     }
 }

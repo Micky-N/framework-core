@@ -10,36 +10,101 @@ class ProgressBar
     const NO_DATA = 11;
     const PROCESS_SUCCESS = 12;
     const STOP_PROGRESSION = 13;
+    const STYLES = [
+        'charFull' => ['block', 'cross', 'arrow'],
+        'charEmpty' => ['blank', 'block', 'underscore']
+    ];
 
     private int $progression = 0;
+
     private bool $stopProgression = false;
 
-    protected string $charEmpty = '░';
+    private string $charFull = '█';
 
-    protected string $charFull = '▓';
+    private string $charEmpty = '░';
 
-    protected string $unicodeCharFull = '█';
+    private string $blankCharEmpty = ' ';
 
-    protected string $alternateCharEmpty = '_';
+    private string $blockCharEmpty = '░';
 
-    protected string $crossCharFull = 'X';
+    private string $blockCharFull = '█';
 
-    protected string $arrowCharFull = '=';
+    private string $underscoreCharEmpty = '_';
 
-    public function __construct(private int|array $elements, private readonly ?Closure $process = null)
+    private string $crossCharFull = 'X';
+
+    private string $arrowCharFull = '=';
+
+    private bool $isArrow = false;
+
+    private bool $isDisplay = false;
+
+    public function __construct(private readonly Output $output, private int|array $elements, private readonly ?Closure $process = null)
     {
     }
 
-    public function start(string $startMessage = ''): void
+    public function start(string $startMessage = ''): static
     {
-        print $this->draw();
+        $this->isDisplay = true;
+        print $this->draw($startMessage);
+        return $this;
     }
 
     private function draw($progressMessage = ''): string
     {
+        if(!$this->isDisplay){
+            return '';
+        }
         $percent = round(($this->progression * 100) / $this->count());
         $bar = round(($this->count() * $percent) / 100);
-        return sprintf("\r%s%%[%s>%s] %s/%s %s", $percent, str_repeat($this->unicodeCharFull, $bar), str_repeat($this->charEmpty, $this->count() - $bar), $this->progression, $this->count(), $progressMessage);
+        return sprintf("\r%s%%[%s" . ($this->isArrow ? '>' : '') . "%s] %s/%s %s", $percent, str_repeat($this->charFull, $bar), str_repeat($this->charEmpty, $this->count() - $bar), $this->progression, $this->count(), $progressMessage);
+    }
+
+    public function setArrowBar(bool $setArrow = true): static
+    {
+        $this->setCharFull('arrow');
+        $this->setCharEmpty('blank');
+        $this->isArrow($setArrow);
+        return $this;
+    }
+
+    public function setBlockBar(): static
+    {
+        $this->setCharFull('block');
+        $this->setCharEmpty('block');
+        $this->isArrow(false);
+        return $this;
+    }
+
+    public function setCharFull(string $style): static
+    {
+        if (!$this->styleIsValid($style)) {
+            $style = 'block';
+        }
+
+        $this->charFull = $this->{$style . 'CharFull'};
+        return $this;
+    }
+
+    public function setCharEmpty(string $style): static
+    {
+        if (!$this->styleIsValid($style, 'charEmpty')) {
+            $style = 'block';
+        }
+
+        $this->charEmpty = $this->{$style . 'CharEmpty'};
+        return $this;
+    }
+
+    public function isArrow(bool $isArrow): static
+    {
+        $this->isArrow = $isArrow;
+        return $this;
+    }
+
+    private function styleIsValid(string $style, string $char = 'charFull'): bool
+    {
+        return in_array($style, self::STYLES[$char]);
     }
 
     public function count(): int
@@ -65,7 +130,7 @@ class ProgressBar
                 $i++;
                 continue;
             }
-            if (!$this->stopProgression) {
+            if (!$this->isStopped()) {
                 $i++;
                 $process = $this->process;
                 $response = $process($element, $index, $this);
@@ -82,6 +147,9 @@ class ProgressBar
 
     public function progress(string $progressMessage = ''): static
     {
+        if($this->isStopped()){
+            return $this;
+        }
         $this->progression++;
 
         print $this->draw($progressMessage);
@@ -89,15 +157,20 @@ class ProgressBar
         return $this;
     }
 
-    public function reset(): void
+    public function reset(): static
     {
         $this->progression = 0;
+        return $this;
     }
 
-    public function completed(string $endMessage = ''): void
+    public function finish(string $finishMessage = ''): static
     {
         $this->reset();
-        echo $endMessage . "\n";
+        echo "\n";
+        if($finishMessage){
+            echo $finishMessage . "\n";
+        }
+        return $this;
     }
 
     /**
@@ -108,20 +181,22 @@ class ProgressBar
         return $this->elements;
     }
 
-    public function stop(string $stopMessage = ''): void
+    public function stop(string $stopMessage = ''): static
     {
         $this->stopProgression = true;
-        if ($stopMessage) {
-            echo $stopMessage . "\n";
+        if($stopMessage){
+            echo "\n".$stopMessage . "\n";
         }
+        return $this;
     }
 
-    public function resume(string $resumeMessage = ''): void
+    public function resume(string $resumeMessage = ''): static
     {
         $this->stopProgression = false;
-        if ($resumeMessage) {
+        if($resumeMessage){
             echo $resumeMessage . "\n";
         }
+        return $this;
     }
 
     public function isStopped(): bool
@@ -145,12 +220,19 @@ class ProgressBar
         return $this->progression;
     }
 
-    public function resolve(int|string $index, Closure $resolve, string $resolveMessage = ''): void
+    /**
+     * @param int|string $index
+     * @param Closure $resolve
+     * @return static
+     * 
+     */
+    public function resolve(int|string $index, Closure $resolve, string $resolveMessage = ''): static
     {
         $this->elements[$index] = $resolve($this->elements[$index], $index, $this);
         if ($resolveMessage) {
-            echo $resolveMessage . "\n";
+            echo "\n".$resolveMessage . "\n";
         }
+        return $this;
     }
 
     public function isCompleted(): bool
