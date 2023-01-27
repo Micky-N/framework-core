@@ -6,6 +6,7 @@ use Exception;
 use MkyCommand\Console;
 use MkyCommand\Exceptions\CommandException;
 use MkyCommand\HelpCommand;
+use MkyCommand\Input;
 use MkyCore\Tests\Commands\Arguments\GreetingCommand;
 use MkyCore\Tests\Commands\Arguments\NoSettingsCommand;
 use MkyCore\Tests\Commands\Optional\TestOptionalCommand;
@@ -26,7 +27,8 @@ class CommandTest extends TestCase
         $console = new Console();
         $console->addCommand('test', NoSettingsCommand::class)
             ->addCommand('greeting', GreetingCommand::class);
-        $console->execute(['mky', 'greeting', 'Micky']);
+        $input = new Input(['mky', 'greeting', 'Micky']);
+        $console->execute($input);
         $this->assertInstanceOf(GreetingCommand::class, $console->getCurrentCommand());
     }
 
@@ -36,7 +38,8 @@ class CommandTest extends TestCase
         $console->addCommand('test', NoSettingsCommand::class)
             ->addCommand('greeting', GreetingCommand::class);
         try {
-            $console->execute(['mky', 'wrong']);
+            $input = new Input(['mky', 'wrong']);
+            $console->execute($input);
         } catch (Exception $exception) {
             $this->assertInstanceOf(CommandException::class, $exception);
         }
@@ -47,7 +50,8 @@ class CommandTest extends TestCase
         $console = new Console();
         $console->addCommand('test', NoSettingsCommand::class)
             ->addCommand('greeting', GreetingCommand::class);
-        $this->assertEquals('Micky', $console->execute(['mky', 'greeting', 'Micky']));
+        $input = new Input(['mky', 'greeting', 'Micky']);
+        $this->assertEquals('Micky', $console->execute($input));
     }
 
     public function testHelpAllCommands()
@@ -57,7 +61,8 @@ class CommandTest extends TestCase
             ->addCommand('test:command', NoSettingsCommand::class)
             ->addCommand('greet:someone', GreetingCommand::class)
             ->addCommand('greet:optional', TestOptionalCommand::class);
-        $this->assertEquals(1, $console->execute(['mky', 'help']));
+        $input = new Input(['mky', 'help']);
+        $this->assertEquals(1, $console->execute($input));
     }
 
     public function testHelpCommand()
@@ -65,6 +70,7 @@ class CommandTest extends TestCase
         $console = new Console();
         $console->addCommand('test', NoSettingsCommand::class)
             ->addCommand('greeting', GreetingCommand::class);
-        $this->assertEquals(1, $console->execute(['mky', 'greeting', '-h']));
+        $input = new Input(['mky', 'greeting', '-h']);
+        $this->assertEquals(1, $console->execute($input));
     }
 }

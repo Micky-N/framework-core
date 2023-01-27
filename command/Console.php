@@ -9,22 +9,20 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class Console
 {
-
-    use Color;
-
+    
     /**
      * @var AbstractCommand[]
      */
-    private array $commands = [];
-    private ?AbstractCommand $currentCommand = null;
-    private readonly ?ContainerInterface $container;
+    protected array $commands = [];
+    protected ?AbstractCommand $currentCommand = null;
+    protected Output $output;
 
     /**
      * @param ?ContainerInterface $container
      */
-    public function __construct(?ContainerInterface $container = null)
+    public function __construct(protected readonly ?ContainerInterface $container = null)
     {
-        $this->container = $container;
+        $this->output = new Output;
     }
 
     /**
@@ -80,13 +78,12 @@ class Console
     }
 
     /**
-     * @param array $inputs
+     * @param Input $input
      * @return mixed
      * @throws CommandException
      */
-    public function execute(array $inputs): mixed
+    public function execute(Input $input): mixed
     {
-        $input = new Input($inputs);
         $signature = $input->getSignature();
         if ($this->hasCommand($signature)) {
             $this->currentCommand = $this->getCommand($signature);
@@ -95,12 +92,12 @@ class Console
             }
             $this->currentCommand->settings();
             if ($this->currentCommand->isHelpMode()) {
-                return $this->currentCommand->displayHelp($input);
+                return $this->currentCommand->displayHelp($input, $this->output);
             }
             $this->currentCommand->setRealInput($input);
-            return $this->currentCommand->execute();
+            return $this->currentCommand->execute($input, $this->output);
         }
-        throw CommandException::CommandNotFound($signature, $this->coloredMessage('php mky help', 'yellow'));
+        throw CommandException::CommandNotFound($signature);
     }
 
     /**

@@ -6,10 +6,10 @@ use Exception;
 
 class CommandException extends Exception
 {
-    public static function CommandNotFound(string $signature, string $command = ''): static
+    public static function CommandNotFound(string $signature): static
     {
-        $command = $command ? "\nrun $command to see the list of commands" : $command;
-        return new static("Command not found with signature \"$signature\"$command");
+        
+        return new static("Command not found with signature \"$signature\"");
     }
 
     public static function ArgumentNotFound(string $name): static

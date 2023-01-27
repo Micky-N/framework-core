@@ -22,18 +22,11 @@ abstract class AbstractCommand
      * @var InputOption[]
      */
     protected array $options = [];
-    protected ?Input $input = null;
 
     protected string $description = '';
-    protected Output $output;
     protected bool $helpMode = false;
 
-    public function __construct()
-    {
-        $this->output = new Output();
-    }
-
-    abstract public function execute(): mixed;
+    abstract public function execute(Input $input, Output $output): mixed;
 
     public function settings(): void
     {
@@ -65,7 +58,6 @@ abstract class AbstractCommand
     {
         $this->setRealArguments($input);
         $this->setRealOptions($input);
-        $this->input = $input;
     }
 
     /**
@@ -242,24 +234,24 @@ abstract class AbstractCommand
         return $this;
     }
 
-    public function displayHelp(Input $input): int
+    public function displayHelp(Input $input, Output $output): int
     {
-        $section = $this->output->section();
+        $section = $output->section();
         $section->text("Help for Mky CLI Command")->newLine();
         $arguments = $this->getArguments() ? array_values($this->getArguments()) : [];
         $options = $this->getOptions() ? array_values($this->getOptions()) : [];
-        $section->text($this->output->coloredMessage('Command: ' . $input->getFile(), 'gray') . ' ' . $this->output->coloredMessage($this->getSignature(), 'light_yellow') . "\n")
+        $section->text($output->coloredMessage('Command: ' . $input->getFile(), 'gray') . ' ' . $output->coloredMessage($this->getSignature(), 'light_yellow') . "\n")
             ->newLine()
-            ->text($this->output->coloredMessage('Description:', 'blue'))
+            ->text($output->coloredMessage('Description:', 'blue'))
             ->newLine()
             ->text("  " . $this->getDescription())
             ->newLine(2)
-            ->text($this->output->coloredMessage('Arguments:', 'yellow'))
+            ->text($output->coloredMessage('Arguments:', 'yellow'))
             ->newLine();
-        $table = $this->output->table();
+        $table = $output->table();
         for ($i = 0; $i < count($arguments); $i++) {
             $argument = $arguments[$i];
-            $table->addRow([$this->getInputType($argument), $argument->getDescription(), '']);
+            $table->addRow([$this->getInputType($argument, $output), $argument->getDescription(), '']);
         }
 
         for ($j = 0; $j < count($options); $j++) {
@@ -269,7 +261,7 @@ abstract class AbstractCommand
                 $default = $option->getDefault();
                 $default = is_array($default) ? '[' . join(', ', $default) . ']' : $default;
             }
-            $table->addRow([$this->getInputType($option), $option->getDescription(), $default]);
+            $table->addRow([$this->getInputType($option, $output), $option->getDescription(), $default]);
         }
 
         $section->text($table->setIndent(1)
@@ -280,7 +272,7 @@ abstract class AbstractCommand
         return self::SUCCESS;
     }
 
-    private function getInputType(InputArgument|InputOption $input): string
+    private function getInputType(InputArgument|InputOption $input, Output $output): string
     {
         $type = $input instanceof InputOption ? $this->getOptionType($input) : $this->getArgumentType($input);
         $text = '';
@@ -288,7 +280,7 @@ abstract class AbstractCommand
             $text .= $input->hasShortName() ? '-' . $input->getShortname() . '|' : '';
         }
         $text .= $input->getName() . " [$type]";
-        return $this->output->coloredMessage($text, 'green');
+        return $output->coloredMessage($text, 'green');
     }
 
     private function getOptionType(InputOption $option): string

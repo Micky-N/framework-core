@@ -3,6 +3,8 @@
 namespace MkyCommand;
 
 
+use MkyCommand\Input;
+use MkyCommand\Output;
 use MkyCommand\Input\InputOption;
 
 class HelpCommand extends AbstractCommand
@@ -12,7 +14,6 @@ class HelpCommand extends AbstractCommand
 
     public function __construct(private readonly Console $console)
     {
-        parent::__construct();
     }
 
     public function settings(): void
@@ -20,24 +21,24 @@ class HelpCommand extends AbstractCommand
         $this->addOption('namespace', 'n', InputOption::OPTIONAL, 'Namespace for filtering commands');
     }
 
-    public function execute(): int
+    public function execute(Input $input, Output $output): int
     {
-        $section = $this->output->section();
+        $section = $output->section();
         $section->text("Help for Mky CLI Command")
             ->newLine(2);
-        $this->sendHelp($section);
+        $this->sendHelp($section, $input, $output);
         $section->read(false);
 
         return self::SUCCESS;
     }
 
-    private function sendHelp(Section $section): void
+    private function sendHelp(Section $section, Input $input, Output $output): void
     {
         $namespaces = [];
         $commands = array_values($this->console->getCommands());
-        $section->text($this->output->coloredMessage("Available commands:", 'blue'))->newLine();
-        if ($this->input->hasOption('namespace') && $this->input->getOption('namespace')) {
-            $namespace = $this->input->getOption('namespace');
+        $section->text($output->coloredMessage("Available commands:", 'blue'))->newLine();
+        if ($input->hasOption('namespace') && $input->getOption('namespace')) {
+            $namespace = $input->getOption('namespace');
             $commands = array_filter($commands, function ($command) use ($namespace) {
                 return str_starts_with($command->getSignature(), "$namespace:");
             });
@@ -49,21 +50,21 @@ class HelpCommand extends AbstractCommand
             $namespace = explode(':', $command->getSignature());
             $namespace = isset($namespace[1]) ? $namespace[0] : false;
             $description = $command->getDescription();
-            $namespaces[$namespace ?: count($namespaces)][] = [$this->output->coloredMessage($command->getSignature(), 'green'), $description];
+            $namespaces[$namespace ?: count($namespaces)][] = [$output->coloredMessage($command->getSignature(), 'green'), $description];
         }
 
         ksort($namespaces, SORT_NATURAL);
         foreach ($namespaces as $name => $commandNames) {
-            $this->helpByNamespace($name, $commandNames, $section);
+            $this->helpByNamespace($name, $commandNames, $section, $output);
         }
     }
 
-    private function helpByNamespace(string $name, mixed $commandNames, Section $section): void
+    private function helpByNamespace(string $name, mixed $commandNames, Section $section, Output $output): void
     {
         if (!is_numeric($name)) {
-            $section->text(" " . $this->output->coloredMessage($name, 'yellow'))->newLine();
+            $section->text(" " . $output->coloredMessage($name, 'yellow'))->newLine();
         }
-        $table = $this->output->table();
+        $table = $output->table();
         for ($i = 0; $i < count($commandNames); $i++) {
             $commandName = $commandNames[$i];
             $table->addRow($commandName);
