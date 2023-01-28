@@ -2,30 +2,22 @@
 
 namespace MkyCore\Console\Migration;
 
-use MkyCommand\AbstractCommand;
 use MkyCommand\Input;
 use MkyCommand\Output;
-use MkyCore\Application;
 use MkyCore\File;
-use MkyCore\Migration\DB;
 use MkyCore\Str;
 
-class Create extends AbstractCommand
+class Create extends Migration
 {
 
     protected string $description = 'Create a new migration file';
-
-    public function __construct(private readonly Application $application, private readonly array $variables = [])
-    {
-        $this->migrationDB = $application->get(DB::class);
-    }
 
     public function settings(): void
     {
         $this->addArgument('name', Input\InputArgument::REQUIRED, 'Name of the migration file');
     }
 
-    public function execute(Input $input, Output $output): int|string
+    public function execute(Input $input, Output $output): int
     {
         $outputDir = File::makePath([$this->application->get('path:database'), 'migrations']);
         $name = $input->argument('name');
@@ -42,9 +34,6 @@ class Create extends AbstractCommand
             mkdir($outputDir, '0777', true);
         }
         file_put_contents($final, $parsedModel);
-        if (count($this->variables) > 0) {
-            return $final;
-        }
         $output->success("Migration file created", $final);
         return self::SUCCESS;
     }

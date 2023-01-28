@@ -12,17 +12,10 @@ use MkyCore\Migration\DB;
 use MkyCore\Migration\MigrationFile;
 use MkyCore\Migration\Schema;
 
-class Refresh extends AbstractCommand
+class Refresh extends Migration
 {
-    public static bool $query = false;
-    protected DB $migrationDB;
-
     protected string $description = 'Refresh database migration (one or multiple)';
 
-    public function __construct(private readonly Application $application)
-    {
-        $this->migrationDB = $application->get(DB::class);
-    }
 
     public function settings(): void
     {
@@ -61,22 +54,6 @@ class Refresh extends AbstractCommand
         } catch (Exception $e) {
             $output->error($e->getMessage());
             return self::ERROR;
-        }
-    }
-
-    protected function sendResponse(Output $output, array $success, array $errors)
-    {
-        if ($success) {
-            for ($i = 0; $i < count($success); $i++) {
-                $response = $success[$i];
-                $output->coloredMessage($response[0], 'green', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
-            }
-        }
-        if ($errors) {
-            for ($i = 0; $i < count($errors); $i++) {
-                $response = $errors[$i];
-                $output->coloredMessage($response[0], 'red', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
-            }
         }
     }
 }

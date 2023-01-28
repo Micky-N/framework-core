@@ -6,7 +6,7 @@ use MkyCommand\AbstractCommand;
 use MkyCommand\Input;
 use MkyCommand\Output;
 
-class Reset extends AbstractCommand
+class Reset extends Create
 {
     protected string $direction = 'up';
 

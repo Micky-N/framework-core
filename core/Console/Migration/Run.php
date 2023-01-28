@@ -12,17 +12,10 @@ use MkyCore\Migration\DB;
 use MkyCore\Migration\MigrationFile;
 use MkyCore\Migration\Schema;
 
-class Run extends AbstractCommand
+class Run extends Create
 {
-    public static bool $query = false;
-    protected DB $migrationDB;
 
     protected string $description = 'Run database migration (all or one migration file)';
-
-    public function __construct(private readonly Application $application)
-    {
-        $this->migrationDB = $application->get(DB::class);
-    }
 
     public function settings(): void
     {
@@ -31,7 +24,7 @@ class Run extends AbstractCommand
             ->addOption('pop', null, InputOption::NONE, 'Run database population after migration');
     }
 
-    public function execute(Input $input, Output $output): bool|string
+    public function execute(Input $input, Output $output): int
     {
         /** @var MigrationFile $migrationRunner */
         $migrationRunner = $this->application->get(MigrationFile::class);
@@ -56,22 +49,6 @@ class Run extends AbstractCommand
         } catch (Exception $e) {
             $output->error($e->getMessage());
             return self::ERROR;
-        }
-    }
-
-    protected function sendResponse(Output $output, array $success, array $errors)
-    {
-        if ($success) {
-            for ($i = 0; $i < count($success); $i++) {
-                $response = $success[$i];
-                $output->coloredMessage($response[0], 'green', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
-            }
-        }
-        if ($errors) {
-            for ($i = 0; $i < count($errors); $i++) {
-                $response = $errors[$i];
-                $output->coloredMessage($response[0], 'red', 'bold') . (isset($response[1]) ? ": $response[1]" : '') . "\n";
-            }
         }
     }
 }

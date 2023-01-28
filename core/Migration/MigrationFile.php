@@ -3,6 +3,7 @@
 namespace MkyCore\Migration;
 
 use MkyCore\Application;
+use MkyCore\Console\Migration\Create;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Exceptions\Migration\MigrationException;
@@ -72,37 +73,6 @@ class MigrationFile
     }
 
     /**
-     * Call migration class method
-     *
-     * @param string $direction
-     * @param string $migrationFile
-     * @return void
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     */
-    private function instantiateMigration(string $direction, string $migrationFile): void
-    {
-        $log = str_replace([$this->app->get('path:database').DIRECTORY_SEPARATOR.'migrations', '.php'], ['', ''], $migrationFile);
-        $log = trim($log, '\/');
-        if(!$this->migrationDB->isLogExists($log)){
-            if (in_array($direction, ['up', 'down'])) {
-                require $migrationFile;
-                $class = $this->getClassFromFile($migrationFile);
-                $instantiateMigration = new $class();
-                if (method_exists($instantiateMigration, $direction)) {
-                    $instantiateMigration->{$direction}();
-                    if($direction == 'up'){
-                        $this->migrationDB->addLog($log);
-                    }elseif($direction == 'down'){
-                        $this->migrationDB->deleteLog($log);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Get migration file by time
      *
      * @param string $fileTime
@@ -114,10 +84,59 @@ class MigrationFile
     private function getMigrationFile(string $fileTime): string
     {
         $files = glob(File::makePath([$this->app->get('path:database'), 'migrations', "*.php"]));
-        $base = File::makePath([$this->app->get('path:database'), 'migrations']).DIRECTORY_SEPARATOR;
+        $base = File::makePath([$this->app->get('path:database'), 'migrations']) . DIRECTORY_SEPARATOR;
         $files = array_map(fn($file) => str_replace([$base, '.php'], '', $file), $files);
-        $fileReg = preg_grep('/^'.$fileTime.'_/', $files);
+        $fileReg = preg_grep('/^' . $fileTime . '_/', $files);
         return $fileReg ? $fileReg[0] : $fileTime;
+    }
+
+    /**
+     * Call migration class method
+     *
+     * @param string $direction
+     * @param string $migrationFile
+     * @return void
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    private function instantiateMigration(string $direction, string $migrationFile): void
+    {
+        $log = str_replace([$this->app->get('path:database') . DIRECTORY_SEPARATOR . 'migrations', '.php'], ['', ''], $migrationFile);
+        $log = trim($log, '\/');
+        if (in_array($direction, ['up', 'down'])) {
+            require $migrationFile;
+            $class = $this->getClassFromFile($migrationFile);
+            $instantiateMigration = new $class();
+            if (method_exists($instantiateMigration, $direction)) {
+                if (!$this->migrationDB->isLogExists($log)) {
+                    $instantiateMigration->{$direction}();
+                    if ($direction == 'up') {
+                        $this->migrationDB->addLog($log);
+                    } elseif ($direction == 'down') {
+                        $this->migrationDB->deleteLog($log);
+                    }
+                }else{
+                    if(Create::$query){
+                        $instantiateMigration->{$direction}();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Get migration class name
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     */
+    private function getClassFromFile(string $file): string
+    {
+        $text = preg_replace('/[0-9+]/', '', $file);
+        $text = str_replace([$this->app->get('path:database') . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR, '.php'], '', $text);
+        $text = str_starts_with($text, '_') ? ltrim($text, '_') : $text;
+        return Str::classify($text);
     }
 
     /**
@@ -153,20 +172,6 @@ class MigrationFile
         $file2 = str_replace([$this->app->get('path:database') . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR, '.php'], '', $file2);
         $file1 = preg_replace('/[_a-z+]/', '', $file1);
         $file2 = preg_replace('/[_a-z+]/', '', $file2);
-        return (int) $file2 > (int) $file1;
-    }
-
-    /**
-     * Get migration class name
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     * @throws FailedToResolveContainerException
-     */
-    private function getClassFromFile(string $file): string
-    {
-        $text = preg_replace('/[0-9+]/', '', $file);
-        $text = str_replace([$this->app->get('path:database') . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR, '.php'], '', $text);
-        $text = str_starts_with($text, '_') ? ltrim($text, '_') : $text;
-        return Str::classify($text);
+        return (int)$file2 > (int)$file1;
     }
 }
