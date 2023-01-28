@@ -44,8 +44,7 @@ class NodeConsoleHandler extends Console
 
     private function setInitCommands(): void
     {
-        $this->addCommand('help', new HelpCommand($this))
-            ->addCommand('create:controller', $this->app->get(Controller::class))
+        $this->addCommand('create:controller', $this->app->get(Controller::class))
             ->addCommand('create:entity', $this->app->get(Entity::class))
             ->addCommand('create:event', $this->app->get(Event::class))
             ->addCommand('create:listener', $this->app->get(Listener::class))

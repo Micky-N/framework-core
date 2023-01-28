@@ -279,7 +279,8 @@ abstract class AbstractCommand
         $type = $input instanceof InputOption ? $this->getOptionType($input) : $this->getArgumentType($input);
         $text = '';
         if ($input instanceof InputOption) {
-            $text .= $input->hasShortName() ? '-' . $input->getShortname() . '|' : '';
+            $text = '--';
+            $text .= $input->hasShortName() ? $input->getShortname() . '|' : '';
         }
         $text .= $input->getName() . " [$type]";
         return $output->coloredMessage($text, 'green');

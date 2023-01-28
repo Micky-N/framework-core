@@ -20,6 +20,7 @@ class Console
     public function __construct()
     {
         $this->output = new Output;
+        $this->addCommand('help', new HelpCommand($this));
     }
 
     /**
