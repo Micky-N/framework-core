@@ -3,12 +3,9 @@
 namespace MkyCore\Console\Migration;
 
 use Exception;
-use MkyCommand\AbstractCommand;
 use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
-use MkyCore\Application;
-use MkyCore\Migration\DB;
 use MkyCore\Migration\MigrationFile;
 use MkyCore\Migration\Schema;
 
@@ -42,7 +39,7 @@ class Rollback extends Create
                 return self::ERROR;
             }
             foreach ($migrationLogs as $log) {
-                $file = $this->application->get('path:database') . DIRECTORY_SEPARATOR . $log['log'];
+                $file = $this->application->get('path:database') . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR . $log['log'];
                 $migrationRunner->actionMigration('down', $file);
             }
             $this->sendResponse($output, Schema::$SUCCESS, Schema::$ERRORS);
