@@ -7,6 +7,7 @@ use MkyCommand\Input;
 use MkyCommand\Output;
 use MkyCore\Application;
 use MkyCore\File;
+use MkyCore\Migration\DB;
 use MkyCore\Str;
 
 class Create extends AbstractCommand
@@ -16,6 +17,7 @@ class Create extends AbstractCommand
 
     public function __construct(private readonly Application $application, private readonly array $variables = [])
     {
+        $this->migrationDB = $application->get(DB::class);
     }
 
     public function settings(): void

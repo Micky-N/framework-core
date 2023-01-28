@@ -21,6 +21,7 @@ class Refresh extends AbstractCommand
 
     public function __construct(private readonly Application $application)
     {
+        $this->migrationDB = $application->get(DB::class);
     }
 
     public function settings(): void
