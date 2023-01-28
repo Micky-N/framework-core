@@ -49,7 +49,7 @@ class Rollback extends AbstractCommand
                 return self::ERROR;
             }
             foreach ($migrationLogs as $log) {
-                $file = $this->application->get('path::database') . DIRECTORY_SEPARATOR . $log['log'];
+                $file = $this->application->get('path:database') . DIRECTORY_SEPARATOR . $log['log'];
                 $migrationRunner->actionMigration('down', $file);
             }
             $this->sendResponse($output, Schema::$SUCCESS, Schema::$ERRORS);
