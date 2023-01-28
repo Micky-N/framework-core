@@ -57,7 +57,11 @@ class MigrationFile
     {
         if ($file) {
             $file = $this->getMigrationFile($file);
-            $migrationFile = File::makePath([$this->app->get('path:database'), 'migrations', "$file.php"], true);
+            if(!str_starts_with($file, $this->app->get('path:database'))){
+                $migrationFile = File::makePath([$this->app->get('path:database'), 'migrations', "$file.php"], true);
+            }else{
+                $migrationFile = $file.'.php';
+            }
             if (!$migrationFile) {
                 throw MigrationException::MIGRATION_FILE_NOT_FOUND("$file.php");
             }
@@ -86,8 +90,11 @@ class MigrationFile
         $files = glob(File::makePath([$this->app->get('path:database'), 'migrations', "*.php"]));
         $base = File::makePath([$this->app->get('path:database'), 'migrations']) . DIRECTORY_SEPARATOR;
         $files = array_map(fn($file) => str_replace([$base, '.php'], '', $file), $files);
-        $fileReg = preg_grep('/^' . $fileTime . '_/', $files);
-        return $fileReg ? $fileReg[0] : $fileTime;
+        if(!str_starts_with($fileTime, $this->app->get('path:database'))){
+            $fileReg = preg_grep('/^' . $fileTime . '_/', $files);
+            return $fileReg ? $fileReg[0] : $fileTime;
+        }
+        return $fileTime;
     }
 
     /**
