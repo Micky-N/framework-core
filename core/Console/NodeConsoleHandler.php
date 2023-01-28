@@ -3,6 +3,7 @@
 namespace MkyCore\Console;
 
 use Exception;
+use MkyCommand\HelpCommand;
 use MkyCommand\Input;
 use MkyCommand\Console;
 use MkyCore\Application;
@@ -43,27 +44,28 @@ class NodeConsoleHandler extends Console
 
     private function setInitCommands(): void
     {
-        $this->addCommand('create:controller', Controller::class)
-            ->addCommand('create:entity', Entity::class)
-            ->addCommand('create:event', Event::class)
-            ->addCommand('create:listener', Listener::class)
-            ->addCommand('create:manager', Manager::class)
-            ->addCommand('create:middleware', Middleware::class)
-            ->addCommand('create:module', Module::class)
-            ->addCommand('create:provider', Provider::class)
-            ->addCommand('generate:key', Key::class)
-            ->addCommand('install:jwt', Jwt::class)
-            ->addCommand('install:remember', Remember::class)
-            ->addCommand('migration:create', Create::class)
-            ->addCommand('migration:refresh', Refresh::class)
-            ->addCommand('migration:reset', Reset::class)
-            ->addCommand('migration:rollback', Rollback::class)
-            ->addCommand('migration:run', Run::class)
-            ->addCommand('populator:create', PopulatorCreate::class)
-            ->addCommand('populator:run', PopulatorRun::class)
-            ->addCommand('show:module', ShowModule::class)
-            ->addCommand('show:routes', Route::class)
-            ->addCommand('tmp:link', Link::class);
+        $this->addCommand('help', new HelpCommand($this))
+            ->addCommand('create:controller', $this->app->get(Controller::class))
+            ->addCommand('create:entity', $this->app->get(Entity::class))
+            ->addCommand('create:event', $this->app->get(Event::class))
+            ->addCommand('create:listener', $this->app->get(Listener::class))
+            ->addCommand('create:manager', $this->app->get(Manager::class))
+            ->addCommand('create:middleware', $this->app->get(Middleware::class))
+            ->addCommand('create:module', $this->app->get(Module::class))
+            ->addCommand('create:provider', $this->app->get(Provider::class))
+            ->addCommand('generate:key', $this->app->get(Key::class))
+            ->addCommand('install:jwt', $this->app->get(Jwt::class))
+            ->addCommand('install:remember', $this->app->get(Remember::class))
+            ->addCommand('migration:create', $this->app->get(Create::class))
+            ->addCommand('migration:refresh', $this->app->get(Refresh::class))
+            ->addCommand('migration:reset', $this->app->get(Reset::class))
+            ->addCommand('migration:rollback', $this->app->get(Rollback::class))
+            ->addCommand('migration:run', $this->app->get(Run::class))
+            ->addCommand('populator:create', $this->app->get(PopulatorCreate::class))
+            ->addCommand('populator:run', $this->app->get(PopulatorRun::class))
+            ->addCommand('show:module', $this->app->get(ShowModule::class))
+            ->addCommand('show:routes', $this->app->get(Route::class))
+            ->addCommand('tmp:link', $this->app->get(Link::class));
     }
 
     private function setCustomCommands(): void
