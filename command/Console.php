@@ -17,56 +17,20 @@ class Console
     protected ?AbstractCommand $currentCommand = null;
     protected Output $output;
 
-    /**
-     * @param ?ContainerInterface $container
-     */
-    public function __construct(protected readonly ?ContainerInterface $container = null)
+    public function __construct()
     {
         $this->output = new Output;
     }
 
     /**
      * @param string $signature
-     * @param string|AbstractCommand $command
+     * @param AbstractCommand $command
      * @return Console
-     * @throws ConsoleException
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      */
-    public function addCommand(string $signature, string|AbstractCommand $command): static
+    public function addCommand(string $signature, AbstractCommand $command): static
     {
-        if (is_string($command)) {
-            if (!class_exists($command)) {
-                throw ConsoleException::CommandNotFound($command);
-            }
-            $command = $this->instantiateCommand($command);
-        } else {
-            if (!($command instanceof AbstractCommand)) {
-                throw ConsoleException::CommandNotExtendsAbstract(get_class($command));
-            }
-        }
         $this->commands[$signature] = $command->setSignature($signature);
         return $this;
-    }
-
-    /**
-     * @param string $command
-     * @return AbstractCommand
-     * @throws ConsoleException
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    private function instantiateCommand(string $command): AbstractCommand
-    {
-        if ($this->container) {
-            $commandInstance = $this->container->get($command);
-        } else {
-            $commandInstance = new $command();
-        }
-        if (!($commandInstance instanceof AbstractCommand)) {
-            throw ConsoleException::CommandNotExtendsAbstract($command);
-        }
-        return $commandInstance;
     }
 
     /**
@@ -119,6 +83,10 @@ class Console
         return $this->commands[$signature] ?? throw CommandException::CommandNotFound($signature);
     }
 
+    /**
+     * @param array $options
+     * @return bool
+     */
     private function askHelpCommand(array $options): bool
     {
         return isset($options['h']) || isset($options['help']);

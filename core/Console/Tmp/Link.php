@@ -6,6 +6,7 @@ use MkyCommand\AbstractCommand;
 use MkyCommand\Input;
 use MkyCommand\Output;
 use MkyCore\Application;
+use MkyCore\Config;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\FileManager;
@@ -14,7 +15,7 @@ use ReflectionException;
 class Link extends AbstractCommand
 {
 
-    protected string $description = '';
+    protected string $description = 'Create symlinks from filesystems config';
 
     public function __construct(private readonly Application $application)
     {
@@ -30,7 +31,7 @@ class Link extends AbstractCommand
      */
     public function execute(Input $input, Output $output): int
     {
-        $links = config('filesystems.links');
+        $links = $this->application->get(Config::class)->get('filesystems.links', []);
         foreach ($links as $link => $target) {
             $link = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $link);
             $target = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $target);

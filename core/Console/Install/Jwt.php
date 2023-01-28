@@ -9,6 +9,7 @@ use MkyCore\Application;
 
 class Jwt extends AbstractCommand
 {
+    protected string $description = 'Implement json web token migration and config file';
 
     public function __construct(private readonly Application $application)
     {

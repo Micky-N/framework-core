@@ -2,39 +2,48 @@
 
 namespace MkyCore\Console\Migration;
 
+use MkyCommand\AbstractCommand;
+use MkyCommand\Input;
+use MkyCommand\Output;
 use MkyCore\Application;
-use MkyCore\Console\Create\Create as AbstractCreate;
 use MkyCore\File;
 use MkyCore\Str;
 
-class Create extends AbstractCreate
+class Create extends AbstractCommand
 {
 
-    public function __construct(Application $app, array $params = [], array $moduleOptions = [])
+    protected string $description = 'Create a new migration file';
+
+    public function __construct(private readonly Application $application, private readonly array $variables = [])
     {
-        parent::__construct($app, $params, $moduleOptions);
-        $this->createType = 'migration';
     }
 
-    public function process(): bool|string
+    public function settings(): void
     {
-        $getModel = $this->getModel();
-        $output = File::makePath([$this->app->get('path:database'), 'migrations']);
-        $params = $this->params;
-        $replaceParams = $this->moduleOptions;
-        $name = array_shift($params);
+        $this->addArgument('name', Input\InputArgument::REQUIRED, 'Name of the migration file');
+    }
+
+    public function execute(Input $input, Output $output): int|string
+    {
+        $outputDir = File::makePath([$this->application->get('path:database'), 'migrations']);
+        $name = $input->argument('name');
         $nameSnaked = Str::toSnake($name);
         $nameFile = time() . "_$nameSnaked";
-        $final = $output . DIRECTORY_SEPARATOR . $nameFile . '.php';
+        $final = $outputDir . DIRECTORY_SEPARATOR . $nameFile . '.php';
         if (file_exists($final)) {
-            return $this->error('File already exists', 'migrations' . DIRECTORY_SEPARATOR . "$nameFile.php");
+            $output->error('File already exists', 'migrations' . DIRECTORY_SEPARATOR . "$nameFile.php");
+            return self::ERROR;
         }
-        $parsedModel = file_get_contents($getModel);
+        $parsedModel = file_get_contents(dirname(__DIR__) . 'models/migration.model');
         $parsedModel = str_replace('!name', Str::classify($name), $parsedModel);
-        if (!is_dir($output)) {
-            mkdir($output, '0777', true);
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, '0777', true);
         }
         file_put_contents($final, $parsedModel);
-        return count($this->moduleOptions) > 0 ? $replaceParams['name'] : $this->success("$this->createType file created", $final);
+        if (count($this->variables) > 0) {
+            return $final;
+        }
+        $output->success("Migration file created", $final);
+        return self::SUCCESS;
     }
 }

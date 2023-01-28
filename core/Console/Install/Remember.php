@@ -12,6 +12,8 @@ use MkyCore\Console\Create\Middleware;
 class Remember extends AbstractCommand
 {
 
+    protected string $description = 'Implement the remember authenticate system';
+
     public function __construct(private readonly Application $application)
     {
     }

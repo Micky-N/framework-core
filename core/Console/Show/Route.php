@@ -3,11 +3,9 @@
 namespace MkyCore\Console\Show;
 
 use MkyCommand\AbstractCommand;
-use MkyCommand\Color;
 use MkyCommand\Input;
 use MkyCommand\Output;
 use MkyCore\Application;
-use MkyCore\Facades\Router;
 
 class Route extends AbstractCommand
 {

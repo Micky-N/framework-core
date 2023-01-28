@@ -2,14 +2,25 @@
 
 namespace MkyCore\Console\Migration;
 
-class Reset extends Migration
+use MkyCommand\AbstractCommand;
+use MkyCommand\Input;
+use MkyCommand\Output;
+
+class Reset extends AbstractCommand
 {
     protected string $direction = 'up';
 
-    public function process(): bool|string
+    protected string $description = 'Reset and re-run migration';
+
+    public function settings(): void
     {
-        $pop = in_array('--pop', $this->params);
-        exec('php mky migration:rollback -n=all', $outputClear);
+        $this->addOption('pop', null, Input\InputOption::NONE, 'Run database population after resetting');
+    }
+
+    public function execute(Input $input, Output $output): int
+    {
+        $pop = $input->option('pop');
+        exec('php mky migration:rollback -n all', $outputClear);
         for ($i = 0; $i < count($outputClear); $i++) {
             echo $outputClear[$i] . "\n";
         }
@@ -17,6 +28,6 @@ class Reset extends Migration
         for ($i = 0; $i < count($outputRun); $i++) {
             echo $outputRun[$i] . "\n";
         }
-        return true;
+        return self::SUCCESS;
     }
 }
