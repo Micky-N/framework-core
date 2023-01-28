@@ -2,10 +2,14 @@
 
 namespace MkyCore\Console\Show;
 
+use MkyCommand\AbstractCommand;
 use MkyCommand\Color;
+use MkyCommand\Input;
+use MkyCommand\Output;
+use MkyCore\Application;
 use MkyCore\Facades\Router;
 
-class Route extends Show
+class Route extends AbstractCommand
 {
 
     const HEADERS = [
@@ -18,21 +22,34 @@ class Route extends Show
 
     const FILTERS = ['controller', 'module', 'name', 'url', 'methods'];
 
-    use Color;
+    protected string $description = 'Show all routes';
 
-    public function process(): bool|string
+    public function __construct(private readonly Application $application)
     {
-        $print = in_array('--print', $this->params);
-        $table = new ConsoleTable();
+    }
+
+    public function settings(): void
+    {
+        $this->addOption('print', 'p', Input\InputOption::NONE, 'Display routes in print mode');
+        for($i = 0; $i < count(self::FILTERS); $i++){
+            $filter = self::FILTERS[$i];
+            $this->addOption($filter, null, Input\InputOption::OPTIONAL, "Filter routes by $filter");
+        }
+    }
+
+    public function execute(Input $input, Output $output): int
+    {
+        $print = $input->hasOption('print');
+        $table = $output->table();
         $table->setHeaders(array_map(fn($header) => substr($header, 3), array_keys(self::HEADERS)));
-        $filters = $this->getFilters($this->parseParams());
-        $routes = Router::getRoutes($filters);
+        $filters = $this->getFilters($input->options());
+        $routes = $this->application->get(\MkyCore\Router\Router::class)->getRoutes($filters);
         if(!$routes){
-            echo $this->coloredMessage('No route found with these filter criteria', 'red', 'bold').":\n";
+            $output->error('No route found with these filter criteria:');
             foreach ($filters as $cr => $value){
                 echo "  - $cr: ".join('|', (array) $value)."\n";
             }
-            return false;
+            return self::ERROR;
         }
         $methods = array_keys(self::HEADERS);
         for ($i = 0; $i < count($routes); $i++) {
@@ -42,7 +59,7 @@ class Route extends Show
                 if ($method == 'getAction') {
                     $array[] = join('::', $route->{$method}());
                 } elseif ($method == 'getMethods') {
-                    $array[] = $this->parseMethods(join('|', $route->{$method}()), $print);
+                    $array[] = $this->parseMethods($output, join('|', $route->{$method}()), $print);
                 } elseif ($method == 'getUrl') {
                     $array[] = '/' . trim($this->parseUrl($route->{$method}(), $print), '/');
                 } else {
@@ -59,7 +76,7 @@ class Route extends Show
             ->setIndent(2)
             ->showAllBorders()
             ->display();
-        return true;
+        return self::SUCCESS;
     }
 
     private function getFilters(array $inputs): array
@@ -79,18 +96,18 @@ class Route extends Show
         return $filters;
     }
 
-    private function parseMethods(string $methods, bool $print = false): string
+    private function parseMethods(Output $output, string $methods, bool $print = false): string
     {
         foreach (['POST' => 'green', 'GET' => 'blue', 'PUT' => 'light_purple', 'DELETE' => 'red'] as $method => $color) {
-            $apply = $print ? $method : $this->coloredMessage($method, $color);
+            $apply = $print ? $method : $output->coloredMessage($method, $color);
             $methods = str_replace($method, $apply, $methods);
         }
         return $methods;
     }
 
-    private function parseUrl(string $url, bool $print = false): string
+    private function parseUrl(Output $output, string $url, bool $print = false): string
     {
-        $apply = $print ? '$1' : $this->coloredMessage('$1', 'light_yellow', 0);
+        $apply = $print ? '$1' : $output->coloredMessage('$1', 'light_yellow', 0);
         return preg_replace('/(\{.*?})/', $apply, $url);
     }
 }

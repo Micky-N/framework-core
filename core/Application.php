@@ -155,6 +155,16 @@ class Application extends Container
     }
 
     /**
+     * Get the name of all modules
+     *
+     * @return array<string, string>
+     */
+    public function getModulesName(): array
+    {
+        return array_keys($this->modules);
+    }
+
+    /**
      * Get all commands
      *
      * @return array<string, string>

@@ -2,9 +2,16 @@
 
 namespace MkyCore\Console\Show;
 
+use MkyCommand\AbstractCommand;
 use MkyCommand\Color;
+use MkyCommand\Input;
+use MkyCommand\Output;
+use MkyCore\Application;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use ReflectionException;
 
-class Module extends Show
+class Module extends AbstractCommand
 {
 
     const HEADERS = [
@@ -12,18 +19,34 @@ class Module extends Show
         'getModuleKernel' => 'Kernel',
     ];
 
-    use Color;
 
+    protected string $description = 'Show all modules';
 
-    public function process(): bool|string
+    public function __construct(private readonly Application $application)
     {
-        $print = in_array('--print', $this->params);
+    }
+
+    public function settings(): void
+    {
+        $this->addOption('print', 'p', Input\InputOption::NONE, 'Display modules in print mode');
+    }
+
+    /**
+     * @param Input $input
+     * @param Output $output
+     * @return int
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    public function execute(Input $input, Output $output): int
+    {
         $table = new ConsoleTable();
-        $table->setHeaders(array_map(fn($header) => $this->coloredMessage($header, 'green'), array_values(self::HEADERS)));
-        $modules = array_keys($this->app->getModules());
+        $table->setHeaders(array_map(fn($header) => $output->coloredMessage($header, 'green'), array_values(self::HEADERS)));
+        $modules = array_keys($this->application->getModules());
         $headers = array_keys(self::HEADERS);
         for ($i = 0; $i < count($modules); $i++) {
-            $module = $this->app->getModuleKernel($modules[$i]);
+            $module = $this->application->getModuleKernel($modules[$i]);
             $array = [];
             foreach ($headers as $header) {
                 if ($header == 'getModuleKernel') {
@@ -34,7 +57,7 @@ class Module extends Show
             }
             $table->addRow($array);
         }
-        if ($print) {
+        if ($input->hasOption('print')) {
             echo "List of modules:\n";
         }
 
@@ -42,6 +65,7 @@ class Module extends Show
             ->setIndent(2)
             ->showAllBorders()
             ->display();
-        return true;
+        return self::SUCCESS;
     }
+
 }

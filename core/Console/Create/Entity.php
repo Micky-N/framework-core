@@ -2,6 +2,10 @@
 
 namespace MkyCore\Console\Create;
 
+use MkyCommand\Input;
+use MkyCommand\Input\InputOption;
+use MkyCommand\Output;
+use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Str;
@@ -9,23 +13,29 @@ use ReflectionException;
 
 class Entity extends Create
 {
-    protected string $outputDirectory = 'Entities';
 
-    /**
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     * @throws FailedToResolveContainerException
-     */
-    protected function handleQuestions(array $replaceParams, array $params = []): array
+    protected string $outputDirectory = 'Entities';
+    protected string $createType = 'entity';
+    protected string $suffix = 'Entity';
+
+    protected string $description = 'Create a new entity';
+
+    public function settings(): void
     {
-        $manager = $this->moduleOptions['manager'] ?? false;
+        $this->addArgument('name', Input\InputArgument::REQUIRED, 'Name of event, by default is suffixed by Event')
+            ->addOption('real', 'r', InputOption::NONE, 'Keep the real name of the event');
+    }
+
+    public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars): void
+    {
+        $manager = $this->variables['manager'] ?? false;
         $properties = [];
         if (!$manager) {
             do {
                 $confirm = true;
-                $manager = trim($this->ask('Enter the name of manager, or skip'));
+                $manager = trim($input->ask('Enter the name of manager', false, 'n/ to skip'));
                 if ($manager) {
-                    $confirm = $this->getModuleAndClass($manager, 'managers', 'manager', $replaceParams['module'] ?? '');
+                    $confirm = $this->getModuleAndClass($output, $manager, 'managers', 'manager', $vars['module'] ?? '');
                     if ($confirm) {
                         $manager = $confirm;
                     }
@@ -33,7 +43,7 @@ class Entity extends Create
             } while (!$confirm);
         }
         do {
-            $property = $this->ask('Set column', 'n/ to skip') ?: false;
+            $property = $input->ask('Set property', false, 'n/ to skip');
             if ($property) {
                 $properties[] = Str::camelize($property);
             }
@@ -41,10 +51,10 @@ class Entity extends Create
 
         do {
             $confirm = true;
-            $primaryKey = $this->ask('Set primary column', 'n/ to skip') ?: false;
+            $primaryKey = $input->ask('Set primary key property', false, 'n/ to skip');
             if ($primaryKey) {
                 $primaryKey = Str::camelize($primaryKey);
-                if(!in_array($primaryKey, $properties)){
+                if (!in_array($primaryKey, $properties)) {
                     $confirm = false;
                 }
             }
@@ -60,10 +70,39 @@ class Entity extends Create
         if ($manager) {
             $manager = $this->setManager($manager);
         }
-        $replaceParams['manager'] = $manager;
-        $replaceParams['properties'] = $propertiesString;
-        $replaceParams['getters'] = $gettersString;
-        return $replaceParams;
+        $vars['manager'] = $manager;
+        $vars['properties'] = $propertiesString;
+        $vars['getters'] = $gettersString;
+    }
+
+    /**
+     * @throws ReflectionException
+     * @throws NotInstantiableContainerException
+     * @throws FailedToResolveContainerException
+     */
+    protected function getModuleAndClass(Output $output, string $moduleClass, string $type, string $end = '', string $moduleAlias = ''): string|bool
+    {
+        $module = 'App';
+        $moduleClass = explode(':', $moduleClass);
+        if (count($moduleClass) == 2) {
+            $module = array_shift($moduleClass);
+            if ($module == '@') {
+                $module = $moduleAlias;
+            }
+            $module = $this->application->getModuleKernel($module);
+            if (!$module) {
+                $output->error("Module not found", $module);
+                return false;
+            }
+            $module = $module->getModulePath(true);
+        }
+        $class = [$module, ucfirst($type), ucfirst(array_shift($moduleClass)) . ucfirst($end)];
+        $final = join('\\', $class);
+        if (!class_exists($final)) {
+            $output->error("Class not exists", $final);
+            return false;
+        }
+        return $final;
     }
 
     private function setProperties(array $properties, string $primaryKey = ''): string

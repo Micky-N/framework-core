@@ -2,28 +2,26 @@
 
 namespace MkyCore\Console\Populator;
 
+use MkyCommand\AbstractCommand;
+use MkyCommand\Input;
+use MkyCommand\Output;
 use MkyCore\Application;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\File;
 use ReflectionException;
 
-class Create extends \MkyCore\Console\Create\Create
+class Create extends AbstractCommand
 {
-    protected array $rules = [
-        'name' => ['ucfirst', 'ends:populator'],
-    ];
 
-    public function __construct(Application $app, array $params = [], array $moduleOptions = [])
+    public function __construct(private readonly Application $application)
     {
-        parent::__construct($app, $params, $moduleOptions);
-        $this->createType = 'populator';
     }
 
-    public function process(): bool|string
+    public function execute(Input $input, Output $output): bool|string
     {
         $getModel = $this->getModel();
-        $output = File::makePath([$this->app->get('path:database'), 'Populators']);
+        $output = File::makePath([$this->application->get('path:database'), 'Populators']);
         $params = $this->params;
         $replaceParams = $this->moduleOptions;
         $namebase = array_shift($params);
@@ -44,7 +42,7 @@ class Create extends \MkyCore\Console\Create\Create
         $parsedModel = str_replace('!manager', "$manager", $parsedModel);
         $parsedModel = str_replace('!class', "$class::class", $parsedModel);
         file_put_contents($final, $parsedModel);
-        return count($this->moduleOptions) > 0 ? $replaceParams['name'] : $this->success("$this->createType file created", $final);
+        return count($this->moduleOptions) > 0 ? $replaceParams['name'] : $output->success("$this->createType file created", $final);
     }
 
     /**

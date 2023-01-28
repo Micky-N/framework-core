@@ -2,15 +2,19 @@
 
 namespace MkyCore\Console\Generate;
 
-use MkyCore\Console\Create\Create;
+use MkyCommand\AbstractCommand;
+use MkyCommand\Input;
+use MkyCommand\Output;
 use MkyCore\Str;
 
-class Key extends Create
+class Key extends AbstractCommand
 {
-    public function process(): bool|string
+
+    protected string $description = 'Generate a new application key';
+
+    public function execute(Input $input, Output $output): int
     {
         $replace = 1;
-        $envs = $_ENV;
         $newKey = Str::random();
         $explodedFile = explode("\n", file_get_contents('.env'));
         $line = preg_grep('/APP_KEY=/', $explodedFile);
@@ -23,6 +27,7 @@ class Key extends Create
         }
         array_splice($explodedFile, $index, $replace, "APP_KEY=$newKey");
         file_put_contents('.env', join("\n", $explodedFile));
-        return $this->success('Key generated successfully', $newKey);
+        $output->success('Key generated successfully', $newKey);
+        return self::SUCCESS;
     }
 }

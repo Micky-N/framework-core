@@ -1,13 +1,13 @@
 <?php
 
 
-namespace !module\Listeners;
+namespace {module}\Listeners;
 
 
 use MkyCore\Interfaces\EventInterface;
 use MkyCore\Interfaces\ListenerInterface;
 
-class !name implements ListenerInterface
+class {name} implements ListenerInterface
 {
 
     /**

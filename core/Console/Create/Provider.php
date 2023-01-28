@@ -2,29 +2,45 @@
 
 namespace MkyCore\Console\Create;
 
+use MkyCommand\Input;
+use MkyCommand\Output;
+use MkyCore\Abstracts\ModuleKernel;
+
 class Provider extends Create
 {
     protected string $outputDirectory = 'Providers';
-    protected array $rules = [
-        'name' => ['ucfirst', 'ends:ServiceProvider'],
-    ];
+    protected string $createType = 'provider';
+    protected string $suffix = 'ServiceProvider';
 
-    public function handleQuestions(array $replaceParams, array $params = []): array
+    protected string $description = 'Create a new provider';
+
+    public function settings(): void
     {
-        $replaceParams['doc'] = '';
-        $name = $replaceParams['name'];
-
-        if(str_starts_with($name, 'Auth')){
-            $replaceParams['doc'] = $this->setAuthDocs();
-        }elseif(str_starts_with($name, 'App')){
-            $replaceParams['doc'] = $this->setAppDocs();
-        }elseif(str_starts_with($name, 'Event')){
-            $replaceParams['doc'] = $this->setEventDocs();
-        }
-        return $replaceParams;
+        $this->addArgument('name', Input\InputArgument::REQUIRED, 'Name of the provider, by default is suffixed by ServiceProvider');
     }
 
-    private function setAuthDocs(): string
+    /**
+     * @param Input $input
+     * @param Output $output
+     * @param ModuleKernel $moduleKernel
+     * @param array $vars
+     * @return void
+     */
+    public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars): void
+    {
+        $doc = '';
+        $name = $vars['name'];
+        if (str_starts_with($name, 'AuthService')) {
+            $doc = $this->setAuthServiceDocs();
+        } elseif (str_starts_with($name, 'AppService')) {
+            $doc = $this->setAppServiceDocs();
+        } elseif (str_starts_with($name, 'EventService')) {
+            $doc = $this->setEventServiceDocs();
+        }
+        $vars['doc'] = $doc;
+    }
+
+    private function setAuthServiceDocs(): string
     {
         return <<<DOCS
 
@@ -40,7 +56,7 @@ DOCS;
 
     }
 
-    private function setAppDocs(): string
+    private function setAppServiceDocs(): string
     {
         return <<<DOCS
 
@@ -55,7 +71,7 @@ DOCS;
 
     }
 
-    private function setEventDocs(): string
+    private function setEventServiceDocs(): string
     {
         return <<<DOCS
 

@@ -1,12 +1,12 @@
 <?php
 
-namespace !module\Controllers;
+namespace {module}\Controllers;
 
 use MkyCore\Abstracts\Controller;
 use MkyCore\RedirectResponse;
 use MkyCore\View;
-!head
-class !name extends Controller
+{head}
+class {name} extends Controller
 {
-    !crud
+    {crud}
 }

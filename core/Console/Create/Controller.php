@@ -2,20 +2,20 @@
 
 namespace MkyCore\Console\Create;
 
-use MkyCommand\AbstractCommand;
 use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
-use MkyCore\Application;
-use MkyCore\File;
+use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Str;
 
-class Controller extends AbstractCommand
+class Controller extends Create
 {
 
-    public function __construct(private readonly Application $application, private readonly array $moduleOptions = [])
-    {
-    }
+    protected string $outputDirectory = 'Controllers';
+    protected string $createType = 'controller';
+    protected string $suffix = 'Controller';
+
+    protected string $description = 'Create a new controller';
 
     public function settings(): void
     {
@@ -25,47 +25,25 @@ class Controller extends AbstractCommand
             ->addOption('crud-api', 'a', InputOption::NONE, 'Api Crud methods implementation');
     }
 
-    public function execute(Input $input, Output $output): mixed
+    /**
+     * @param Input $input
+     * @param Output $output
+     * @param ModuleKernel $moduleKernel
+     * @param array $vars
+     * @return void
+     */
+    public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars): void
     {
-        $fileModel = file_get_contents(dirname(__DIR__) . '/models/controller.model');
-        $name = $input->argument('name');
-        $name = $input->option('real') ? ucfirst($name) : ucfirst($name) . 'Controller';
-
-        if ($this->application->getModules()) {
-            $allModules = array_keys($this->application->getModules());
-            $moduleIndex = $input->choice('Which module you want to create controller', $allModules, 0, 3, "Module not found");
-            $module = $this->application->getModuleKernel($moduleIndex);
-        } else {
-            $module = $this->application->getModuleKernel('root');
-        }
-        $namespace = $module->getModulePath(true);
-        $namespace = $namespace . '\\' . $name;
-        $crud = $input->hasOption('crud') || in_array('--crud', $this->moduleOptions);
-        $crudApi = $input->hasOption('crud-api') || in_array('--crud-api', $this->moduleOptions);
+        $crud = $input->hasOption('crud');
+        $crudApi = $input->hasOption('crud-api');
         if ($crud || $crudApi) {
+            $name = $vars['name'];
             if ($crud) {
-                $replaceParams['crud'] = $this->implementCrud($name);
+                $vars['crud'] = $this->implementCrud($name);
             } elseif ($crudApi) {
-                $replaceParams['crud'] = $this->implementCrudApi($name);
+                $vars['crud'] = $this->implementCrudApi($name);
             }
-            $replaceParams['head'] = $this->implementHead($name, $replaceParams['parent'] ?? '');
-        }
-        $outputDir = File::makePath([$module->getModulePath(), 'Controllers']);
-        if (file_exists($outputDir . DIRECTORY_SEPARATOR . $name . '.php')) {
-            $output->error("$name file already exists", $outputDir . DIRECTORY_SEPARATOR . $name . '.php');
-            exit();
-        }
-
-        if (!is_dir($outputDir)) {
-            mkdir($outputDir, '0777', true);
-        }
-
-        file_put_contents($outputDir . DIRECTORY_SEPARATOR . $name . '.php', $fileModel);
-        if(count($this->moduleOptions) > 0){
-            return $name;
-        }else{
-            $output->success("$name created", $outputDir . DIRECTORY_SEPARATOR . $name . '.php');
-            return self::SUCCESS;
+            $vars['head'] = $this->implementHead($name, $this->variables['parent'] ?? '');
         }
     }
 
@@ -224,30 +202,12 @@ CRUD;
         $name = Str::pluralize($name);
         $parent = Str::pluralize($parent);
         $name = $parent ? "$parent.$name" : $name;
-        $prefix = $this->moduleOptions ? Str::pluralize($this->moduleOptions['name']) : $name;
+        $prefix = $this->variables ? Str::pluralize($this->variables['name']) : $name;
         return <<<ROUTER
 
 /**
  * @Router('/$prefix', name: '$name')
  */
 ROUTER;
-    }
-
-    protected function handleQuestions(array $replaceParams, array $params = []): array
-    {
-        $replaceParams['crud'] = '';
-        $replaceParams['head'] = '';
-        $name = $replaceParams['name'];
-        $crud = in_array('--crud', $params) || in_array('--crud', $this->moduleOptions);
-        $crudApi = in_array('--crud-api', $params) || in_array('--crud-api', $this->moduleOptions);
-        if ($crud || $crudApi) {
-            if ($crud) {
-                $replaceParams['crud'] = $this->implementCrud($name);
-            } elseif ($crudApi) {
-                $replaceParams['crud'] = $this->implementCrudApi($name);
-            }
-            $replaceParams['head'] = $this->implementHead($name, $replaceParams['parent'] ?? '');
-        }
-        return $replaceParams;
     }
 }

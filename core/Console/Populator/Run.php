@@ -3,17 +3,16 @@
 namespace MkyCore\Console\Populator;
 
 use Exception;
+use MkyCommand\AbstractCommand;
+use MkyCommand\Input;
+use MkyCommand\Output;
 use MkyCore\Abstracts\Populator;
 
-class Run extends Populate
+class Run extends AbstractCommand
 {
     public static int $count = 0;
 
-    protected array $rules = [
-        'file' => ['ucfirst', 'ends:populator']
-    ];
-
-    public function process(): bool|string
+    public function execute(Input $input, Output $output): bool|string
     {
         $params = $this->parseParams();
         try {

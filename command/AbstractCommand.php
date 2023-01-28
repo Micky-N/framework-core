@@ -26,6 +26,7 @@ abstract class AbstractCommand
     protected string $description = '';
     protected bool $helpMode = false;
 
+
     abstract public function execute(Input $input, Output $output): mixed;
 
     public function settings(): void
@@ -221,6 +222,7 @@ abstract class AbstractCommand
     {
         $this->helpMode = true;
     }
+
 
     protected function addArgument(string $name, string $type, string $description = ''): static
     {

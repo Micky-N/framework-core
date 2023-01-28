@@ -2,6 +2,7 @@
 
 namespace MkyCommand;
 
+use Closure;
 use MkyCommand\Exceptions\CommandException;
 use MkyCommand\Input\InputArgument;
 use MkyCommand\Input\InputOption;
@@ -192,7 +193,7 @@ class Input
         return isset($this->options[$name]);
     }
 
-    public function choice(string $question, array $choices, int $defaultIndex = null, ?int $maxAttempts = null, string $errorMessage = ''): string
+    public function choice(string $question, array $choices, int $defaultIndex = null, ?int $maxAttempts = null, string|Closure $errorMessage = ''): string
     {
         $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
         if (!is_null($defaultIndex)) {
@@ -211,12 +212,21 @@ class Input
             if (isset($choices[$answer])) {
                 return $choices[$answer];
             } else {
+                if (is_callable($errorMessage)) {
+                    $errorMessage = $errorMessage($answer, $choices);
+                }
+                if (!is_string($errorMessage)) {
+                    $errorMessage = '';
+                }
                 if ($maxAttempts && $maxAttempts > 1) {
                     $maxAttempts--;
-                    echo "\n$errorMessage\n" ?: "\n$maxAttempts remaining attempts\n";
+                    if ($errorMessage) {
+                        echo "\n$errorMessage\n";
+                    }
                     $this->choice($question, $choices, $defaultIndex, $maxAttempts);
                 } else {
-                    exit($this->error("Value is not correct, the number of attempts is exceeded"));
+                    $this->error("Value is not correct, the number of attempts is exceeded");
+                    exit();
                 }
             }
         }
@@ -230,16 +240,17 @@ class Input
             return $default;
         }
         if (!in_array(strtolower($answer), ['y', 'n'])) {
-            exit($this->error('Value not correct'));
+            $this->error('Value not correct');
+            exit();
         }
         return strtolower($answer) === 'y';
     }
 
-    public function ask(string $question, string $default = ''): string
+    public function ask(string $question, string $default = '', string $defaultMessage = ''): string
     {
         $message = "\n" . $this->coloredMessage($question, 'blue', 'bold');
         if ($default) {
-            $message .= $this->coloredMessage(" [$default]", 'light_yellow');
+            $message .= $this->coloredMessage(' ['.($defaultMessage ?: $default).']', 'light_yellow');
         }
         $message .= ":\n";
         echo $message;

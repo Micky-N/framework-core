@@ -2,18 +2,27 @@
 
 namespace MkyCore\Console\Install;
 
+use MkyCommand\AbstractCommand;
+use MkyCommand\Input;
+use MkyCommand\Output;
+use MkyCore\Application;
 use MkyCore\Console\Create\Create;
 use MkyCore\Console\Create\Middleware;
 
-class Remember extends Create
+class Remember extends AbstractCommand
 {
-    public function process(): bool|string
+
+    public function __construct(private readonly Application $application)
+    {
+    }
+
+    public function execute(Input $input, Output $output): int
     {
         $migrationAR = false;
         $migrationModel = file_get_contents(dirname(__DIR__) . '/models/install/remember/migration.model');
         $middlewareModel = file_get_contents(dirname(__DIR__) . '/models/install/remember/middleware.model');
-        $databasePath = $this->app->get('path:base') . DIRECTORY_SEPARATOR . 'database' . DIRECTORY_SEPARATOR . 'migrations';
-        $middlewareFile = $this->app->get('path:app') . DIRECTORY_SEPARATOR . 'Middlewares' . DIRECTORY_SEPARATOR . 'RememberTokenMiddleware.php';
+        $databasePath = $this->application->get('path:base') . DIRECTORY_SEPARATOR . 'database' . DIRECTORY_SEPARATOR . 'migrations';
+        $middlewareFile = $this->application->get('path:app') . DIRECTORY_SEPARATOR . 'Middlewares' . DIRECTORY_SEPARATOR . 'RememberTokenMiddleware.php';
         if (!is_dir($databasePath)) {
             mkdir($databasePath, '0777', true);
         }
@@ -26,12 +35,12 @@ class Remember extends Create
         $middlewareAR = false;
         $middlewareOut = false;
         if(!file_exists($middlewareFile)){
-            $middleware = new Middleware($this->app, [], [
+            $middleware = new Middleware($this->application, [
                 'name' => 'rememberToken',
                 'module' => 'root',
                 'type' => 'global'
             ]);
-            $middlewareOut = $middleware->process();
+            $middlewareOut = $middleware->execute($input, $output);
         }else{
             $middlewareAR = true;
         }
@@ -41,20 +50,21 @@ class Remember extends Create
         }
 
         if ($middlewareAR && $migrationAR) {
-            echo $this->coloredMessage('remember token middleware and migration file already exist', 'red', 'bold');
+            echo $output->coloredMessage('remember token middleware and migration file already exist', 'red', 'bold');
             return false;
         } else if ($migrationAR) {
-            echo $this->coloredMessage('remember token migration file already exists', 'red', 'bold')."\n";
-            echo $this->coloredMessage('remember token middleware created successfully', 'green', 'bold') . "\n";
+            echo $output->coloredMessage('remember token migration file already exists', 'red', 'bold')."\n";
+            echo $output->coloredMessage('remember token middleware created successfully', 'green', 'bold') . "\n";
         } else if ($middlewareAR) {
-            echo $this->coloredMessage('remember token middleware already exists', 'red', 'bold');
-            echo $this->coloredMessage('remember token migration file created successfully', 'green', 'bold') . "\n";
-            echo '> run ' . $this->coloredMessage('php mky migration:run', 'yellow') . ' to migrate the Remember token table';
+            echo $output->coloredMessage('remember token middleware already exists', 'red', 'bold');
+            echo $output->coloredMessage('remember token migration file created successfully', 'green', 'bold') . "\n";
+            echo '> run ' . $output->coloredMessage('php mky migration:run', 'yellow') . ' to migrate the Remember token table';
         } else {
-            echo $this->coloredMessage('remember token middleware created successfully', 'green', 'bold') . "\n";
-            echo $this->coloredMessage('remember token migration file created successfully', 'green', 'bold') . "\n";
-            echo '> run ' . $this->coloredMessage('php mky migration:run', 'yellow') . ' to migrate the Remember token table';
+            echo $output->coloredMessage('remember token middleware created successfully', 'green', 'bold') . "\n";
+            echo $output->coloredMessage('remember token migration file created successfully', 'green', 'bold') . "\n";
+            echo '> run ' . $output->coloredMessage('php mky migration:run', 'yellow') . ' to migrate the Remember token table';
         }
-        return $this->success('Remember system installed successfully');
+        $output->success('Remember system installed successfully');
+        return self::SUCCESS;
     }
 }

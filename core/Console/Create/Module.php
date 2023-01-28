@@ -3,15 +3,22 @@
 namespace MkyCore\Console\Create;
 
 use Exception;
+use MkyCommand\AbstractCommand;
+use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Input;
+use MkyCommand\Input\InputOption;
+use MkyCommand\Output;
 use MkyCore\Abstracts\ModuleKernel;
+use MkyCore\Application;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\File;
 use ReflectionException;
 
-class Module extends Create
+class Module extends AbstractCommand
 {
 
+    const ROUTE_MODE = ['controller', 'file', 'both'];
     const DEFAULT_DIRS = [
         'Controllers',
         'Middlewares',
@@ -19,7 +26,6 @@ class Module extends Create
         'Entities',
         'Managers'
     ];
-
     const CLASS_FILE = [
         'Controllers' => 'Controller',
         'Middlewares' => 'Middleware',
@@ -28,60 +34,64 @@ class Module extends Create
         'Managers' => 'Manager'
     ];
 
-    const DEFAULT_FILES = [
-        'aliases' => 'Middlewares/aliases',
-    ];
+    protected string $description = 'Create a new module';
 
-
-    public function process(): bool
+    public function __construct(private readonly Application $application)
     {
-        $params = $this->parseParams();
-        $parent = $params['--parent'] ?? 'root';
-        $parent = $this->app->getModuleKernel($parent);
+    }
+
+    public function settings(): void
+    {
+        $this->addArgument('name', Input\InputArgument::REQUIRED, 'Name of the module, this name will be suffixed by Module')
+            ->addOption('crud', 'c', InputOption::NONE, 'Crud implementation for views and controller')
+            ->addOption('crud-api', 'a', InputOption::NONE, 'Api Crud implementation for controller')
+            ->addOption('parent', 'p', InputOption::OPTIONAL, 'The Module parent name');
+    }
+
+
+    /**
+     * @param Input $input
+     * @param Output $output
+     * @return int
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     * @throws CommandException
+     */
+    public function execute(Input $input, Output $output): int
+    {
+        $parent = $input->option('parent');
+        $parent = $this->application->getModuleKernel($parent);
         $parentPath = $parent->getModulePath();
         $parentNamespace = $parent->getModulePath(true);
-        $name = array_shift($params);
-        if (!$name) {
-            return $this->error("No name given");
-        }
+        $name = $input->argument('name');
         $module = ucfirst($name) . 'Module';
         $newPath = File::makePath([$parentPath, $module]);
         if (is_dir($newPath)) {
-            return $this->error("Module already exists", $module);
-        }
-        if(empty($this->moduleOptions['alias'])){
-            do {
-                $confirm = true;
-                $alias = $this->ask('Enter the alias module', $name) ?: $name;
-                if ($this->app->hasModule($alias)) {
-                    $this->error("Alias $alias already exists");
-                    $confirm = false;
-                }
-            } while (!$confirm);
-        }else{
-            $alias = $this->moduleOptions['alias'];
+            $output->error("Module already exists", $module);
+            return self::ERROR;
         }
 
-        if(empty($this->moduleOptions['routeMode'])){
-            do {
-                $confirm = true;
-                $routeMode = $this->ask('Enter the route mode (file/controller/both)', 'controller') ?: 'controller';
-                if (!in_array($routeMode, ['file', 'controller', 'both'])) {
-                    $confirm = $this->error("Route mode not given", $routeMode);
-                }
-            } while (!$confirm);
-        }else{
-            $routeMode = $this->moduleOptions['routeMode'];
-        }
-        $table = $this->moduleOptions['table'] ?? $this->ask('Enter the table name for manager', 'n/ to skip');
+        do {
+            $confirm = true;
+            $alias = $input->ask('Enter the alias module', $name);
+            if ($this->application->hasModule($alias)) {
+                $output->error("Alias $alias already exists");
+                $confirm = false;
+            }
+        } while (!$confirm);
+
+        $routeMode = $input->choice('Enter the route mode', self::ROUTE_MODE, 0, 3, fn($answer, $c) => $output->error("Route mode not given", $c[$answer]));
+
+        $table = $input->ask('Enter the table name for manager', false, 'n/ to skip');
         $dirs = [];
         for ($i = 0; $i < count(self::DEFAULT_DIRS); $i++) {
             $dir = self::DEFAULT_DIRS[$i];
             $dirs[self::CLASS_FILE[$dir]] = "$module\\$dir";
-            if(!in_array($dir, ['Entities', 'Managers'])){
+            if (!in_array($dir, ['Entities', 'Managers'])) {
                 mkdir(File::makePath([$newPath, $dir]), '0777', true);
-            }else{
-                if($table){
+            } else {
+                if ($table) {
                     mkdir(File::makePath([$newPath, $dir]), '0777', true);
                 }
             }
@@ -100,43 +110,48 @@ class Module extends Create
         }
 
         if (!$this->declareModuleInApp($alias, $fileKernel)) {
-            return $this->error('Error in declaration of module in AppServiceProvider');
+            $output->error('Error in declaration of module in AppServiceProvider');
+            return self::ERROR;
         }
 
-        $parentAlias = $this->getAncestorsAlias($this->app->get($fileKernel));
+        $parentAlias = $this->getAncestorsAlias($this->application->get($fileKernel));
         // controller
-        $controller = new Controller($this->app, [], [
+        $variables = [
             'name' => $name,
             'module' => $alias,
-            'parent' => $parentAlias,
-            ...$params
-        ]);
-        if ($file = $controller->process()) {
+            'parent' => $parentAlias
+        ];
+        if($input->hasOption('crud')){
+            $variables['crud'] = $input->option('crud');
+        }
+        if($input->hasOption('crud-api')){
+            $variables['crud-api'] = $input->option('crud-api');
+        }
+        $controller = new Controller($this->application, $variables);
+        if ($file = $controller->execute($input, $output)) {
             $success['Controller'] = $namespaces['Controller'] . '\\' . $file;
         }
 
-        if($table){
+        if ($table) {
             // entity
-            echo "\n".$this->coloredMessage('Entity Creation', 'light_purple', 'bold');
-            $entity = new Entity($this->app, [], [
+            echo "\n" . $output->coloredMessage('Entity Creation', 'light_purple', 'bold');
+            $entity = new Entity($this->application, [
                 'name' => $name,
                 'module' => $alias,
-                'manager' => $namespaces['Manager'] . "\\" . ucfirst($name . 'Manager'),
-                ...$params
+                'manager' => $namespaces['Manager'] . "\\" . ucfirst($name . 'Manager')
             ]);
-            if ($file = $entity->process()) {
+            if ($file = $entity->execute($input, $output)) {
                 $success['Entity'] = $namespaces['Entity'] . '\\' . $file;
             }
 
             // manager
-            $manager = new Manager($this->app, [], [
+            $manager = new Manager($this->application, [
                 'name' => $name,
                 'module' => $alias,
                 'entity' => $namespaces['Entity'] . "\\" . ucfirst($name),
                 'table' => $table,
-                ...$params
             ]);
-            if ($file = $manager->process()) {
+            if ($file = $manager->execute($input, $output)) {
                 $success['Manager'] = $namespaces['Manager'] . '\\' . $file;
             }
         }
@@ -147,11 +162,11 @@ class Module extends Create
 
         // provider
         foreach (['auth', 'app'] as $item) {
-            $provider = new Provider($this->app, [], [
+            $provider = new Provider($this->application, [
                 'name' => $item,
                 'module' => $alias
             ]);
-            if ($file = $provider->process()) {
+            if ($file = $provider->execute($input, $output)) {
                 $success['Provider'][] = $namespaces['Provider'] . '\\' . $file;
             }
         }
@@ -160,7 +175,7 @@ class Module extends Create
             $success['Routes file'] = $routePath;
         }
 
-        if (in_array('--crud', $params)) {
+        if ($input->hasOption('crud')) {
             $viewsModuleDirectory = $this->viewsModuleDirectory($alias);
             if (!is_dir($viewsModuleDirectory)) {
                 mkdir($viewsModuleDirectory, '0777', true);
@@ -185,10 +200,10 @@ class Module extends Create
             $files = (array)$files;
             for ($i = 0; $i < count($files); $i++) {
                 $file = $files[$i];
-                echo $this->coloredMessage("$key created", 'green', 'bold') . ": $file\n";
+                $output->success("$key created", $file);
             }
         }
-        return true;
+        return self::SUCCESS;
     }
 
     /**
@@ -229,6 +244,9 @@ class Module extends Create
      * @param ModuleKernel $parentKernel
      * @param string $routeMode
      * @return bool|string
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
     private function createConfigKernel(string $name, ModuleKernel $parentKernel, string $routeMode = 'file'): bool|string
     {
@@ -248,6 +266,22 @@ class Module extends Create
     }
 
     /**
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     */
+    private function getAncestorsAlias(ModuleKernel $Kernel, string $join = '.'): string
+    {
+        if (!$Kernel->isNestedModule()) {
+            return '';
+        }
+        return array_reduce(array_reverse($Kernel->getAncestorsKernel()), function ($a, ModuleKernel $b) use ($join) {
+            $a .= $a ? "$join{$b->getAlias()}" : $b->getAlias();
+            return $a;
+        });
+    }
+
+    /**
      * @param string $alias
      * @param string $fileKernel
      * @return bool|string
@@ -258,11 +292,11 @@ class Module extends Create
      */
     private function declareModuleInApp(string $alias, string $fileKernel): bool|string
     {
-        $file = File::makePath([$this->app->get('path:app'), 'Providers', 'AppServiceProvider.php']);
+        $file = File::makePath([$this->application->get('path:app'), 'Providers', 'AppServiceProvider.php']);
         $arr = explode("\n", file_get_contents($file));
         $findModule = array_keys(preg_grep('/private array \$modules = \[/', $arr));
-        $arr2 = array_slice($arr, $findModule[0], count($arr) -1, true);
-        $index = array_keys(preg_grep("/\];/", $arr2));
+        $arr2 = array_slice($arr, $findModule[0], count($arr) - 1, true);
+        $index = array_keys(preg_grep("/];/", $arr2));
         if (!$index) {
             return false;
         }
@@ -270,7 +304,7 @@ class Module extends Create
         array_splice($arr, $moduleLine, 0, "\t    '$alias' => \\$fileKernel::class,");
         $arr = array_values($arr);
         $arr = implode("\n", $arr);
-        $this->app->addModule($alias, $fileKernel);
+        $this->application->addModule($alias, $fileKernel);
         return file_put_contents($file, $arr) !== false ? $alias : false;
     }
 
@@ -283,7 +317,7 @@ class Module extends Create
      */
     private function createRoutesFile(string $alias): bool|string
     {
-        $modulePath = $this->app->getModuleKernel($alias)->getModulePath();
+        $modulePath = $this->application->getModuleKernel($alias)->getModulePath();
         $model = file_get_contents(dirname(__DIR__) . '/models/routes.model');
         if (!is_dir($modulePath . DIRECTORY_SEPARATOR . 'start')) {
             mkdir($modulePath . DIRECTORY_SEPARATOR . 'start', '0777', true);
@@ -300,18 +334,7 @@ class Module extends Create
      */
     private function viewsModuleDirectory(string $alias): string
     {
-        $module = $this->app->getModuleKernel($alias);
+        $module = $this->application->getModuleKernel($alias);
         return File::makePath([$module->getModulePath(), 'views']);
-    }
-    
-    private function getAncestorsAlias(ModuleKernel $parentKernel, string $join = '.'): string
-    {
-        if(!$parentKernel->isNestedModule()){
-            return '';
-        }
-        return array_reduce(array_reverse($parentKernel->getAncestorsKernel()), function($a, ModuleKernel $b) use($join){
-            $a .= $a ? "$join{$b->getAlias()}" : $b->getAlias();
-            return $a;
-        });
     }
 }
