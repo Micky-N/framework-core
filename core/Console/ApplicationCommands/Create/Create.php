@@ -12,7 +12,6 @@ use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\File;
 use ReflectionException;
-use function MkyCore\Console\Create\str_ends_with;
 
 abstract class Create extends AbstractCommand
 {
@@ -62,6 +61,7 @@ abstract class Create extends AbstractCommand
             }
         } else {
             $module = $this->variables['module'];
+            $module = $this->application->getModuleKernel($module);
         }
         $namespace = $module->getModulePath(true);
         $outputDir = File::makePath([$module->getModulePath(), $this->outputDirectory]);

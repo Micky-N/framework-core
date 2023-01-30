@@ -3,6 +3,7 @@
 namespace MkyCore\Console\ApplicationCommands\Create;
 
 use MkyCommand\Input;
+use MkyCommand\Input\InputArgument;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
 use MkyCore\Abstracts\ModuleKernel;
@@ -19,7 +20,7 @@ class Controller extends Create
 
     public function settings(): void
     {
-        $this->addArgument('name', Input\InputArgument::REQUIRED, 'Name of controller, by default is suffixed by Controller')
+        $this->addArgument('name', InputArgument::REQUIRED, 'Name of controller, by default is suffixed by Controller')
             ->addOption('real', 'r', InputOption::NONE, 'Keep the real name of the controller')
             ->addOption('crud', 'c', InputOption::NONE, 'Crud methods implementation')
             ->addOption('crud-api', 'a', InputOption::NONE, 'Api Crud methods implementation');

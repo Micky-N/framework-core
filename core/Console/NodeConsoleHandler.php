@@ -6,6 +6,7 @@ use Exception;
 use MkyCommand\Console;
 use MkyCommand\Input;
 use MkyCore\Application;
+use MkyCore\Console\ApplicationCommands\Create\Command;
 use MkyCore\Console\ApplicationCommands\Create\Controller;
 use MkyCore\Console\ApplicationCommands\Create\Entity;
 use MkyCore\Console\ApplicationCommands\Create\Event;
@@ -62,7 +63,8 @@ class NodeConsoleHandler extends Console
      */
     private function setInitCommands(): void
     {
-        $this->addCommand('create:controller', $this->application->get(Controller::class))
+        $this->addCommand('create:command', $this->application->get(Command::class))
+            ->addCommand('create:controller', $this->application->get(Controller::class))
             ->addCommand('create:entity', $this->application->get(Entity::class))
             ->addCommand('create:event', $this->application->get(Event::class))
             ->addCommand('create:listener', $this->application->get(Listener::class))
