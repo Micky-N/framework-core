@@ -27,10 +27,10 @@ class Refresh extends Migration
         $migrationRunner = $this->application->get(MigrationFile::class);
         self::$query = $input->option('query');
         $migrationLogs = [];
-        if ($input->hasOption('version')) {
+        if ($input->option('version')) {
             $version = $input->option('version');
             $migrationLogs = $this->migrationDB->getTo((int)$version);
-        } elseif ($input->hasOption('number')) {
+        } elseif ($input->option('number')) {
             $number = $input->option('number');
             $migrationLogs = $this->migrationDB->getLast($number);
         }

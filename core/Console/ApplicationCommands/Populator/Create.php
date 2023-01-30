@@ -11,7 +11,6 @@ use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\File;
 use ReflectionException;
-use function MkyCore\Console\Populator\str_ends_with;
 
 class Create extends AbstractCommand
 {
@@ -27,6 +26,15 @@ class Create extends AbstractCommand
         $this->addArgument('name', Input\InputArgument::REQUIRED, 'Name of the populator, the name will be suffixed by Populator');
     }
 
+    /**
+     * @param Input $input
+     * @param Output $output
+     * @return bool|string
+     * @throws CommandException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
     public function execute(Input $input, Output $output): bool|string
     {
         $outputDir = File::makePath([$this->application->get('path:database'), 'Populators']);

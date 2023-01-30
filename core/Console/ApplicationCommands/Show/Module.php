@@ -3,6 +3,7 @@
 namespace MkyCore\Console\ApplicationCommands\Show;
 
 use MkyCommand\AbstractCommand;
+use MkyCommand\Exceptions\CommandException;
 use MkyCommand\Input;
 use MkyCommand\Output;
 use MkyCore\Application;
@@ -38,10 +39,11 @@ class Module extends AbstractCommand
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
+     * @throws CommandException
      */
     public function execute(Input $input, Output $output): int
     {
-        $table = new ConsoleTable();
+        $table = $output->table();
         $table->setHeaders(array_map(fn($header) => $output->coloredMessage($header, 'green'), array_values(self::HEADERS)));
         $modules = array_keys($this->application->getModules());
         $headers = array_keys(self::HEADERS);
@@ -57,7 +59,7 @@ class Module extends AbstractCommand
             }
             $table->addRow($array);
         }
-        if ($input->hasOption('print')) {
+        if ($input->option('print')) {
             echo "List of modules:\n";
         }
 

@@ -2,6 +2,7 @@
 
 namespace MkyCore\Console\ApplicationCommands\Migration;
 
+use MkyCommand\Exceptions\CommandException;
 use MkyCommand\Input;
 use MkyCommand\Output;
 
@@ -16,6 +17,12 @@ class Reset extends Create
         $this->addOption('pop', null, Input\InputOption::NONE, 'Run database population after resetting');
     }
 
+    /**
+     * @param Input $input
+     * @param Output $output
+     * @return int
+     * @throws CommandException
+     */
     public function execute(Input $input, Output $output): int
     {
         $pop = $input->option('pop');

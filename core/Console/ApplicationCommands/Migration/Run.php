@@ -3,11 +3,15 @@
 namespace MkyCore\Console\ApplicationCommands\Migration;
 
 use Exception;
+use MkyCommand\Exceptions\CommandException;
 use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Migration\MigrationFile;
 use MkyCore\Migration\Schema;
+use ReflectionException;
 
 class Run extends Create
 {
@@ -21,6 +25,15 @@ class Run extends Create
             ->addOption('pop', null, InputOption::NONE, 'Run database population after migration');
     }
 
+    /**
+     * @param Input $input
+     * @param Output $output
+     * @return int
+     * @throws CommandException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
     public function execute(Input $input, Output $output): int
     {
         /** @var MigrationFile $migrationRunner */
@@ -28,9 +41,9 @@ class Run extends Create
         self::$query = $input->option('query');
         $pop = false;
         $version = null;
-        if($input->hasOption('version')){
+        if($input->option('version')){
             $version = $input->option('version');
-        }elseif($input->hasOption('pop')){
+        }elseif($input->option('pop')){
             $pop = $input->option('pop');
         }
         try {

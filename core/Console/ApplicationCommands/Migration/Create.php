@@ -2,10 +2,14 @@
 
 namespace MkyCore\Console\ApplicationCommands\Migration;
 
+use MkyCommand\Exceptions\CommandException;
 use MkyCommand\Input;
 use MkyCommand\Output;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\File;
 use MkyCore\Str;
+use ReflectionException;
 
 class Create extends Migration
 {
@@ -17,6 +21,15 @@ class Create extends Migration
         $this->addArgument('name', Input\InputArgument::REQUIRED, 'Name of the migration file');
     }
 
+    /**
+     * @param Input $input
+     * @param Output $output
+     * @return int
+     * @throws CommandException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
     public function execute(Input $input, Output $output): int
     {
         $outputDir = File::makePath([$this->application->get('path:database'), 'migrations']);

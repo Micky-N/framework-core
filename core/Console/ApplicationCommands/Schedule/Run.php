@@ -13,7 +13,12 @@ class Run extends \MkyCommand\AbstractCommand
     {
     }
 
-    public function execute(Input $input, Output $output): mixed
+    /**
+     * @param Input $input
+     * @param Output $output
+     * @return int
+     */
+    public function execute(Input $input, Output $output): int
     {
         $tasks = $this->schedule->getTasks();
         if (!$tasks) {

@@ -3,11 +3,15 @@
 namespace MkyCore\Console\ApplicationCommands\Migration;
 
 use Exception;
+use MkyCommand\Exceptions\CommandException;
 use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Migration\MigrationFile;
 use MkyCore\Migration\Schema;
+use ReflectionException;
 
 class Rollback extends Create
 {
@@ -21,16 +25,22 @@ class Rollback extends Create
             ->addOption('number', 'n', InputOption::OPTIONAL, 'Number a migration to rollback');
     }
 
+    /**
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws CommandException
+     * @throws ReflectionException
+     */
     public function execute(Input $input, Output $output): int
     {
         /** @var MigrationFile $migrationRunner */
         $migrationRunner = $this->application->get(MigrationFile::class);
         self::$query = $input->option('query');
         $migrationLogs = [];
-        if ($input->hasOption('version')) {
+        if ($input->option('version')) {
             $version = $input->option('version');
             $migrationLogs = $this->migrationDB->getTo((int)$version);
-        } elseif ($input->hasOption('number')) {
+        } elseif ($input->option('number')) {
             $number = $input->option('number');
             $migrationLogs = $this->migrationDB->getLast($number);
         }

@@ -10,7 +10,6 @@ use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use ReflectionException;
-use function MkyCore\Console\Create\str_contains;
 
 class Middleware extends Create
 {

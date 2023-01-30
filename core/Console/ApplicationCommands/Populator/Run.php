@@ -8,7 +8,6 @@ use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
 use MkyCore\Abstracts\Populator;
-use function MkyCore\Console\Populator\str_ends_with;
 
 class Run extends AbstractCommand
 {

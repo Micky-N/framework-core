@@ -35,8 +35,8 @@ class Controller extends Create
      */
     public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars): void
     {
-        $crud = $input->hasOption('crud');
-        $crudApi = $input->hasOption('crud-api');
+        $crud = $input->option('crud');
+        $crudApi = $input->option('crud-api');
         if ($crud || $crudApi) {
             $name = $vars['name'];
             if ($crud) {

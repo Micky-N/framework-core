@@ -5,7 +5,6 @@ namespace MkyCore\Console\ApplicationCommands\Create;
 use MkyCommand\Input;
 use MkyCommand\Output;
 use MkyCore\Abstracts\ModuleKernel;
-use function MkyCore\Console\Create\str_starts_with;
 
 class Provider extends Create
 {

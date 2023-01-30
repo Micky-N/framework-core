@@ -3,9 +3,13 @@
 namespace MkyCore\Console\ApplicationCommands\Show;
 
 use MkyCommand\AbstractCommand;
+use MkyCommand\Exceptions\CommandException;
 use MkyCommand\Input;
 use MkyCommand\Output;
 use MkyCore\Application;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use ReflectionException;
 
 class Route extends AbstractCommand
 {
@@ -35,12 +39,21 @@ class Route extends AbstractCommand
         }
     }
 
+    /**
+     * @param Input $input
+     * @param Output $output
+     * @return int
+     * @throws CommandException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
     public function execute(Input $input, Output $output): int
     {
-        $print = $input->hasOption('print');
+        $print = $input->option('print');
         $table = $output->table();
         $table->setHeaders(array_map(fn($header) => substr($header, 3), array_keys(self::HEADERS)));
-        $filters = $this->getFilters($input->options());
+        $filters = $this->getFilters($input);
         $routes = $this->application->get(\MkyCore\Router\Router::class)->getRoutes($filters);
         if(!$routes){
             $output->error('No route found with these filter criteria:');
@@ -77,14 +90,19 @@ class Route extends AbstractCommand
         return self::SUCCESS;
     }
 
-    private function getFilters(array $inputs): array
+    /**
+     * @param Input $input
+     * @return array
+     * @throws CommandException
+     */
+    private function getFilters(Input $input): array
     {
         $filters = [];
         $filtersBase = self::FILTERS;
         for($i = 0; $i < count($filtersBase); $i ++){
             $filterBase = $filtersBase[$i];
-            if(array_key_exists("--$filterBase", $inputs)){
-                $value = $inputs["--$filterBase"];
+            if($input->option($filterBase)){
+                $value = $input->option($filterBase);
                 if($filterBase == 'methods'){
                     $value = explode('!', $value);
                 }

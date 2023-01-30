@@ -121,10 +121,10 @@ class Module extends AbstractCommand
             'module' => $alias,
             'parent' => $parentAlias
         ];
-        if($input->hasOption('crud')){
+        if($input->option('crud')){
             $variables['crud'] = $input->option('crud');
         }
-        if($input->hasOption('crud-api')){
+        if($input->option('crud-api')){
             $variables['crud-api'] = $input->option('crud-api');
         }
         $controller = new Controller($this->application, $variables);
@@ -175,7 +175,7 @@ class Module extends AbstractCommand
             $success['Routes file'] = $routePath;
         }
 
-        if ($input->hasOption('crud')) {
+        if ($input->option('crud')) {
             $viewsModuleDirectory = $this->viewsModuleDirectory($alias);
             if (!is_dir($viewsModuleDirectory)) {
                 mkdir($viewsModuleDirectory, '0777', true);
