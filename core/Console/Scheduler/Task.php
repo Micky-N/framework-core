@@ -3,11 +3,7 @@
 namespace MkyCore\Console\Scheduler;
 
 use MkyCommand\AbstractCommand;
-use MkyCore\Exceptions\Container\FailedToResolveContainerException;
-use MkyCore\Exceptions\Container\NotInstantiableContainerException;
-use ReflectionException;
 use Symfony\Component\Process\Process;
-use Throwable;
 
 class Task
 {
@@ -58,7 +54,7 @@ class Task
         $command[] = $this->getCommand()->getSignature();
         if($this->output){
             $command[] = '>>';
-            $command[] = $this->output;;
+            $command[] = $this->output;
         }
         $command[] = '2>&1';
         return join(' ', $command);
