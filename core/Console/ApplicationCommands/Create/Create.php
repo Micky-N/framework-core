@@ -78,8 +78,6 @@ abstract class Create extends AbstractCommand
         foreach ($vars as $key => $var) {
             if (preg_match("/\{$key}/", $fileModel)) {
                 $fileModel = str_replace('{'.$key.'}', $var, $fileModel);
-            } else {
-                $fileModel = str_replace('{'.$key.'}', '', $fileModel);
             }
         }
         $fileModel = preg_replace('/\{(\w*)}/', '', $fileModel);
