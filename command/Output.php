@@ -31,9 +31,17 @@ class Output
         }
     }
 
-    public function write(string $message): void
+    /**
+     * @return void
+     */
+    public function breakLine(): void
     {
-        echo "\n" . $message;
+        echo "\n";
+    }
+
+    public function write(string $message, bool $breakLineBefore = true): void
+    {
+        echo ($breakLineBefore ? "\n" : '') . $message;
     }
 
     /**

@@ -5,7 +5,7 @@ namespace MkyCore\Populate;
 use Exception;
 use MkyCore\Abstracts\Entity;
 use MkyCore\Abstracts\Populator;
-use MkyCore\Console\Populator\Run;
+use MkyCore\Console\ApplicationCommands\Populator\Run;
 use MkyCore\RelationEntity\ManyToMany;
 use MkyCore\Str;
 use ReflectionClass;

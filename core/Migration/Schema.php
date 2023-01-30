@@ -4,7 +4,7 @@ namespace MkyCore\Migration;
 
 use Exception;
 use MkyCommand\Color;
-use MkyCore\Console\Migration\Run;
+use MkyCore\Console\ApplicationCommands\Migration\Run;
 use MkyCore\Facades\DB;
 use PDOException;
 
@@ -154,7 +154,7 @@ class Schema
     private static function dropTableIfExists(string $table): bool
     {
         $queryCreate = "DROP TABLE IF EXISTS `$table`\n\n";
-        if (Run::$query) {
+        if (\MkyCore\Console\ApplicationCommands\Migration\Run::$query) {
             echo $queryCreate;
             return true;
         }

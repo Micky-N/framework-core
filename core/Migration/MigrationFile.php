@@ -3,7 +3,6 @@
 namespace MkyCore\Migration;
 
 use MkyCore\Application;
-use MkyCore\Console\Migration\Create;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Exceptions\Migration\MigrationException;
@@ -124,7 +123,7 @@ class MigrationFile
                         $this->migrationDB->deleteLog($log);
                     }
                 }else{
-                    if(Create::$query){
+                    if(\MkyCore\Console\ApplicationCommands\Migration\Create::$query){
                         $instantiateMigration->{$direction}();
                     }
                 }

@@ -26,7 +26,7 @@ class NodeRequestHandler implements RequestHandlerInterface
     private array $nodeMiddlewares;
     private int $index = 0;
 
-    public function __construct(private readonly Application $app)
+    public function __construct(private readonly Application $application)
     {
         $this->setInitNodeMiddlewares();
     }
@@ -110,7 +110,7 @@ class NodeRequestHandler implements RequestHandlerInterface
         if (isset($this->nodeMiddlewares[$this->index])) {
             $middleware = $this->nodeMiddlewares[$this->index];
             $this->index++;
-            return $this->app->get($middleware);
+            return $this->application->get($middleware);
         } else {
             return new ResponseHandlerNotFound();
         }

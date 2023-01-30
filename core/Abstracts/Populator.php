@@ -6,7 +6,7 @@ use Closure;
 use Exception;
 use Faker\Factory;
 use Faker\Generator;
-use MkyCore\Console\Populator\Run;
+use MkyCore\Console\ApplicationCommands\Populator\Run;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Populate\AddOnPivotRelation;

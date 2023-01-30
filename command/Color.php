@@ -61,21 +61,21 @@ trait Color
 
     public function success(string $message, string $res = ''): void
     {
-        echo $this->coloredMessage($message, 'green', 'bold') . ($res ? ": $res" : '') . "\n";
+        echo $this->coloredMessage($message, 'green', 'bold') . ($res ? ": $res" : '') . PHP_EOL;
     }
 
     public function error(string $message, string $res = ''): void
     {
-        echo $this->coloredMessage($message, 'red', 'bold') . ($res ? ": $res" : '') . "\n";
+        echo $this->coloredMessage($message, 'red', 'bold') . ($res ? ": $res" : '') . PHP_EOL;
     }
 
     public function info(string $message, string $res = ''): void
     {
-        echo $this->coloredMessage($message, 'blue') . ($res ? ": $res" : '') . "\n";
+        echo $this->coloredMessage($message, 'blue') . ($res ? ": $res" : '') . PHP_EOL;
     }
 
     public function warning(string $message, string $res = ''): void
     {
-        echo $this->coloredMessage($message, 'light_yellow') . ($res ? ": $res" : '') . "\n";
+        echo $this->coloredMessage($message, 'light_yellow') . ($res ? ": $res" : '') . PHP_EOL;
     }
 }

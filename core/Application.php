@@ -175,6 +175,17 @@ class Application extends Container
     }
 
     /**
+     * Get a command
+     *
+     * @param string $signature
+     * @return string|null
+     */
+    public function getCommand(string $signature): ?string
+    {
+        return $this->commands[$signature] ?? null;
+    }
+
+    /**
      * Call register from all ServiceProvider
      *
      * @throws FailedToResolveContainerException
