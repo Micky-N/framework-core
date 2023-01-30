@@ -37,7 +37,7 @@ class HelpCommand extends AbstractCommand
         $namespaces = [];
         $commands = array_values($this->console->getCommands());
         $section->text($output->coloredMessage("Available commands:", 'blue'))->newLine();
-        if ($input->hasOption('namespace') && $input->option('namespace')) {
+        if ($input->option('namespace')) {
             $namespace = $input->option('namespace');
             $commands = array_filter($commands, function ($command) use ($namespace) {
                 return str_starts_with($command->getSignature(), "$namespace:");
