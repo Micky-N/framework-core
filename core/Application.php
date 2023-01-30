@@ -51,7 +51,6 @@ class Application extends Container
         $this->registerBaseBindings();
         $this->setInitModules();
         $this->registerServiceProviders();
-        $this->registerCliCommands();
         $this->loadEnvironment($basePath . DIRECTORY_SEPARATOR . '.env');
     }
 
@@ -110,14 +109,6 @@ class Application extends Container
         if (class_exists('App\Providers\AppServiceProvider')) {
             $appProvider = $this->get('App\Providers\AppServiceProvider');
             $this->addModules($appProvider->getModules());
-        }
-    }
-
-    private function registerCliCommands()
-    {
-        if (class_exists('App\Commands\CliServiceProvider')) {
-            $cliProvider = $this->get('App\Commands\CliServiceProvider');
-            $this->addCommands($cliProvider->getCommands());
         }
     }
 

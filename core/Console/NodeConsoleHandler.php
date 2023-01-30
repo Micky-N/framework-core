@@ -3,7 +3,6 @@
 namespace MkyCore\Console;
 
 use Exception;
-use MkyCommand\AbstractCommand;
 use MkyCommand\Console;
 use MkyCommand\Input;
 use MkyCore\Application;
@@ -47,7 +46,7 @@ class NodeConsoleHandler extends Console
      */
     public function __construct(private readonly Application $application)
     {
-        if (! defined('MKY_FILE')) {
+        if (!defined('MKY_FILE')) {
             define('MKY_FILE', 'mky');
         }
 
@@ -89,21 +88,6 @@ class NodeConsoleHandler extends Console
     }
 
     /**
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     * @throws FailedToResolveContainerException
-     */
-    private function setCustomCommands(): void
-    {
-        foreach ($this->application->getCommands() as $signature => $command) {
-            $command = $this->application->get($command);
-            /** @var AbstractCommand $command */
-            $this->addCommand($signature, $command);
-            $this->customCommands[$signature] = $command;
-        }
-    }
-
-    /**
      * @return string[]
      */
     public function getCustomCommands(): array
@@ -111,14 +95,30 @@ class NodeConsoleHandler extends Console
         return $this->customCommands;
     }
 
+    /**
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    public function setCustomCommands(): void
+    {
+        if (class_exists('App\Commands\CliServiceProvider')) {
+            $cliProvider = $this->application->get('App\Commands\CliServiceProvider');
+            foreach ($cliProvider->getCommands() as $signature => $command) {
+                $this->customCommands[$signature] = $command;
+                $this->addCommand($signature, $this->application->get($command));
+            }
+        }
+    }
+
     public function handle(Input $input): static
     {
         try {
             $this->response = $this->execute($input);
             return $this;
-        }catch(Exception $ex){
+        } catch (Exception $ex) {
             $command = $this->output->coloredMessage('php mky help', 'yellow');
-            exit($ex->getMessage()."\nrun $command to see the list of commands");
+            exit($ex->getMessage() . "\nrun $command to see the list of commands");
         }
     }
 
