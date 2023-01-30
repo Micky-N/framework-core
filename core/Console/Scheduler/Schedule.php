@@ -17,9 +17,17 @@ class Schedule
      */
     private array $tasks = [];
 
+    /**
+     * @throws NotInstantiableContainerException
+     * @throws FailedToResolveContainerException
+     * @throws ReflectionException
+     */
     public function __construct(private readonly Application $application)
     {
-
+        if(class_exists('App\Commands\CliServiceProvider')){
+            $cliProvider = $this->application->get('App\Commands\CliServiceProvider');
+            $cliProvider->schedule($this);
+        }
     }
 
     /**
