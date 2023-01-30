@@ -11,6 +11,7 @@ class Run extends \MkyCommand\AbstractCommand
 {
     public function __construct(private readonly Schedule $schedule)
     {
+        
     }
 
     /**

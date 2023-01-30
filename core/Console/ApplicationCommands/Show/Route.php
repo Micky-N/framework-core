@@ -72,7 +72,7 @@ class Route extends AbstractCommand
                 } elseif ($method == 'getMethods') {
                     $array[] = $this->parseMethods($output, join('|', $route->{$method}()), $print);
                 } elseif ($method == 'getUrl') {
-                    $array[] = '/' . trim($this->parseUrl($route->{$method}(), $print), '/');
+                    $array[] = '/' . trim($this->parseUrl($output, $route->{$method}(), $print), '/');
                 } else {
                     $array[] = $route->{$method}();
                 }
@@ -83,9 +83,7 @@ class Route extends AbstractCommand
             echo "List of routes:\n";
         }
 
-        $table->setPadding(2)
-            ->setIndent(2)
-            ->showAllBorders()
+        $table->showAllBorders()
             ->display();
         return self::SUCCESS;
     }

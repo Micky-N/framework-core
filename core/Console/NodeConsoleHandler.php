@@ -27,6 +27,7 @@ use MkyCore\Console\ApplicationCommands\Populator\Create as PopulatorCreate;
 use MkyCore\Console\ApplicationCommands\Populator\Run as PopulatorRun;
 use MkyCore\Console\ApplicationCommands\Schedule\Cron as ScheduleCron;
 use MkyCore\Console\ApplicationCommands\Schedule\Run as ScheduleRun;
+use MkyCore\Console\ApplicationCommands\Schedule\ScheduleList;
 use MkyCore\Console\ApplicationCommands\Show\Module as ShowModule;
 use MkyCore\Console\ApplicationCommands\Show\Route;
 use MkyCore\Console\ApplicationCommands\Tmp\Link;
@@ -82,10 +83,11 @@ class NodeConsoleHandler extends Console
             ->addCommand('migration:run', $this->application->get(Run::class))
             ->addCommand('populator:create', $this->application->get(PopulatorCreate::class))
             ->addCommand('populator:run', $this->application->get(PopulatorRun::class))
-            ->addCommand('show:module', $this->application->get(ShowModule::class))
+            ->addCommand('show:modules', $this->application->get(ShowModule::class))
             ->addCommand('show:routes', $this->application->get(Route::class))
             ->addCommand('tmp:link', $this->application->get(Link::class))
             ->addCommand('schedule:run', $this->application->get(ScheduleRun::class))
+            ->addCommand('schedule:list', $this->application->get(ScheduleList::class))
             ->addCommand('schedule:cron', $this->application->get(ScheduleCron::class));
     }
 
@@ -106,7 +108,7 @@ class NodeConsoleHandler extends Console
     {
         if (class_exists('App\Commands\CliServiceProvider')) {
             $cliProvider = $this->application->get('App\Commands\CliServiceProvider');
-            foreach ($cliProvider->getCommands() as $signature => $command) {
+            foreach ($cliProvider->commands as $signature => $command) {
                 $this->customCommands[$signature] = $command;
                 $this->addCommand($signature, $this->application->get($command));
             }

@@ -1,27 +1,28 @@
 <?php
 
-namespace MkyCore\Console\ApplicationCommands\Show;
+namespace MkyCore\Console\ApplicationCommands\Schedule;
 
 use MkyCommand\AbstractCommand;
 use MkyCommand\Exceptions\CommandException;
 use MkyCommand\Input;
 use MkyCommand\Output;
 use MkyCore\Application;
-use MkyCore\Console\Show\ConsoleTable;
+use MkyCore\Console\Scheduler\Schedule;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use ReflectionException;
 
-class Module extends AbstractCommand
+class ScheduleList extends AbstractCommand
 {
 
     const HEADERS = [
-        'getAlias' => 'Alias',
-        'getModuleKernel' => 'Kernel',
+        'buildCommand' => 'Command',
+        'getInterval' => 'Interval',
+        'getDescription' => 'Description',
     ];
 
 
-    protected string $description = 'Show all modules';
+    protected string $description = 'Show all scheduled tasks';
 
     public function __construct(private readonly Application $application)
     {
@@ -45,17 +46,15 @@ class Module extends AbstractCommand
     {
         $table = $output->table();
         $table->setHeaders(array_map(fn($header) => $output->coloredMessage($header, 'green'), array_values(self::HEADERS)));
-        $modules = array_keys($this->application->getModules());
         $headers = array_keys(self::HEADERS);
-        for ($i = 0; $i < count($modules); $i++) {
-            $module = $this->application->getModuleKernel($modules[$i]);
+        $schedule = new Schedule($this->application);
+        $tasks = array_values($schedule->getTasks());
+        ksort($tasks, SORT_NATURAL);
+        for ($i = 0; $i < count($tasks); $i++) {
+            $task = $tasks[$i];
             $array = [];
             foreach ($headers as $header) {
-                if ($header == 'getModuleKernel') {
-                    $array[] = get_class($module);
-                } else {
-                    $array[] = $module->{$header}();
-                }
+                $array[] = $task->{$header}();
             }
             $table->addRow($array);
         }
@@ -63,8 +62,7 @@ class Module extends AbstractCommand
             echo "List of modules:\n";
         }
 
-        $table->showAllBorders()
-            ->display();
+        $table->display();
         return self::SUCCESS;
     }
 

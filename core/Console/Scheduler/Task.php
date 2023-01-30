@@ -46,7 +46,7 @@ class Task
         return true;
     }
 
-    private function buildCommand(): string
+    public function buildCommand(): string
     {
         $command = [];
         $command[] = '"'.PHP_BINARY.'"';
@@ -68,5 +68,15 @@ class Task
     {
         $this->output = $output;
         return $this;
+    }
+    
+    public function getDescription(): string
+    {
+        return $this->command->getDescription();
+    }
+    
+    public function getInterval(): string
+    {
+        return '* * * * *';
     }
 }
