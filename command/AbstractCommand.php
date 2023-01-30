@@ -3,6 +3,8 @@
 namespace MkyCommand;
 
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputArgumentException;
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input\InputArgument;
 use MkyCommand\Input\InputOption;
 
@@ -53,7 +55,9 @@ abstract class AbstractCommand
     }
 
     /**
-     * @throws CommandException
+     * @param Input $input
+     * @throws InputArgumentException
+     * @throws InputOptionException
      */
     public function setRealInput(Input $input): void
     {
@@ -62,7 +66,8 @@ abstract class AbstractCommand
     }
 
     /**
-     * @throws CommandException
+     * @param Input $input
+     * @throws InputArgumentException
      */
     private function setRealArguments(Input &$input): void
     {
@@ -73,7 +78,7 @@ abstract class AbstractCommand
             $index = array_search($name, $commandArgumentsKeys);
             if (empty($inputArguments[$index])) {
                 if (in_array($commandArgument->getType(), [InputArgument::REQUIRED, InputArgument::ARRAY | InputArgument::REQUIRED])) {
-                    throw CommandException::ArgumentNotFound($name);
+                    throw InputArgumentException::ArgumentNotFound($name);
                 }
                 $inputArguments[$index] = false;
             } else {
@@ -95,7 +100,8 @@ abstract class AbstractCommand
     }
 
     /**
-     * @throws CommandException
+     * @param Input $input
+     * @throws InputOptionException
      */
     private function setRealOptions(Input &$input): void
     {
@@ -169,7 +175,7 @@ abstract class AbstractCommand
      * @param int|string $name
      * @param InputOption $commandOption
      * @return array
-     * @throws CommandException
+     * @throws InputOptionException
      */
     private function getShortInputOptionCommand(array $inputOptions, int|string $name, InputOption $commandOption): array
     {
@@ -185,7 +191,7 @@ abstract class AbstractCommand
             } else if ($commandOption->hasDefault()) {
                 $inputOptions[$name] = $commandOption->getDefault();
             } else if (in_array($commandOption->getType(), [InputOption::REQUIRED, InputOption::ARRAY | InputOption::REQUIRED])) {
-                throw CommandException::OptionNotFound($name);
+                throw InputOptionException::OptionNotFound($name);
             }
         } else if (!$inputOptions[$shortOption]) {
             if ($commandOption->hasDefault()) {
