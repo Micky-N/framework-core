@@ -77,13 +77,12 @@ abstract class Create extends AbstractCommand
 
         foreach ($vars as $key => $var) {
             if (preg_match("/\{$key}/", $fileModel)) {
-                $fileModel = str_replace("\{$key}", $var, $fileModel);
+                $fileModel = str_replace('{'.$key.'}', $var, $fileModel);
             } else {
-                $fileModel = str_replace("\{$key}", '', $fileModel);
+                $fileModel = str_replace('{'.$key.'}', '', $fileModel);
             }
         }
-
-        $fileModel = preg_replace('/\{(\w)}/', '', $fileModel);
+        $fileModel = preg_replace('/\{(\w*)}/', '', $fileModel);
 
         if (!is_dir($outputDir)) {
             mkdir($outputDir, '0777', true);
