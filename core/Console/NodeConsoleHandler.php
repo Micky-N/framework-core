@@ -121,10 +121,10 @@ class NodeConsoleHandler extends Console
         } catch (Exception $ex) {
             $command = $this->output->coloredMessage('php mky help', 'yellow');
             if ($input->getSignature()) {
-                $command = $this->output->coloredMessage("php mky {$input->getSignature()} --help", 'yellow');
-                exit($ex->getMessage() . "\nrun $command to see the list of commands");
+                $help = $this->output->coloredMessage("php mky {$input->getSignature()} --help", 'yellow');
+                exit($ex->getMessage() . "\nRun $help to see the help documentation\nOr run $command to see the list of commands");
             }
-            exit($ex->getMessage() . "\nrun $command to see the list of commands");
+            exit($ex->getMessage() . "\nRun $command to see the list of commands");
         }
     }
 
