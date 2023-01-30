@@ -38,13 +38,11 @@ class Task
     }
 
     /**
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
+     * @return void
      */
     public function run(): void
     {
-        Process::fromShellCommandline($this->buildCommand(), app()->get('path:base'))->run();
+        Process::fromShellCommandline($this->buildCommand(), app()->getBasePath())->run();
     }
 
     public function toDo(): bool

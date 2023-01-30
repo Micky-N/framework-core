@@ -19,11 +19,6 @@ class Application extends Container
      * @var array<string, string>
      */
     private array $modules = [];
-    
-    /**
-     * @var array<string, string>
-     */
-    private array $commands = [];
 
     private string $basePath;
 
@@ -124,18 +119,6 @@ class Application extends Container
     }
 
     /**
-     * Set commands
-     *
-     * @param array<string, string> $commands
-     * @return void
-     * 
-     */
-    public function addCommands(array $commands): void
-    {
-        $this->commands = $commands;
-    }
-
-    /**
      * Get all modules
      *
      * @return array<string, string>
@@ -153,16 +136,6 @@ class Application extends Container
     public function getModulesName(): array
     {
         return array_keys($this->modules);
-    }
-
-    /**
-     * Get all commands
-     *
-     * @return array<string, string>
-     */
-    public function getCommands(): array
-    {
-        return $this->commands;
     }
 
     /**
