@@ -100,7 +100,7 @@ class Middleware extends Create
 
         if (!isset($this->variables['alias'])) {
             if ($type === 'route') {
-                $alias = $input->ask('Enter the middleware alias', $name);
+                $alias = $input->ask('Enter the middleware alias', $input->argument('name'));
             }
         } else {
             $alias = $this->variables['alias'];
