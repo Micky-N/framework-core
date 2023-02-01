@@ -5,6 +5,8 @@ namespace MkyCore\Console\ApplicationCommands\Create;
 use Exception;
 use MkyCommand\AbstractCommand;
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputArgumentException;
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
@@ -53,10 +55,12 @@ class Module extends AbstractCommand
      * @param Input $input
      * @param Output $output
      * @return int
+     * @throws CommandException
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
-     * @throws CommandException
+     * @throws InputArgumentException
+     * @throws InputOptionException
      */
     public function execute(Input $input, Output $output): int
     {
@@ -74,7 +78,8 @@ class Module extends AbstractCommand
 
         do {
             $confirm = true;
-            $alias = $input->ask('Enter the alias module', $name);
+            $defaultAlias = ($parent->getAlias() !== 'root' ? $parent->getAlias() . '.' : '') . $name;
+            $alias = $input->ask('Enter the alias module', $defaultAlias);
             if ($this->application->hasModule($alias)) {
                 $output->error("Alias $alias already exists");
                 $confirm = false;
@@ -121,10 +126,10 @@ class Module extends AbstractCommand
             'module' => $alias,
             'parent' => $parentAlias
         ];
-        if($input->option('crud')){
+        if ($input->option('crud')) {
             $variables['crud'] = $input->option('crud');
         }
-        if($input->option('crud-api')){
+        if ($input->option('crud-api')) {
             $variables['crud-api'] = $input->option('crud-api');
         }
         $controller = new Controller($this->application, $variables);
