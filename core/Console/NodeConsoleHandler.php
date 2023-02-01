@@ -33,9 +33,10 @@ use MkyCore\Console\ApplicationCommands\Show\Route;
 use MkyCore\Console\ApplicationCommands\Tmp\Link;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use MkyCore\Interfaces\NodeConsoleHandlerInterface;
 use ReflectionException;
 
-class NodeConsoleHandler extends Console
+class NodeConsoleHandler extends Console implements NodeConsoleHandlerInterface
 {
 
     public array $customCommands = [];

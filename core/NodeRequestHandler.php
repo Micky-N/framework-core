@@ -6,6 +6,7 @@ use Exception;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Interfaces\MiddlewareInterface;
+use MkyCore\Interfaces\NodeRequestHandlerInterface;
 use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\Middlewares\DispatcherMiddleware;
 use MkyCore\Middlewares\GlobalHandlerMiddleware;
@@ -20,7 +21,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionException;
 
-class NodeRequestHandler implements RequestHandlerInterface
+class NodeRequestHandler implements RequestHandlerInterface, NodeRequestHandlerInterface
 {
 
     private array $nodeMiddlewares;
