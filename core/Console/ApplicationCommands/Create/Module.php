@@ -217,10 +217,10 @@ class Module extends AbstractCommand
         $name = ucfirst($name);
         $outputDir = File::makePath([$parentKernel->getModulePath(), $module]);
         $fileModel = file_get_contents(dirname(__DIR__) . '/models/kernel.model');
-        $fileModel = str_replace("!name", $name . 'Kernel', $fileModel);
-        $fileModel = str_replace("!module", $parentKernel->getModulePath(true) . "\\$module", $fileModel);
+        $fileModel = str_replace("{name}", $name . 'Kernel', $fileModel);
+        $fileModel = str_replace("{module}", $parentKernel->getModulePath(true) . "\\$module", $fileModel);
         $parentAlias = $this->setParentAlias($parentKernel);
-        $fileModel = str_replace("!parent", $parentAlias, $fileModel);
+        $fileModel = str_replace("{parent}", $parentAlias, $fileModel);
         if (!is_dir($outputDir)) {
             mkdir($outputDir, '0777', true);
         }
