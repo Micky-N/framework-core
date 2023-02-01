@@ -61,4 +61,12 @@ class Schedule
         return $this->tasks;
     }
 
+    /**
+     * @return array
+     */
+    public function getTasksToDo(): array
+    {
+        return array_filter($this->tasks, fn($task) => $task->toDo());
+    }
+
 }

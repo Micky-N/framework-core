@@ -12,7 +12,8 @@ class Cron extends \MkyCommand\AbstractCommand
 
     public function execute(Input $input, Output $output): mixed
     {
-        $output->info('Schedule cron started successfully.');
+        $output->success('Schedule cron started successfully.');
+        $output->breakLine();
 
         [$lastTaskStartedAt, $keyOfLastTaskWithOutput, $tasks] = [null, null, []];
 
@@ -25,7 +26,7 @@ class Cron extends \MkyCommand\AbstractCommand
                     PHP_BINARY,
                     defined('MKY_FILE') ? MKY_FILE : 'mky',
                     'schedule:run',
-                ]);
+                ], app()->getBasePath());
 
                 $task->start();
 
@@ -38,8 +39,9 @@ class Cron extends \MkyCommand\AbstractCommand
 
                 if (!empty($outputTask)) {
                     if ($key !== $keyOfLastTaskWithOutput) {
-                        $output->info(PHP_EOL . date('Y-m-d H:i:sP e') . ' Task #' . ($key + 1) . ' output', $outputTask);
-
+                        $output->info(date('Y-m-d H:i:sP e') . ' Task #' . ($key + 1) . ' output :');
+                        $output->write($outputTask, false);
+                        $output->breakLine();
                         $keyOfLastTaskWithOutput = $key;
                     }
                 }
