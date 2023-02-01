@@ -85,7 +85,7 @@ class Middleware extends Create
      */
     public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars): bool
     {
-        $name = $this->variables['name'] ?? $input->argument('name');
+        $name = $this->variables['name'] ?? $vars['name'];
         $alias = '';
 
         if (isset($this->variables['write']) && !$this->variables['write']) {
