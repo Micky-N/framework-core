@@ -45,7 +45,7 @@ class Module extends AbstractCommand
         $this->addArgument('name', Input\InputArgument::REQUIRED, 'Name of the module, this name will be suffixed by Module')
             ->addOption('crud', 'c', InputOption::NONE, 'Crud implementation for views and controller')
             ->addOption('crud-api', 'a', InputOption::NONE, 'Api Crud implementation for controller')
-            ->addOption('parent', 'p', InputOption::OPTIONAL, 'The Module parent name');
+            ->addOption('parent', 'p', InputOption::OPTIONAL, 'The Module parent name', 'root');
     }
 
 
