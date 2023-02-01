@@ -42,10 +42,13 @@ abstract class Create extends AbstractCommand
         $fileModel = file_get_contents(dirname(__DIR__) . "/models/{$this->createType}.model");
         if (!isset($this->variables['name'])) {
             $name = ucfirst($input->argument('name'));
+            if (!$input->option('real')) {
+                if (!str_ends_with($name, $this->suffix)) {
+                    $name .= $this->suffix;
+                }
+            }
         } else {
-            $name = $this->variables['name'];
-        }
-        if (!$input->option('real')) {
+            $name = ucfirst($this->variables['name']);
             if (!str_ends_with($name, $this->suffix)) {
                 $name .= $this->suffix;
             }
