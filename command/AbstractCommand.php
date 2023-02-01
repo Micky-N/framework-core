@@ -276,7 +276,7 @@ abstract class AbstractCommand
             ->text($output->coloredMessage('Description:', 'blue'))
             ->newLine()
             ->text($this->getDescription())
-            ->newLine();
+            ->newLine(2);
 
         $section->read(false);
         return self::SUCCESS;
