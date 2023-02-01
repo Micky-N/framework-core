@@ -1,10 +1,10 @@
 <?php
 
-namespace !module\Managers;
+namespace {module}\Managers;
 
 use MkyCore\Abstracts\Manager;
-!table
-class !name extends Manager
+{table}
+class {name} extends Manager
 {
 
 }

@@ -5,7 +5,7 @@ use MkyCore\Abstracts\Migration;
 use MkyCore\Migration\MigrationTable;
 use MkyCore\Migration\Schema;
 
-class !name extends Migration
+class {name} extends Migration
 {
 
     public function up()

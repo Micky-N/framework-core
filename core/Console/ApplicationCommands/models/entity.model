@@ -1,13 +1,13 @@
 <?php
 
-namespace !module\Entities;
+namespace {module}\Entities;
 
 use MkyCore\Abstracts\Entity;
-!manager
-class !name extends Entity
+{manager}
+class {name} extends Entity
 {
 
-    !properties
+    {properties}
 
-    !getters
+    {getters}
 }

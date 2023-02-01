@@ -2,10 +2,10 @@
 
 namespace Database\Populators;
 
-use !manager;
+use {manager};
 use MkyCore\Abstracts\Populator;
 
-class !name extends Populator
+class {name} extends Populator
 {
 
     protected string $manager = !class;
