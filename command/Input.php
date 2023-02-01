@@ -4,6 +4,8 @@ namespace MkyCommand;
 
 use Closure;
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputArgumentException;
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input\InputArgument;
 use MkyCommand\Input\InputOption;
 
@@ -140,12 +142,12 @@ class Input
     /**
      * @param string $name
      * @return mixed
-     * @throws CommandException
+     * @throws InputArgumentException
      */
     public function argument(string $name): mixed
     {
         if (!$this->hasArgument($name)) {
-            throw CommandException::ArgumentNotFound($name);
+            throw InputArgumentException::ArgumentNotFound($name);
         }
         $argument = $this->arguments[$name];
         if (is_null($argument)) {
@@ -167,12 +169,14 @@ class Input
     }
 
     /**
-     * @throws CommandException
+     * @param string $name
+     * @return mixed|null
+     * @throws InputOptionException
      */
-    public function option(string $name)
+    public function option(string $name): mixed
     {
         if (!$this->hasOption($name)) {
-            throw CommandException::OptionNotFound($name);
+            throw InputOptionException::OptionNotFound($name);
         }
         $options = $this->options[$name];
         if (is_null($options)) {

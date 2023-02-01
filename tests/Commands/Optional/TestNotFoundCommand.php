@@ -4,6 +4,7 @@ namespace MkyCore\Tests\Commands\Optional;
 
 use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
+use MkyCommand\Output;
 
 class TestNotFoundCommand extends \MkyCommand\AbstractCommand
 {
@@ -13,7 +14,7 @@ class TestNotFoundCommand extends \MkyCommand\AbstractCommand
         $this->addOption('name', 'n', InputOption::REQUIRED, '');
     }
 
-    public function execute(): mixed
+    public function execute(Input $input, Output $output): mixed
     {
         return true;
     }

@@ -4,6 +4,7 @@ namespace MkyCore\Tests\Commands\Optional;
 
 use MkyCommand\Input;
 use MkyCommand\Input\InputArgument;
+use MkyCommand\Output;
 
 class ArrayCommand extends \MkyCommand\AbstractCommand
 {
@@ -13,7 +14,7 @@ class ArrayCommand extends \MkyCommand\AbstractCommand
         $this->addOption('names', 'n', InputArgument::ARRAY, 'Array values', [1, 2]);
     }
 
-    public function execute(): mixed
+    public function execute(Input $input, Output $output): mixed
     {
         return true;
     }

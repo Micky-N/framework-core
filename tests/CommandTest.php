@@ -19,14 +19,14 @@ class CommandTest extends TestCase
         $console = new Console();
         $console->addCommand('test', new NoSettingsCommand())
             ->addCommand('greeting', new GreetingCommand());
-        $this->assertCount(2, $console->getCommands());
+        $this->assertCount(3, $console->getCommands());
     }
 
     public function testFindCommandBySignature()
     {
         $console = new Console();
-        $console->addCommand('test', NoSettingsCommand::class)
-            ->addCommand('greeting', GreetingCommand::class);
+        $console->addCommand('test', new NoSettingsCommand())
+            ->addCommand('greeting', new GreetingCommand());
         $input = new Input(['mky', 'greeting', 'Micky']);
         $console->execute($input);
         $this->assertInstanceOf(GreetingCommand::class, $console->getCurrentCommand());
@@ -35,8 +35,8 @@ class CommandTest extends TestCase
     public function testNotFindCommandBySignature()
     {
         $console = new Console();
-        $console->addCommand('test', NoSettingsCommand::class)
-            ->addCommand('greeting', GreetingCommand::class);
+        $console->addCommand('test', new NoSettingsCommand())
+            ->addCommand('greeting', new GreetingCommand());
         try {
             $input = new Input(['mky', 'wrong']);
             $console->execute($input);
@@ -48,8 +48,8 @@ class CommandTest extends TestCase
     public function testExecuteCommand()
     {
         $console = new Console();
-        $console->addCommand('test', NoSettingsCommand::class)
-            ->addCommand('greeting', GreetingCommand::class);
+        $console->addCommand('test', new NoSettingsCommand())
+            ->addCommand('greeting', new GreetingCommand());
         $input = new Input(['mky', 'greeting', 'Micky']);
         $this->assertEquals('Micky', $console->execute($input));
     }
@@ -58,9 +58,9 @@ class CommandTest extends TestCase
     {
         $console = new Console();
         $console->addCommand('help', new HelpCommand($console))
-            ->addCommand('test:command', NoSettingsCommand::class)
-            ->addCommand('greet:someone', GreetingCommand::class)
-            ->addCommand('greet:optional', TestOptionalCommand::class);
+            ->addCommand('test:command', new NoSettingsCommand())
+            ->addCommand('greet:someone', new GreetingCommand())
+            ->addCommand('greet:optional', new TestOptionalCommand());
         $input = new Input(['mky', 'help']);
         $this->assertEquals(1, $console->execute($input));
     }
@@ -68,8 +68,8 @@ class CommandTest extends TestCase
     public function testHelpCommand()
     {
         $console = new Console();
-        $console->addCommand('test', NoSettingsCommand::class)
-            ->addCommand('greeting', GreetingCommand::class);
+        $console->addCommand('test', new NoSettingsCommand())
+            ->addCommand('greeting', new GreetingCommand());
         $input = new Input(['mky', 'greeting', '-h']);
         $this->assertEquals(1, $console->execute($input));
     }

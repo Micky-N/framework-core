@@ -4,6 +4,8 @@ namespace MkyCore\Tests;
 
 use Exception;
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputArgumentException;
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input;
 use MkyCore\Tests\Commands\Arguments\ArrayCommand;
 use MkyCore\Tests\Commands\Arguments\GreetingCommand;
@@ -31,7 +33,7 @@ class InputTest extends TestCase
             $this->assertEquals('Micky', $input->argument('name'));
         }catch(Exception $exception){
             $this->assertEquals('Argument "name" not found', $exception->getMessage());
-            $this->assertInstanceOf(CommandException::class, $exception);
+            $this->assertInstanceOf(InputArgumentException::class, $exception);
         }
     }
 
@@ -53,7 +55,7 @@ class InputTest extends TestCase
             $command->setRealInput($input);
         } catch (Exception $exception) {
             $this->assertEquals('Argument "name" not found', $exception->getMessage());
-            $this->assertInstanceOf(CommandException::class, $exception);
+            $this->assertInstanceOf(InputArgumentException::class, $exception);
 
         }
     }
@@ -119,7 +121,7 @@ class InputTest extends TestCase
             $command->setRealInput($input);
         } catch (Exception $exception) {
             $this->assertEquals('Option "name" not found', $exception->getMessage());
-            $this->assertInstanceOf(CommandException::class, $exception);
+            $this->assertInstanceOf(InputOptionException::class, $exception);
         }
     }
 

@@ -250,10 +250,6 @@ abstract class AbstractCommand
         $options = $this->getOptions() ? array_values($this->getOptions()) : [];
         $section->text($output->coloredMessage('Command: ' . $input->getFile(), 'gray') . ' ' . $output->coloredMessage($this->getSignature(), 'light_yellow') . "\n")
             ->newLine()
-            ->text($output->coloredMessage('Description:', 'blue'))
-            ->newLine()
-            ->text("  " . $this->getDescription())
-            ->newLine(2)
             ->text($output->coloredMessage('Arguments:', 'yellow'))
             ->newLine();
         $table = $output->table();
@@ -275,6 +271,12 @@ abstract class AbstractCommand
         $section->text($table->setIndent(1)
             ->hideBorder()
             ->getTable());
+
+        $section->newLine()
+            ->text($output->coloredMessage('Description:', 'blue'))
+            ->newLine()
+            ->text($this->getDescription())
+            ->newLine();
 
         $section->read(false);
         return self::SUCCESS;

@@ -4,11 +4,16 @@ namespace MkyCore\Tests\Commands\Arguments;
 
 use MkyCommand\Input;
 use MkyCommand\Input\InputArgument;
+use MkyCommand\Output;
 
 class GreetingCommand extends \MkyCommand\AbstractCommand
 {
 
-    protected string $description = 'Say hello to someone';
+    protected string $description = <<<'EOD'
+Example of string spanning multiple lines
+using nowdoc syntax. Backslashes are always treated literally,
+e.g. \\ and \'.
+EOD;
 
     public function settings(): void
     {
@@ -17,8 +22,8 @@ class GreetingCommand extends \MkyCommand\AbstractCommand
         $this->addOption('test', '-t', Input\InputOption::ARRAY | Input\InputOption::REQUIRED, 'Test array named', ['name', 'fdfd', 5]);
     }
 
-    public function execute(): mixed
+    public function execute(Input $input, Output $output): mixed
     {
-        return $this->input->getArgument('name');
+        return $input->argument('name');
     }
 }

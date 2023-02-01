@@ -4,6 +4,7 @@ namespace MkyCore\Tests\Commands\Optional;
 
 use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
+use MkyCommand\Output;
 
 class TestNoneCommand extends \MkyCommand\AbstractCommand
 {
@@ -13,7 +14,7 @@ class TestNoneCommand extends \MkyCommand\AbstractCommand
         $this->addOption('name', 'n', InputOption::NONE, '');
     }
 
-    public function execute(): mixed
+    public function execute(Input $input, Output $output): mixed
     {
         return true;
     }
