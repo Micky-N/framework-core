@@ -26,6 +26,11 @@ class Entity extends Create
             ->addOption('real', 'r', InputOption::NONE, 'Keep the real name of the event');
     }
 
+    /**
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     * @throws FailedToResolveContainerException
+     */
     public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars): void
     {
         $manager = $this->variables['manager'] ?? false;

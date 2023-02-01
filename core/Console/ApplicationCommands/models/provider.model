@@ -1,12 +1,12 @@
 <?php
 
-namespace {module}\Providers;
+namespace {{module}}\Providers;
 
 use MkyCore\Abstracts\ServiceProvider;
 
-class {name} extends ServiceProvider
+class {{name}} extends ServiceProvider
 {
-    {doc}
+    {{doc}}
     public function register(): void
     {
         //

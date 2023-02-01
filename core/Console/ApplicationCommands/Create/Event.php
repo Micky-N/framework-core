@@ -47,6 +47,12 @@ class Event extends Create
         }
     }
 
+    /**
+     * @throws FailedToResolveContainerException
+     * @throws ReflectionException
+     * @throws CommandException
+     * @throws NotInstantiableContainerException
+     */
     public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars): void
     {
         $namespace = $vars['module'];

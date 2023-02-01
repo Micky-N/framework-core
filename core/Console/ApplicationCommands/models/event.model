@@ -1,10 +1,10 @@
 <?php
 
-namespace {module}\Events;
+namespace {{module}}\Events;
 
 use MkyCore\Abstracts\Event;
 
-class {name} extends Event
+class {{name}} extends Event
 {
 
     /**

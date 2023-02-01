@@ -9,7 +9,7 @@ use MkyCommand\Output;
 use MkyCore\Abstracts\Command;
 use MkyCore\Application;
 
-class {name} extends Command
+class {{name}} extends Command
 {
 
     protected string $description = '';

@@ -1,10 +1,10 @@
 <?php
 
-namespace {module};
+namespace {{module}};
 
 use MkyCore\Abstracts\ModuleKernel;
 
-class {name} extends ModuleKernel
+class {{name}} extends ModuleKernel
 {
-    {parent}
+    {{parent}}
 }

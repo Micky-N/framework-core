@@ -65,11 +65,11 @@ class Command extends Create
         $vars['module'] = $namespace;
 
         foreach ($vars as $key => $var) {
-            if (preg_match("/\{$key}/", $fileModel)) {
-                $fileModel = str_replace('{'.$key.'}', $var, $fileModel);
+            if (preg_match("/\{\{$key}}/", $fileModel)) {
+                $fileModel = str_replace('{{' . $key . '}}', $var, $fileModel);
             }
         }
-        $fileModel = preg_replace('/\{(\w*)}/', '', $fileModel);
+        $fileModel = preg_replace('/\{\{(\w*)}}/', '', $fileModel);
 
         if (!is_dir($outputDir)) {
             mkdir($outputDir, '0777', true);
