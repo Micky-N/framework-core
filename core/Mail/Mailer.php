@@ -6,6 +6,7 @@ use MkyCore\Facades\Request;
 use MkyCore\Facades\View;
 use MkyCore\Interfaces\MailerTemplateInterface;
 use MkyCore\Str;
+use Swift_DependencyException;
 use Swift_Mailer;
 use Swift_Message;
 use Swift_Transport;
@@ -71,6 +72,7 @@ class Mailer
      * @param string|null $contentType
      * @param string|null $charset
      * @return MailerMessage
+     * @throws Swift_DependencyException
      */
     public function buildMessage(string $subject = null, string $body = null, string $contentType = null, string $charset = null): MailerMessage
     {
@@ -89,7 +91,7 @@ class Mailer
      * @param array $params
      * @return string
      */
-    public function twigRender(string $view, array $params = []): string
+    public function render(string $view, array $params = []): string
     {
         $params = array_replace_recursive($params, [
             'app_url' => env('APP_URL', Request::baseUri())

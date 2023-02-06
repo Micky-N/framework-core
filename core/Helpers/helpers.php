@@ -5,12 +5,12 @@ use Carbon\Carbon;
 use MkyCore\Application;
 use MkyCore\AuthManager;
 use MkyCore\Config;
-use MkyCore\Facades\Router;
 use MkyCore\Facades\View;
 use MkyCore\JsonResponse;
 use MkyCore\Middlewares\CsrfMiddleware;
 use MkyCore\RedirectResponse;
 use MkyCore\Request;
+use MkyCore\Router\Router;
 use MkyCore\Session;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -44,13 +44,17 @@ if (!function_exists('request')) {
     }
 }
 
-if (!function_exists('route')) {
-    function route(string $name = null, array $params = []): string|Router
+if (!function_exists('router')) {
+    function router(string $name = null, array $params = []): string|Router
     {
         if ($name) {
-            return Router::getUrlFromName($name, $params);
+            return \MkyCore\Facades\Router::getUrlFromName($name, $params);
         }
-        return new Router();
+        try {
+            return app()->get(Router::class);
+        } catch (Exception $e) {
+            return new Router(app());
+        }
     }
 }
 
@@ -110,9 +114,9 @@ if (!function_exists('redirect')) {
 }
 
 if (!function_exists('now')) {
-    function now(DateTimeZone|null|string $tz = 'Europe/Paris'): Carbon
+    function now(): Carbon
     {
-        return Carbon::now($tz);
+        return Carbon::now();
     }
 }
 
@@ -183,7 +187,7 @@ if (!function_exists('asset')) {
     {
         try {
             $base = app()->get(Request::class)->baseUri();
-            if(!$asset){
+            if (!$asset) {
                 return $base;
             }
             return $base . '/assets/' . trim($asset, '/');
@@ -202,7 +206,7 @@ if (!function_exists('public_path')) {
     {
         try {
             $base = app()->get('path:public');
-            if(!$path){
+            if (!$path) {
                 return $base;
             }
             return $base . '/' . trim($path, '/');
@@ -221,7 +225,7 @@ if (!function_exists('tmp_path')) {
     {
         try {
             $base = app()->get('path:tmp');
-            if(!$path){
+            if (!$path) {
                 return $base;
             }
             return $base . '/' . trim($path, '/');

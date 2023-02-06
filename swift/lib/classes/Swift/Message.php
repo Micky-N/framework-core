@@ -35,10 +35,11 @@ class Swift_Message extends Swift_Mime_SimpleMessage
      *
      * Details may be optionally passed into the constructor.
      *
-     * @param string $subject
-     * @param string $body
-     * @param string $contentType
-     * @param string $charset
+     * @param null $subject
+     * @param null $body
+     * @param null $contentType
+     * @param null $charset
+     * @throws Swift_DependencyException
      */
     public function __construct($subject = null, $body = null, $contentType = null, $charset = null)
     {

@@ -284,18 +284,18 @@
                             <tr>
                                 <td class="content-cell">
                                     <div>
-                                        {{ greeting|raw }}
-                                        {% for content in contents %}
-                                            {{ content|raw }}
-                                        {% endfor %}
-                                        {{ footer|raw }}
+                                        <?= $this->escape($greeting) ?>
+                                        <?php foreach ($contents as $content): ?>
+                                            <?= $this->escape($content) ?>
+                                        <?php endforeach ?>
+                                        <?= $this->escape($footer) ?>
                                     </div>
                                 </td>
                             </tr>
                         </table>
                     </td>
                 </tr>
-                {{ signature|raw }}
+                <?= $this->escape($signature) ?>
             </table>
         </td>
     </tr>

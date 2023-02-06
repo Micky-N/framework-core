@@ -150,4 +150,9 @@ abstract class ModuleKernel
         return $this->parent;
     }
 
+    public function sharedVariables(): array
+    {
+        return [];
+    }
+
 }

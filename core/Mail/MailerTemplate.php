@@ -2,24 +2,11 @@
 
 namespace MkyCore\Mail;
 
-use MkyCore\Exceptions\Container\FailedToResolveContainerException;
-use MkyCore\Exceptions\Container\NotInstantiableContainerException;
-use MkyCore\Exceptions\ViewSystemException;
-use MkyCore\Facades\View;
-use MkyCore\Interfaces\MailerTemplateInterface;
-use ReflectionException;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
+use MkyCore\Abstracts\AbstractMailerTemplate;
 
-class MailerTemplate implements MailerTemplateInterface
+class MailerTemplate extends AbstractMailerTemplate
 {
     protected string $viewPath = __DIR__ . '/views';
-    protected string $viewNamespace = 'mailer';
-    protected string $viewTwig = 'template.twig';
-    protected string $viewText = 'template.txt';
-    protected array $texts = [];
-    protected array $blocks = [];
     protected bool $hasSignature = false;
     protected bool $hasFooter = false;
     protected bool $hasGreeting = false;
@@ -167,20 +154,6 @@ HTML;
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function use(array|string $viewTemplates): MailerTemplate
-    {
-        if (is_array($viewTemplates)) {
-            $this->viewTwig = $viewTemplates['twig'] ?? '';
-            $this->viewText = $viewTemplates['text'] ?? '';
-        } else if (is_string($viewTemplates)) {
-            $this->viewTwig = $viewTemplates;
-        }
-        return $this;
-    }
-
     public function signature(array|string $signatures): MailerTemplate
     {
         if (!$this->hasSignature) {
@@ -202,37 +175,5 @@ HTML;
             $this->hasSignature = true;
         }
         return $this;
-    }
-
-    /**
-     * @inheritDoc
-     * @throws FailedToResolveContainerException
-     * @throws RuntimeError
-     * @throws LoaderError
-     * @throws ViewSystemException
-     * @throws SyntaxError
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     */
-    public function generate(): string
-    {
-        list($namespace, $twigRender) = $this->outPutTemplate();
-        return $twigRender->toHtml("@$namespace/" . $this->viewTwig, $this->blocks);
-    }
-
-    public function generateText(): string|false
-    {
-        list($namespace, $twigRender) = $this->outPutTemplate();
-        return $twigRender->toHtml("@$namespace/" . $this->viewText, $this->texts);
-    }
-
-    /**
-     * @return array
-     */
-    private function outPutTemplate(): array
-    {
-        $namespace = $this->viewNamespace;
-        $twigRender = View::addPath($this->viewPath, $namespace);
-        return array($namespace, $twigRender);
     }
 }

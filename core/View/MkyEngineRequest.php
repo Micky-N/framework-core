@@ -7,9 +7,10 @@ use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Facades\Config;
 use MkyCore\Request;
+use MkyCore\Router\Router;
 use ReflectionException;
 
-class TwigRequest
+class MkyEngineRequest
 {
     public function __construct(private readonly Request $request)
     {
@@ -70,6 +71,15 @@ class TwigRequest
     {
         $route = app()->getCurrentRoute();
         return $route->getName() === $name;
+    }
+
+    public function router(): Router
+    {
+        try {
+            return app()->get(Router::class);
+        } catch (\Exception $e) {
+            return new Router(app());
+        }
     }
 
     public function query(string $name, mixed $default)

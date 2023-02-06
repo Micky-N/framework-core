@@ -7,14 +7,13 @@ use MkyCommand\Input\InputArgument;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
 use MkyCore\Abstracts\Command;
-use MkyCore\Application;
 
 class {{name}} extends Command
 {
 
     protected string $description = '';
 
-    public function __construct(private readonly Application $application)
+    public function __construct()
     {
     }
 

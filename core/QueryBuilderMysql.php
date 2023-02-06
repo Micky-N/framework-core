@@ -72,7 +72,7 @@ class QueryBuilderMysql
      * @param array $attribute
      * @return array
      * @throws Exception
-     * @see $this->>db->prepare()
+     * @see $this->db->prepare()
      */
     public function prepare(string $statement, array $attribute): array
     {
