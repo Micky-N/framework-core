@@ -7,6 +7,7 @@ use MkyCore\Abstracts\ModuleKernel;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Exceptions\ViewSystemException;
+use MkyCore\Facades\Config;
 use MkyCore\Interfaces\ResponseHandlerInterface;
 use MkyCore\View\MkyEngineRequest;
 use MkyEngine\DirectoryLoader;
@@ -49,15 +50,17 @@ class View implements ResponseHandlerInterface
     private function rootViewDirectory(): void
     {
         $context = $this->module->sharedVariables();
-        $context['request'] = app()->get(MkyEngineRequest::class);
-        $rootView = $this->setDirectoryLoader(app()->getBasePath() . '/views');
+        $context['request'] = $this->app->get(MkyEngineRequest::class);
+        $rootView = $this->setDirectoryLoader(app()->getBasePath() . '/views', true);
         $this->environment = new Environment($rootView, $context);
     }
 
-    private function setDirectoryLoader(string $path): DirectoryLoader
+    private function setDirectoryLoader(string $path, bool $root = false): DirectoryLoader
     {
-        return (new DirectoryLoader($path))->setComponentDir('components')
-            ->setLayoutDir('layouts');
+        $componentDir = $root ? Config::getBase('mkyengine.componentDir', 'components') : Config::get('mkyengine.componentDir', 'components');
+        $layoutDir = $root ? Config::getBase('mkyengine.layoutDir', 'layouts') : Config::get('mkyengine.layoutDir', 'layouts');
+        return (new DirectoryLoader($path))->setComponentDir($componentDir)
+            ->setLayoutDir($layoutDir);
     }
 
     /**
@@ -101,7 +104,6 @@ class View implements ResponseHandlerInterface
      */
     private function getParentViewsDirectory(ModuleKernel $moduleKernel): void
     {
-        /** @var ModuleKernel[] $ancestors */
         $ancestors = $moduleKernel->getAncestorsKernel();
         foreach ($ancestors as $ancestor) {
             $loader = $this->setDirectoryLoader($ancestor->getModulePath() . DIRECTORY_SEPARATOR . 'views');

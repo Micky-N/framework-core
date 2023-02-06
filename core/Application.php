@@ -78,16 +78,10 @@ class Application extends Container
     /**
      * Set Application class to Container instances
      *
-     * @throws ConfigNotFoundException
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
      */
     private function registerBaseBindings()
     {
         static::setBaseInstance($this);
-        $config = new Config($this, $this->get('path:config'));
-        date_default_timezone_set($config->get('app.default_timezone', 'Europe/Paris'));
         $this->setInstance(Application::class, $this);
         $this->setInstance(Container::class, $this);
     }
@@ -129,29 +123,9 @@ class Application extends Container
     }
 
     /**
-     * Get the name of all modules
-     *
-     * @return array<string, string>
-     */
-    public function getModulesName(): array
-    {
-        return array_keys($this->modules);
-    }
-
-    /**
-     * Get a command
-     *
-     * @param string $signature
-     * @return string|null
-     */
-    public function getCommand(string $signature): ?string
-    {
-        return $this->commands[$signature] ?? null;
-    }
-
-    /**
      * Call register from all ServiceProvider
      *
+     * @throws ConfigNotFoundException
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
@@ -194,6 +168,8 @@ class Application extends Container
                 }
             }
         }
+        $config = $this->get(Config::class);
+        date_default_timezone_set($config->get('app.default_timezone', 'Europe/Paris'));
     }
 
     /**
@@ -209,6 +185,27 @@ class Application extends Container
             $dotEnv->load();
             $this->environmentFile = $envFile;
         }
+    }
+
+    /**
+     * Get the name of all modules
+     *
+     * @return array<string, string>
+     */
+    public function getModulesName(): array
+    {
+        return array_keys($this->modules);
+    }
+
+    /**
+     * Get a command
+     *
+     * @param string $signature
+     * @return string|null
+     */
+    public function getCommand(string $signature): ?string
+    {
+        return $this->commands[$signature] ?? null;
     }
 
     /**
@@ -286,9 +283,9 @@ class Application extends Container
     public function addEvent(string $event, array|string $listeners, bool $replace = false): void
     {
         $listeners = (array)$listeners;
-        if(!$replace){
+        if (!$replace) {
             $this->events[$event] = array_replace_recursive($this->events[$event] ?? [], $listeners);
-        }else{
+        } else {
             $this->events[$event] = $listeners;
         }
     }

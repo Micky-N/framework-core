@@ -2,6 +2,7 @@
 
 namespace MkyCore;
 
+use Exception;
 use MkyCore\Exceptions\Config\ConfigNotFoundException;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
@@ -21,15 +22,99 @@ class Config
      * @param mixed|null $default
      * @return mixed
      * @throws ConfigNotFoundException
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
      */
     public function get(string $key, mixed $default = null): mixed
     {
         $configArray = explode('.', $key);
         $directory = array_shift($configArray);
-        $config = $this->getMergedConfig($directory) ?? $default;
+        try {
+            $config = $this->getConfig($directory, true) ?? $default;
+        } catch (Exception) {
+            return $default;
+        }
+        return $this->getParamConfig($configArray, $config, $default);
+    }
+
+    /**
+     * @param string $directory
+     * @param bool $merged
+     * @return array
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    private function getConfig(string $directory, bool $merged = false): array
+    {
+        if (!$merged) {
+            $configFile = $this->configPath . "/$directory.php";
+            if (!file_exists($configFile)) {
+                return [];
+            }
+            return include($configFile);
+        }
+        return $this->getMergedConfig($directory);
+    }
+
+    /**
+     * Get config merged with module config
+     *
+     * @param string $directory
+     * @return array
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    private function getMergedConfig(string $directory): array
+    {
+        $moduleConfig = [];
+        $currentRoute = $this->app->getCurrentRoute();
+
+        if ($currentRoute) {
+            $currentModule = $this->app->getModuleKernel($currentRoute->getModule());
+            if ($currentModule->isNestedModule()) {
+                $parentModules = $currentModule->getAncestorsKernel();
+                $parentModules[] = $currentModule;
+                for ($i = 0; $i < count($parentModules); $i++) {
+                    $module = $parentModules[$i];
+                    $filterConfig = $this->getFilterConfig($module, $directory);
+                    $moduleConfig = array_merge($moduleConfig, $filterConfig);
+                }
+            } else {
+                $filterConfig = $this->getFilterConfig($currentModule, $directory);
+                $moduleConfig = array_merge($moduleConfig, $filterConfig);
+            }
+
+        }
+
+        $configFile = $this->configPath . "/$directory.php";
+        if (!file_exists($configFile)) {
+            return [];
+        }
+        return array_replace_recursive(include($configFile), $moduleConfig);
+    }
+
+    /**
+     * @param Abstracts\ModuleKernel|null $module
+     * @param string $directory
+     * @return array
+     */
+    private function getFilterConfig(?Abstracts\ModuleKernel $module, string $directory): array
+    {
+        $config = $module->getConfig();
+        $filterConfig = array_filter($config, fn($c) => str_starts_with($c, "$directory:"), ARRAY_FILTER_USE_KEY);
+        $a = array_map(fn($c) => str_replace("$directory:", '', $c), array_keys($filterConfig));
+        return array_combine($a, $filterConfig);
+    }
+
+    /**
+     * @param array $configArray
+     * @param mixed $config
+     * @param mixed $default
+     * @return mixed
+     * @throws ConfigNotFoundException
+     */
+    private function getParamConfig(array $configArray, mixed $config, mixed $default): mixed
+    {
         if ($configArray) {
             for ($i = 0; $i < count($configArray); $i++) {
                 if (isset($config[$configArray[$i]])) {
@@ -46,32 +131,20 @@ class Config
     }
 
     /**
-     * Get config merged with module config
-     *
-     * @throws ReflectionException
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
+     * @param string $key
+     * @param mixed|null $default
+     * @return mixed
+     * @throws ConfigNotFoundException
      */
-    private function getMergedConfig(string $moduleDirectory): ?array
+    public function getBase(string $key, mixed $default = null): mixed
     {
-        $moduleKey = false;
-        $moduleConfig = [];
-        $moduleDirectory = explode('::', $moduleDirectory);
-        if (count($moduleDirectory) == 2) {
-            $moduleKey = array_shift($moduleDirectory);
+        $configArray = explode('.', $key);
+        $directory = array_shift($configArray);
+        try {
+            $config = $this->getConfig($directory) ?? $default;
+        } catch (Exception) {
+            return $default;
         }
-        $directory = array_shift($moduleDirectory);
-        if ($moduleKey) {
-            $module = $this->app->getModuleKernel($moduleKey);
-            $moduleConfig = array_filter($module->getConfig(), fn($c) => str_starts_with($c, "$directory::"), ARRAY_FILTER_USE_KEY);
-            $a = array_map(fn($c) => str_replace("$directory::", '', $c), array_keys($moduleConfig));
-            $moduleConfig = array_combine($a, $moduleConfig);
-        }
-
-        $configFile = $this->configPath . "/$directory.php";
-        if (!file_exists($configFile)) {
-            return null;
-        }
-        return array_replace_recursive(include($configFile), $moduleConfig);
+        return $this->getParamConfig($configArray, $config, $default);
     }
 }

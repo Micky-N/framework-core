@@ -32,5 +32,5 @@ return [
      * Merge config in app file, replace route_mode config
      *
      */
-    'app::route_mode' => '{{routeMode}}'
+    'app:route_mode' => '{{routeMode}}'
 ];

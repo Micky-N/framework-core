@@ -126,10 +126,14 @@ if (!function_exists('config')) {
      * @param string|null $default
      * @return mixed
      */
-    function config(string $key, mixed $default = null): mixed
+    function config(string $key = null, mixed $default = null): mixed
     {
         try {
+            /** @var Config $config */
             $config = app()->get(Config::class);
+            if(!$key){
+                return $config;
+            }
             return $config->get($key, $default);
         } catch (Exception $ex) {
             return $default;

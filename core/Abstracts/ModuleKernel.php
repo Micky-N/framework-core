@@ -74,7 +74,7 @@ abstract class ModuleKernel
      * if limit is greater than 0, the maximum size of value will be equal to limit
      *
      * @param int $limit
-     * @return array
+     * @return ModuleKernel[]
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
@@ -90,7 +90,7 @@ abstract class ModuleKernel
      *
      * @param array $ancestors
      * @param int $limit
-     * @return array
+     * @return ModuleKernel[]
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException

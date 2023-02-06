@@ -258,8 +258,8 @@ class Module extends AbstractCommand
         $prefix = $prefix ? "$prefix/{$parentKernel->getAlias()}/$name" : $name;
         $outputDir = File::makePath([$parentKernel->getModulePath(), "{$nameModule}Module"]);
         $fileModel = file_get_contents(dirname(__DIR__) . '/models/config.model');
-        $fileModel = str_replace("!name", strtolower($prefix), $fileModel);
-        $fileModel = str_replace("!routeMode", $routeMode, $fileModel);
+        $fileModel = str_replace("{{name}}", strtolower($prefix), $fileModel);
+        $fileModel = str_replace("{{routeMode}}", $routeMode, $fileModel);
         if (!is_dir($outputDir)) {
             mkdir($outputDir, '0777', true);
         }

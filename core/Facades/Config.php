@@ -7,6 +7,7 @@ use MkyCore\Abstracts\Facade;
 
 /**
  * @method static mixed get(string $key, mixed $default = null)
+ * @method static mixed getBase(string $key, mixed $default = null)
  * @see \MkyCore\Config
  */
 class Config extends Facade

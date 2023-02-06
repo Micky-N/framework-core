@@ -57,7 +57,7 @@ class Router
             $controller = ucfirst(trim(str_replace([$this->app->get('path:base'), '.php'], ['', ''], $controllerDir), DIRECTORY_SEPARATOR));
             $module = $this->parseModule($controller);
             $alias = $module->getAlias();
-            if (!in_array(Config::get($alias . '::app.route_mode', 'file'), ['controller', 'both'])) {
+            if (!in_array(Config::get('app.route_mode', 'file'), ['controller', 'both'])) {
                 continue;
             }
             $controller = new Annotation($controller);
