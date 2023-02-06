@@ -19,77 +19,77 @@ class View implements ResponseHandlerInterface
 {
     const VIEWS_STRATEGIES = ['base', 'module', 'parent', 'both'];
     private ?string $renderedView = null;
-    private DirectoryLoader $loader;
     private Environment $environment;
+    private ModuleKernel $module;
 
     /**
-     * @throws ReflectionException
-     * @throws NotInstantiableContainerException
-     * @throws FailedToResolveContainerException
-     */
-    public function __construct(private readonly Application $app)
-    {
-        $module = $this->app->getModuleKernel($app->getCurrentRoute()->getModule());
-        $viewDirectory = $module->getModulePath() . '/views';
-        $this->loader = new DirectoryLoader($viewDirectory);
-        $this->loader->setComponentDir('components')
-            ->setLayoutDir('layouts');
-        $context = $module->sharedVariables();
-        $context['request'] = app()->get(MkyEngineRequest::class);
-        $this->environment = new Environment($this->loader, context: $context);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function render(string $view, array $params = []): View
-    {
-        $this->toHtml($view, $params);
-        return $this;
-    }
-
-    /**
-     * @param string $view
-     * @param array $params
-     * @return string
+     * @param Application $app
      * @throws EnvironmentException
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
      * @throws ViewSystemException
      */
-    public function toHtml(string $view, array $params = []): string
+    public function __construct(private readonly Application $app)
     {
-        $module = $this->app->getModuleKernel($this->app->getCurrentRoute()->getModule());
+        $this->module = $this->app->getModuleKernel($app->getCurrentRoute()->getModule());
+        $this->rootViewDirectory();
+        if ($this->module->getAlias() !== 'root') {
+            $this->currentViewDirectory();
+        }
+        $this->viewModuleConfig();
+    }
 
-        $viewsModuleConfig = $module->getConfig('views_mode', 'base');
+    /**
+     * @return void
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    private function rootViewDirectory(): void
+    {
+        $context = $this->module->sharedVariables();
+        $context['request'] = app()->get(MkyEngineRequest::class);
+        $rootView = $this->setDirectoryLoader(app()->getBasePath() . '/views');
+        $this->environment = new Environment($rootView, $context);
+    }
+
+    private function setDirectoryLoader(string $path): DirectoryLoader
+    {
+        return (new DirectoryLoader($path))->setComponentDir('components')
+            ->setLayoutDir('layouts');
+    }
+
+    /**
+     * @return void
+     * @throws EnvironmentException
+     */
+    private function currentViewDirectory(): void
+    {
+        $viewDirectory = $this->module->getModulePath() . '/views';
+        $currentLoader = $this->setDirectoryLoader($viewDirectory);
+        $this->environment->addLoader($this->module->getAlias(), $currentLoader);
+    }
+
+    /**
+     * @return void
+     * @throws EnvironmentException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     * @throws ViewSystemException
+     */
+    private function viewModuleConfig(): void
+    {
+        $viewsModuleConfig = $this->module->getConfig('views_mode', 'base');
         if (!in_array($viewsModuleConfig, self::VIEWS_STRATEGIES)) {
             throw new ViewSystemException("View config $viewsModuleConfig not correct, must be base, module or parent");
         }
         if ($viewsModuleConfig == 'parent') {
-            $this->getParentViewsDirectory($module);
+            $this->getParentViewsDirectory($this->module);
         } elseif ($viewsModuleConfig == 'module') {
-            $this->getModuleViewsDirectory($module);
+            $this->getModuleViewsDirectory($this->module);
         }
-        if (str_starts_with($view, '@:')) {
-            $view = str_replace('@', '@' . $module->getAlias(), $view);
-        }
-        $viewCompile = new ViewCompiler($this->environment, $view, $params);
-        return $this->renderedView = $viewCompile->render();
-    }
-
-    /**
-     * @param string $namespace
-     * @param DirectoryLoader $loader
-     * @return $this
-     * @throws EnvironmentException
-     */
-    public function addPath(string $namespace, DirectoryLoader $loader): static
-    {
-        if(!$this->environment->hasLoader($namespace)){
-            $this->environment->addLoader($namespace, $loader);
-        }
-        return $this;
     }
 
     /**
@@ -104,9 +104,23 @@ class View implements ResponseHandlerInterface
         /** @var ModuleKernel[] $ancestors */
         $ancestors = $moduleKernel->getAncestorsKernel();
         foreach ($ancestors as $ancestor) {
-            $loader = new DirectoryLoader($ancestor->getModulePath() . DIRECTORY_SEPARATOR . 'views');
+            $loader = $this->setDirectoryLoader($ancestor->getModulePath() . DIRECTORY_SEPARATOR . 'views');
             $this->addPath($ancestor->getAlias(), $loader);
         }
+    }
+
+    /**
+     * @param string $namespace
+     * @param DirectoryLoader $loader
+     * @return $this
+     * @throws EnvironmentException
+     */
+    public function addPath(string $namespace, DirectoryLoader $loader): static
+    {
+        if (!$this->environment->hasLoader($namespace)) {
+            $this->environment->addLoader($namespace, $loader);
+        }
+        return $this;
     }
 
     /**
@@ -135,8 +149,32 @@ class View implements ResponseHandlerInterface
                 continue;
             }
 
-            $this->addPath($module->getAlias(), new DirectoryLoader($viewPath));
+            $this->addPath($module->getAlias(), $this->setDirectoryLoader($viewPath));
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function render(string $view, array $params = []): View
+    {
+        $this->toHtml($view, $params);
+        return $this;
+    }
+
+    /**
+     * @param string $view
+     * @param array $params
+     * @return string
+     * @throws EnvironmentException
+     */
+    public function toHtml(string $view, array $params = []): string
+    {
+        if (str_starts_with($view, '@:')) {
+            $view = str_replace('@', '@' . $this->module->getAlias(), $view);
+        }
+        $viewCompile = new ViewCompiler($this->environment, $view, $params);
+        return $this->renderedView = $viewCompile->render();
     }
 
     public function handle(): Response
