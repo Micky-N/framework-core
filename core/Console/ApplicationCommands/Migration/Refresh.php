@@ -21,7 +21,7 @@ class Refresh extends Migration
             ->addOption('number', 'n', InputOption::OPTIONAL, 'Number a migration to rollback');
     }
 
-    public function execute(Input $input, Output $output): int
+    public function execute(Input $input, Output $output): void
     {
         /** @var MigrationFile $migrationRunner */
         $migrationRunner = $this->application->get(MigrationFile::class);
@@ -36,7 +36,7 @@ class Refresh extends Migration
         }
         try {
             if (!$migrationLogs) {
-                return false;
+                exit();
             }
             foreach ($migrationLogs as $log) {
                 $file = $this->application->get('path:database') . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR . $log['log'];
@@ -47,10 +47,8 @@ class Refresh extends Migration
                 $migrationRunner->actionMigration('up', $file);
             }
             $this->sendResponse($output, Schema::$SUCCESS, Schema::$ERRORS);
-            return self::SUCCESS;
         } catch (Exception $e) {
             $output->error($e->getMessage());
-            return self::ERROR;
         }
     }
 }

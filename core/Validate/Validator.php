@@ -33,9 +33,10 @@ class Validator
     public function passed(): bool
     {
         $rules = new Rules($this->data, $this->rules);
-        if (count($this->data) < 1 && count($this->rules) > 0) {
-            $this->errors['form'] = 'Form must be filled';
-            return false;
+        $isEmpty = array_filter(array_values($this->data), fn($d) => $d);
+        $form = '';
+        if (count($isEmpty) < 1 && count($this->rules) > 0) {
+            $form = 'Form must be filled';
         }
         foreach ($this->data as $key => $d) {
             $customMessages = [];
@@ -51,6 +52,9 @@ class Validator
         }
         if (!empty($rules->getErrors())) {
             $this->errors = $rules->getErrors();
+            if($form){
+                $this->errors['form'] = $form;
+            }
             return false;
         }
         return true;

@@ -53,7 +53,7 @@ class Cookie
     public function remove(string $id): bool
     {
         unset($_COOKIE[$id]);
-        return $this->set($id, '', time() - 3600);
+        return $this->set($id, '', '-1 hour');
     }
 
     /**

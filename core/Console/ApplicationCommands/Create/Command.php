@@ -2,13 +2,13 @@
 
 namespace MkyCore\Console\ApplicationCommands\Create;
 
-use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputArgumentException;
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input;
 use MkyCommand\Input\InputArgument;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
 use MkyCore\Abstracts\ModuleKernel;
-use MkyCore\Application;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\File;
@@ -32,13 +32,14 @@ class Command extends Create
     /**
      * @param Input $input
      * @param Output $output
-     * @return string|int
-     * @throws CommandException
+     * @return string|null
      * @throws FailedToResolveContainerException
+     * @throws InputArgumentException
+     * @throws InputOptionException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
-    public function execute(Input $input, Output $output): string|int
+    public function execute(Input $input, Output $output): ?string
     {
         $vars = [];
         $fileModel = file_get_contents(dirname(__DIR__) . "/models/{$this->createType}.model");
@@ -58,7 +59,7 @@ class Command extends Create
         $outputDir = File::makePath([$module->getModulePath(), $this->outputDirectory]);
         if (file_exists($outputDir . DIRECTORY_SEPARATOR . $name . '.php')) {
             $output->error("$name file already exists", $outputDir . DIRECTORY_SEPARATOR . $name . '.php');
-            return self::ERROR;
+            exit();
         }
 
         $vars['name'] = $name;
@@ -81,8 +82,8 @@ class Command extends Create
             return $namespace . '\\' . $name;
         } else {
             $output->success("$name created", $outputDir . DIRECTORY_SEPARATOR . $name . '.php');
-            return self::SUCCESS;
         }
+        return null;
     }
 
     public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars)

@@ -3,10 +3,15 @@
 namespace MkyCore\Console\ApplicationCommands\Install;
 
 use MkyCommand\AbstractCommand;
+use MkyCommand\Exceptions\InputArgumentException;
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input;
 use MkyCommand\Output;
 use MkyCore\Application;
 use MkyCore\Console\ApplicationCommands\Create\Middleware;
+use MkyCore\Exceptions\Container\FailedToResolveContainerException;
+use MkyCore\Exceptions\Container\NotInstantiableContainerException;
+use ReflectionException;
 
 class Remember extends AbstractCommand
 {
@@ -17,7 +22,17 @@ class Remember extends AbstractCommand
     {
     }
 
-    public function execute(Input $input, Output $output): int
+    /**
+     * @param Input $input
+     * @param Output $output
+     * @return void
+     * @throws InputArgumentException
+     * @throws InputOptionException
+     * @throws FailedToResolveContainerException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
+     */
+    public function execute(Input $input, Output $output): void
     {
         $migrationAR = false;
         $migrationModel = file_get_contents(dirname(__DIR__) . '/models/install/remember/migration.model');
@@ -52,7 +67,7 @@ class Remember extends AbstractCommand
 
         if ($middlewareAR && $migrationAR) {
             echo $output->coloredMessage('remember token middleware and migration file already exist', 'red', 'bold');
-            return false;
+            exit();
         } else if ($migrationAR) {
             echo $output->coloredMessage('remember token migration file already exists', 'red', 'bold')."\n";
             echo $output->coloredMessage('remember token middleware created successfully', 'green', 'bold') . "\n";
@@ -66,6 +81,6 @@ class Remember extends AbstractCommand
             echo '> run ' . $output->coloredMessage('php mky migration:run', 'yellow') . ' to migrate the Remember token table';
         }
         $output->success('Remember system installed successfully');
-        return self::SUCCESS;
+        exit();
     }
 }

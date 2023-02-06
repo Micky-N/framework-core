@@ -3,6 +3,7 @@
 namespace MkyCore\Console\ApplicationCommands\Migration;
 
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputArgumentException;
 use MkyCommand\Input;
 use MkyCommand\Output;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
@@ -24,13 +25,13 @@ class Create extends Migration
     /**
      * @param Input $input
      * @param Output $output
-     * @return int
-     * @throws CommandException
+     * @return void
      * @throws FailedToResolveContainerException
+     * @throws InputArgumentException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
      */
-    public function execute(Input $input, Output $output): int
+    public function execute(Input $input, Output $output): void
     {
         $outputDir = File::makePath([$this->application->get('path:database'), 'migrations']);
         $name = $input->argument('name');
@@ -39,7 +40,7 @@ class Create extends Migration
         $final = $outputDir . DIRECTORY_SEPARATOR . $nameFile . '.php';
         if (file_exists($final)) {
             $output->error('File already exists', 'migrations' . DIRECTORY_SEPARATOR . "$nameFile.php");
-            return self::ERROR;
+            exit();
         }
         $parsedModel = file_get_contents(dirname(__DIR__) . 'models/migration.model');
         $parsedModel = str_replace('!name', Str::classify($name), $parsedModel);
@@ -48,6 +49,5 @@ class Create extends Migration
         }
         file_put_contents($final, $parsedModel);
         $output->success("Migration file created", $final);
-        return self::SUCCESS;
     }
 }

@@ -51,14 +51,6 @@ class Request extends ServerRequest implements ServerRequestInterface
         return self::$_instance;
     }
 
-    public function header(string $name = null, string $default = null): array|string|null
-    {
-        if ($name) {
-            return $this->getHeader($name) ?? $default;
-        }
-        return $this->getHeaders();
-    }
-
     public function date(string $name, string $format = 'Y-m-d H:i:s', string $timezone = 'Europe/Paris'): ?Carbon
     {
         $date = null;
@@ -78,11 +70,6 @@ class Request extends ServerRequest implements ServerRequestInterface
         return $this->getRequestData($name, $this->getParsedBody() ?: $this->getRawFormData(), $default);
     }
 
-    private function getRawFormData(): array
-    {
-        return json_decode(file_get_contents('php://input'), true) ?? [];
-    }
-
     /**
      * @param string|null $name
      * @param array $data
@@ -91,11 +78,15 @@ class Request extends ServerRequest implements ServerRequestInterface
      */
     private function getRequestData(string $name = null, array $data = [], $default = null): mixed
     {
-        $queryParams = $data;
         if ($name) {
-            return $queryParams[$name] ?? $default;
+            return $data[$name] ?? $default;
         }
-        return array_filter($queryParams, fn($param) => $param !== '', ARRAY_FILTER_USE_BOTH);
+        return $data;
+    }
+
+    private function getRawFormData(): array
+    {
+        return json_decode(file_get_contents('php://input'), true) ?? [];
     }
 
     public function query(string $name = null, mixed $default = null): mixed
@@ -161,6 +152,14 @@ class Request extends ServerRequest implements ServerRequestInterface
             $bool = (bool)$bool;
         }
         return $bool;
+    }
+
+    public function has(string $attribute, string $type = 'post'): bool
+    {
+        if (!in_array(strtolower($type), self::TYPE_DATA)) {
+            return false;
+        }
+        return $this->{$type}($attribute) !== null;
     }
 
     public function is(string $routeRegex): bool
@@ -237,11 +236,19 @@ class Request extends ServerRequest implements ServerRequestInterface
     {
         $headerAuthorization = $this->header('Authorization');
         $authorization = false;
-        if($headerAuthorization){
+        if ($headerAuthorization) {
             $headerAuthorization = reset($headerAuthorization);
             $authorization = trim(str_replace(['bearer', 'Bearer'], '', $headerAuthorization));
         }
         return $authorization;
+    }
+
+    public function header(string $name = null, string $default = null): array|string|null
+    {
+        if ($name) {
+            return $this->getHeader($name) ?? $default;
+        }
+        return $this->getHeaders();
     }
 
     /**
@@ -328,14 +335,6 @@ class Request extends ServerRequest implements ServerRequestInterface
         }
 
         return $flash;
-    }
-
-    public function has(string $attribute, string $type = 'post'): bool
-    {
-        if (!in_array(strtolower($type), self::TYPE_DATA)) {
-            return false;
-        }
-        return $this->{$type}($attribute) !== null;
     }
 
     /**

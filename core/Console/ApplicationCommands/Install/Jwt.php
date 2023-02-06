@@ -15,7 +15,7 @@ class Jwt extends AbstractCommand
     {
     }
 
-    public function execute(Input $input, Output $output): int
+    public function execute(Input $input, Output $output): void
     {
         $configAR = false;
         $migrationAR = false;
@@ -48,6 +48,5 @@ class Jwt extends AbstractCommand
             echo $output->coloredMessage('jwt config file and migration file created successfully', 'green', 'bold')."\n";
             echo '> run ' . $output->coloredMessage('php mky migration:run', 'yellow') . ' to migrate the Jwt table';
         }
-        return self::SUCCESS;
     }
 }

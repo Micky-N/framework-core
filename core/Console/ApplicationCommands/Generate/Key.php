@@ -12,7 +12,7 @@ class Key extends AbstractCommand
 
     protected string $description = 'Generate a new application key';
 
-    public function execute(Input $input, Output $output): int
+    public function execute(Input $input, Output $output): void
     {
         $replace = 1;
         $newKey = Str::random();
@@ -28,6 +28,5 @@ class Key extends AbstractCommand
         array_splice($explodedFile, $index, $replace, "APP_KEY=$newKey");
         file_put_contents('.env', join("\n", $explodedFile));
         $output->success('Key generated successfully', $newKey);
-        return self::SUCCESS;
     }
 }

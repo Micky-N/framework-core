@@ -4,9 +4,11 @@ namespace MkyCore\Console\ApplicationCommands\Migration;
 
 use Exception;
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
+use MkyCore\Abstracts\Command;
 use MkyCore\Exceptions\Container\FailedToResolveContainerException;
 use MkyCore\Exceptions\Container\NotInstantiableContainerException;
 use MkyCore\Migration\MigrationFile;
@@ -28,13 +30,13 @@ class Run extends Create
     /**
      * @param Input $input
      * @param Output $output
-     * @return int
-     * @throws CommandException
+     * @return void
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
+     * @throws InputOptionException
      */
-    public function execute(Input $input, Output $output): int
+    public function execute(Input $input, Output $output): void
     {
         /** @var MigrationFile $migrationRunner */
         $migrationRunner = $this->application->get(MigrationFile::class);
@@ -51,14 +53,12 @@ class Run extends Create
             if ($pop) {
                 exec('php mky populator:run', $outputMessage);
                 for ($i = 0; $i < count($outputMessage); $i++) {
-                    echo $output[$i];
+                    echo $outputMessage[$i]."\n";
                 }
             }
             $this->sendResponse($output, Schema::$SUCCESS, Schema::$ERRORS);
-            return self::SUCCESS;
         } catch (Exception $e) {
             $output->error($e->getMessage());
-            return self::ERROR;
         }
     }
 }

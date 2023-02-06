@@ -2,6 +2,7 @@
 
 namespace MkyCore\Console\ApplicationCommands\Create;
 
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input;
 use MkyCommand\Input\InputArgument;
 use MkyCommand\Input\InputOption;
@@ -32,6 +33,7 @@ class Controller extends Create
      * @param ModuleKernel $moduleKernel
      * @param array $vars
      * @return void
+     * @throws InputOptionException
      */
     public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars): void
     {

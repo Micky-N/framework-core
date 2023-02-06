@@ -3,6 +3,7 @@
 namespace MkyCore\Console\ApplicationCommands\Create;
 
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputArgumentException;
 use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
@@ -78,10 +79,10 @@ class Middleware extends Create
      * @param ModuleKernel $moduleKernel
      * @param array $vars
      * @return bool
-     * @throws CommandException
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
+     * @throws InputArgumentException
      */
     public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars): bool
     {

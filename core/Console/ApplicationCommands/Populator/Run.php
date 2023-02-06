@@ -20,7 +20,7 @@ class Run extends AbstractCommand
         $this->addOption('file', 'f', InputOption::OPTIONAL, 'The name of populator file (\'user\' => \'UserPopulator\')', 'runner');
     }
 
-    public function execute(Input $input, Output $output): bool|string
+    public function execute(Input $input, Output $output): void
     {
         try {
             $file = ucfirst($input->option('file'));
@@ -30,20 +30,20 @@ class Run extends AbstractCommand
             $populator = "Database\Populators\\$file";
             if (!class_exists($populator)) {
                 $output->error("Populator class not found", $populator);
-                return self::ERROR;
+                exit();
             }
             $populator = new $populator();
             if (!($populator instanceof Populator)) {
                 $output->error("Populator class must extends from MkyCore\Abstracts\Populator", $populator);
-                return self::ERROR;
+                exit();
             }
             $populator->populate();
             $count = self::$count;
             $output->success('Database successfully populated', $count . ' record' . ($count > 1 ? 's' : ''));
-            return self::SUCCESS;
+            exit();
         } catch (Exception $e) {
             $output->error($e->getMessage());
-            return self::ERROR;
+            exit();
         }
     }
 }

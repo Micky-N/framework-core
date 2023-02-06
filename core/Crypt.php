@@ -57,4 +57,17 @@ class Crypt
         // timing attack safe comparison
         return hash_equals($hmac, $calcmac) ? $original_plaintext : '';
     }
+
+    public static function hash(string $value): string
+    {
+        if(password_get_info($value)['algoName'] === 'unknown'){
+            $value = password_hash($value, PASSWORD_DEFAULT);
+        }
+        return $value;
+    }
+
+    public static function verify(string $password, string $hash): bool
+    {
+        return password_verify($password, $hash);
+    }
 }

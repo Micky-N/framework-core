@@ -3,6 +3,8 @@
 namespace MkyCore\Console\ApplicationCommands\Create;
 
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputArgumentException;
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
@@ -31,10 +33,11 @@ class Event extends Create
      * @param Input $input
      * @param Output $output
      * @return void
-     * @throws CommandException
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
+     * @throws InputArgumentException
+     * @throws InputOptionException
      */
     private function createEventServiceProvider(string $module, Input $input, Output $output): void
     {
@@ -48,10 +51,15 @@ class Event extends Create
     }
 
     /**
+     * @param Input $input
+     * @param Output $output
+     * @param ModuleKernel $moduleKernel
+     * @param array $vars
      * @throws FailedToResolveContainerException
-     * @throws ReflectionException
-     * @throws CommandException
+     * @throws InputArgumentException
+     * @throws InputOptionException
      * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
     public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars): void
     {

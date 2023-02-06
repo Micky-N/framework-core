@@ -55,14 +55,13 @@ class Module extends AbstractCommand
      * @param Input $input
      * @param Output $output
      * @return int
-     * @throws CommandException
      * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
      * @throws InputArgumentException
      * @throws InputOptionException
+     * @throws NotInstantiableContainerException
+     * @throws ReflectionException
      */
-    public function execute(Input $input, Output $output): int
+    public function execute(Input $input, Output $output): void
     {
         $parent = $input->option('parent');
         $parent = $this->application->getModuleKernel($parent);
@@ -73,7 +72,7 @@ class Module extends AbstractCommand
         $newPath = File::makePath([$parentPath, $module]);
         if (is_dir($newPath)) {
             $output->error("Module already exists", $module);
-            return self::ERROR;
+            exit();
         }
 
         do {
@@ -116,7 +115,7 @@ class Module extends AbstractCommand
 
         if (!$this->declareModuleInApp($alias, $fileKernel)) {
             $output->error('Error in declaration of module in AppServiceProvider');
-            return self::ERROR;
+            exit();
         }
 
         $parentAlias = $this->getAncestorsAlias($this->application->get($fileKernel));
@@ -208,7 +207,6 @@ class Module extends AbstractCommand
                 $output->success("$key created", $file);
             }
         }
-        return self::SUCCESS;
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace MkyCore\Console\ApplicationCommands\Migration;
 
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input;
 use MkyCommand\Output;
 
@@ -20,10 +21,10 @@ class Reset extends Create
     /**
      * @param Input $input
      * @param Output $output
-     * @return int
-     * @throws CommandException
+     * @return void
+     * @throws InputOptionException
      */
-    public function execute(Input $input, Output $output): int
+    public function execute(Input $input, Output $output): void
     {
         $pop = $input->option('pop');
         exec('php mky migration:rollback -n all', $outputClear);
@@ -34,6 +35,5 @@ class Reset extends Create
         for ($i = 0; $i < count($outputRun); $i++) {
             echo $outputRun[$i] . "\n";
         }
-        return self::SUCCESS;
     }
 }

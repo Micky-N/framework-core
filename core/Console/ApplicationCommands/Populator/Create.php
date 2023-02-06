@@ -4,6 +4,7 @@ namespace MkyCore\Console\ApplicationCommands\Populator;
 
 use MkyCommand\AbstractCommand;
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputArgumentException;
 use MkyCommand\Input;
 use MkyCommand\Output;
 use MkyCore\Application;
@@ -29,13 +30,14 @@ class Create extends AbstractCommand
     /**
      * @param Input $input
      * @param Output $output
-     * @return bool|string
+     * @return null
      * @throws CommandException
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
+     * @throws InputArgumentException
      */
-    public function execute(Input $input, Output $output): bool|string
+    public function execute(Input $input, Output $output): null|string
     {
         $outputDir = File::makePath([$this->application->get('path:database'), 'Populators']);
 
@@ -46,7 +48,7 @@ class Create extends AbstractCommand
         $final = $outputDir . DIRECTORY_SEPARATOR . $name . '.php';
         if (file_exists($final)) {
             $output->error('File already exists', 'Populators' . DIRECTORY_SEPARATOR . "$name.php");
-            return self::ERROR;
+            exit();
         }
         $manager = $this->getManagerQuestion($input, $output);
         $class = explode('\\', $manager);
@@ -64,7 +66,7 @@ class Create extends AbstractCommand
             return $final;
         }
         $output->success("Populator file created", $final);
-        return self::SUCCESS;
+        return null;
     }
 
     /**

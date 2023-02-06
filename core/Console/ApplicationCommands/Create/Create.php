@@ -4,6 +4,8 @@ namespace MkyCore\Console\ApplicationCommands\Create;
 
 use MkyCommand\AbstractCommand;
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputArgumentException;
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input;
 use MkyCommand\Output;
 use MkyCore\Abstracts\ModuleKernel;
@@ -30,13 +32,14 @@ abstract class Create extends AbstractCommand
     /**
      * @param Input $input
      * @param Output $output
-     * @return string|int
-     * @throws CommandException
+     * @return string|null
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
      * @throws ReflectionException
+     * @throws InputArgumentException
+     * @throws InputOptionException
      */
-    public function execute(Input $input, Output $output): string|int
+    public function execute(Input $input, Output $output): null|string
     {
         $vars = [];
         $fileModel = file_get_contents(dirname(__DIR__) . "/models/{$this->createType}.model");
@@ -70,7 +73,7 @@ abstract class Create extends AbstractCommand
         $outputDir = File::makePath([$module->getModulePath(), $this->outputDirectory]);
         if (file_exists($outputDir . DIRECTORY_SEPARATOR . $name . '.php')) {
             $output->error("$name file already exists", $outputDir . DIRECTORY_SEPARATOR . $name . '.php');
-            return self::ERROR;
+            exit();
         }
 
         $vars['name'] = $name;
@@ -95,8 +98,8 @@ abstract class Create extends AbstractCommand
             return $namespace . '\\' . $name;
         } else {
             $output->success("$name created", $outputDir . DIRECTORY_SEPARATOR . $name . '.php');
-            return self::SUCCESS;
         }
+        return null;
     }
 
     abstract public function gettingStarted(Input $input, Output $output, ModuleKernel $moduleKernel, array &$vars);

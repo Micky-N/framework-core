@@ -68,7 +68,7 @@ PRIMARY KEY (`id`))";
         $table = self::TABLE;
         $migration = str_replace('.php', '', $migration);
         try {
-            $this->database->prepare("DELETE FROM $table WHERE log = :id", ['log' => $migration]);
+            $this->database->prepare("DELETE FROM $table WHERE log = :log", ['log' => $migration]);
             return true;
         } catch (Exception $e) {
             return false;

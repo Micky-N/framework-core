@@ -4,6 +4,7 @@ namespace MkyCore\Console\ApplicationCommands\Migration;
 
 use Exception;
 use MkyCommand\Exceptions\CommandException;
+use MkyCommand\Exceptions\InputOptionException;
 use MkyCommand\Input;
 use MkyCommand\Input\InputOption;
 use MkyCommand\Output;
@@ -26,12 +27,15 @@ class Rollback extends Create
     }
 
     /**
+     * @param Input $input
+     * @param Output $output
+     * @return void
      * @throws FailedToResolveContainerException
      * @throws NotInstantiableContainerException
-     * @throws CommandException
      * @throws ReflectionException
+     * @throws InputOptionException
      */
-    public function execute(Input $input, Output $output): int
+    public function execute(Input $input, Output $output): void
     {
         /** @var MigrationFile $migrationRunner */
         $migrationRunner = $this->application->get(MigrationFile::class);
@@ -44,19 +48,18 @@ class Rollback extends Create
             $number = $input->option('number');
             $migrationLogs = $this->migrationDB->getLast($number);
         }
+
         try {
             if (!$migrationLogs) {
-                return self::ERROR;
+                exit();
             }
             foreach ($migrationLogs as $log) {
                 $file = $this->application->get('path:database') . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR . $log['log'];
                 $migrationRunner->actionMigration('down', $file);
             }
             $this->sendResponse($output, Schema::$SUCCESS, Schema::$ERRORS);
-            return self::SUCCESS;
         } catch (Exception $e) {
             $output->error($e->getMessage());
-            return self::ERROR;
         }
     }
 }
