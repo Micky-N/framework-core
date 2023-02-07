@@ -348,7 +348,7 @@ class Request extends ServerRequest implements ServerRequestInterface
 
     public function backUrl(): string|null
     {
-        return $this->server('HTTP_REFERER');
+        return $this->server('HTTP_REFERER') ?? 'javascript://history.go(-1)';
     }
 
     public function old(string $name, mixed $default = null): mixed

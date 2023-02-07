@@ -15,18 +15,14 @@ class AbstractMailerTemplate implements MailerTemplateInterface
 {
     const NAMESPACE = 'mailer';
     protected string $viewPath = '';
-    protected string $viewHtml = 'template.php';
-    protected string $viewText = 'template_text.php';
+    protected string $viewHtml = 'template';
+    protected string $viewText = 'template_text';
     protected array $texts = [];
     protected array $blocks = [];
 
     /**
      * @inheritDoc
      * @return string
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     * @throws ViewSystemException
      * @throws EnvironmentException
      */
     public function generate(): string
@@ -39,10 +35,6 @@ class AbstractMailerTemplate implements MailerTemplateInterface
      * @param array $params
      * @return string
      * @throws EnvironmentException
-     * @throws FailedToResolveContainerException
-     * @throws NotInstantiableContainerException
-     * @throws ReflectionException
-     * @throws ViewSystemException
      */
     protected function outPutTemplate(string $view, array $params = []): string
     {
@@ -53,14 +45,26 @@ class AbstractMailerTemplate implements MailerTemplateInterface
     }
 
     /**
-     * @throws FailedToResolveContainerException
+     * @return string|false
      * @throws EnvironmentException
-     * @throws ReflectionException
-     * @throws NotInstantiableContainerException
-     * @throws ViewSystemException
      */
     public function generateText(): string|false
     {
         return $this->outPutTemplate($this->viewText, $this->texts);
+    }
+
+    /**
+     * @param array|string $viewTemplates
+     * @return $this
+     */
+    public function use(array|string $viewTemplates): static
+    {
+        if (is_array($viewTemplates)) {
+            $this->viewHtml = $viewTemplates['html'] ?? '';
+            $this->viewText = $viewTemplates['text'] ?? '';
+        } else if (is_string($viewTemplates)) {
+            $this->viewHtml = $viewTemplates;
+        }
+        return $this;
     }
 }

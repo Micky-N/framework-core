@@ -284,18 +284,18 @@
                             <tr>
                                 <td class="content-cell">
                                     <div>
-                                        <?= $this->escape($greeting) ?>
-                                        <?php foreach ($contents as $content): ?>
-                                            <?= $this->escape($content) ?>
+                                        <?= $this->escape($greeting ?? '') ?>
+                                        <?php foreach ($contents ?? [] as $content): ?>
+                                            <?= $this->escape($content ?? '') ?>
                                         <?php endforeach ?>
-                                        <?= $this->escape($footer) ?>
+                                        <?= $this->escape($footer ?? '') ?>
                                     </div>
                                 </td>
                             </tr>
                         </table>
                     </td>
                 </tr>
-                <?= $this->escape($signature) ?>
+                <?= $this->escape($signature ?? '') ?>
             </table>
         </td>
     </tr>

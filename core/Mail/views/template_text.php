@@ -1,7 +1,9 @@
-<?= $this->escape($greeting) ?>
+<?= $this->escape($greeting ?? '') ?>
 
-<?= $this->escape($content) ?>
+<?php foreach ($contents ?? [] as $content): ?>
+<?= $this->escape($content ?? '') ?>
+<?php endforeach; ?>
 
-<?= $this->escape($footer) ?>
+<?= $this->escape($footer ?? '') ?>
 
-<?= $this->escape($signature) ?>
+<?= $this->escape($signature ?? '') ?>

@@ -2,6 +2,7 @@
 
 namespace MkyCore\Mail;
 
+use MkyCore\Abstracts\AbstractMailerTemplate;
 use MkyCore\Facades\Request;
 use MkyCore\Facades\View;
 use MkyCore\Interfaces\MailerTemplateInterface;
@@ -10,6 +11,7 @@ use Swift_DependencyException;
 use Swift_Mailer;
 use Swift_Message;
 use Swift_Transport;
+use Swift_TransportException;
 
 class Mailer
 {
@@ -59,9 +61,17 @@ class Mailer
         return $transport;
     }
 
+    /**
+     * @return array
+     * @throws Swift_TransportException
+     */
     private function parseDSN(): array
     {
-        $parseUrl = parse_url(env('MAILER_DSN'));
+        $mailerDns = env('MAILER_DSN');
+        if(!$mailerDns){
+            throw new Swift_TransportException('No mailer dns not set in environment file');
+        }
+        $parseUrl = parse_url($mailerDns);
         parse_str($parseUrl['query'], $parseUrl['query']);
         return $parseUrl;
     }
@@ -113,10 +123,10 @@ class Mailer
     }
 
     /**
-     * @param MailerTemplateInterface $mailerTemplate
-     * @return MailerTemplateInterface
+     * @param AbstractMailerTemplate $mailerTemplate
+     * @return AbstractMailerTemplate
      */
-    public function useTemplate(MailerTemplateInterface $mailerTemplate = new MailerTemplate()): MailerTemplateInterface
+    public function useTemplate(AbstractMailerTemplate $mailerTemplate = new MailerTemplate()): AbstractMailerTemplate
     {
         return $mailerTemplate;
     }

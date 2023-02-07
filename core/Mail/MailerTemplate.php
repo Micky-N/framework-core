@@ -22,7 +22,7 @@ class MailerTemplate extends AbstractMailerTemplate
     public function paragraph(string $paragraph): MailerTemplate
     {
         $this->blocks['contents'][] = "<p>$paragraph</p>";
-        $this->texts['contents'][] = $paragraph;
+        $this->texts['contents'][] = "$paragraph\n";
         return $this;
     }
 
@@ -46,7 +46,7 @@ class MailerTemplate extends AbstractMailerTemplate
     </tr>
 </table>
 HTML;
-        $this->texts['contents'][] = "$title ($url)";
+        $this->texts['contents'][] = "$title ($url)\n";
         return $this;
     }
 
@@ -54,8 +54,16 @@ HTML;
     {
         $titleLink = key($link);
         $url = $link[$titleLink];
+        $this->texts['contents'][] = "\n";
+        if ($title) {
+            $this->texts['contents'][] = "$title\n";
+        }
+        if ($content) {
+            $this->texts['contents'][] = "$content\n";
+        }
         $title = $title ? "<h1 class=\"f-fallback discount_heading\">$title</h1>" : '';
         $content = $content ? "<p class=\"f-fallback discount_body\">$content</p>" : '';
+        $this->texts['contents'][] = "$titleLink ($url)\n";
         $this->blocks['contents'][] = <<<HTML
 <table class="discount">
   <tr>
@@ -82,7 +90,7 @@ HTML;
             $this->blocks['greeting'] = "<h1>$greeting</h1>";
             $count = strlen($greeting);
             $starts = str_repeat('*', $count);
-            $this->texts['greeting'] = "$starts\n$greeting\n$starts";
+            $this->texts['greeting'] = "$starts\n$greeting\n$starts\n";
             $this->hasGreeting = true;
         }
         return $this;
@@ -96,11 +104,12 @@ HTML;
                                 <table>";
         $texts = [];
         foreach ($attributes as $key => $attribute) {
-            $attr = $attribute;
-            $texts[] = $attribute;
             if (is_string($key)) {
                 $attr = "<strong>$key:</strong> $attribute";
                 $texts[] = "$key: $attribute";
+            } else {
+                $attr = $attribute;
+                $texts[] = $attribute;
             }
             $block .= "<tr>
                             <td class=\"attributes_item\">
@@ -115,7 +124,7 @@ HTML;
                         </tr>
                     </table>";
         $this->blocks['contents'][] = $block;
-        $this->texts['contents'][] = join("\n", $texts);
+        $this->texts['contents'][] = "\n" . join("\n", $texts) . "\n";
         return $this;
     }
 
@@ -148,7 +157,7 @@ HTML;
                                     </td>
                                 </tr>
                             </table>";
-            $this->texts['footer'] = "$footer$text";
+            $this->texts['footer'] = "\n$footer$text\n";
             $this->hasFooter = true;
         }
         return $this;
@@ -171,7 +180,7 @@ HTML;
                         </table>
                     </td>
                 </tr>";
-            $this->texts['signature'] = join("\n\n", (array)$signatures);
+            $this->texts['signature'] = "\n" . join("\n", (array)$signatures) . "\n";
             $this->hasSignature = true;
         }
         return $this;
